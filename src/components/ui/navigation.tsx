@@ -1,0 +1,108 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Menu, X, Pill, Stethoscope, UserPlus, LogIn } from "lucide-react";
+
+interface NavigationProps {
+  onAuthClick: (type: 'login' | 'signup') => void;
+}
+
+export function Navigation({ onAuthClick }: NavigationProps) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  return (
+    <nav className="bg-background border-b border-border">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <div className="flex items-center space-x-2">
+            <div className="bg-gradient-primary p-2 rounded-lg">
+              <Pill className="h-6 w-6 text-primary-foreground" />
+            </div>
+            <span className="text-2xl font-bold text-primary">MediLink</span>
+          </div>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            <a href="#how-it-works" className="text-foreground hover:text-primary transition-colors">
+              How it Works
+            </a>
+            <a href="#for-patients" className="text-foreground hover:text-primary transition-colors">
+              For Patients
+            </a>
+            <a href="#for-doctors" className="text-foreground hover:text-primary transition-colors">
+              For Doctors
+            </a>
+            <a href="#pharmacies" className="text-foreground hover:text-primary transition-colors">
+              Pharmacies
+            </a>
+          </div>
+
+          {/* Auth Buttons */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Button 
+              variant="ghost" 
+              onClick={() => onAuthClick('login')}
+              className="flex items-center space-x-2"
+            >
+              <LogIn className="h-4 w-4" />
+              <span>Login</span>
+            </Button>
+            <Button 
+              onClick={() => onAuthClick('signup')}
+              className="flex items-center space-x-2 bg-gradient-primary hover:opacity-90"
+            >
+              <UserPlus className="h-4 w-4" />
+              <span>Sign Up</span>
+            </Button>
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
+          </div>
+        </div>
+
+        {/* Mobile menu */}
+        {isMenuOpen && (
+          <div className="md:hidden py-4 space-y-4">
+            <a href="#how-it-works" className="block text-foreground hover:text-primary">
+              How it Works
+            </a>
+            <a href="#for-patients" className="block text-foreground hover:text-primary">
+              For Patients
+            </a>
+            <a href="#for-doctors" className="block text-foreground hover:text-primary">
+              For Doctors
+            </a>
+            <a href="#pharmacies" className="block text-foreground hover:text-primary">
+              Pharmacies
+            </a>
+            <div className="flex flex-col space-y-2 pt-4 border-t border-border">
+              <Button 
+                variant="ghost" 
+                onClick={() => onAuthClick('login')}
+                className="justify-start"
+              >
+                <LogIn className="h-4 w-4 mr-2" />
+                Login
+              </Button>
+              <Button 
+                onClick={() => onAuthClick('signup')}
+                className="justify-start bg-gradient-primary"
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                Sign Up
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </nav>
+  );
+}
