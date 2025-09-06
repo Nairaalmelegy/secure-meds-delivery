@@ -42,14 +42,12 @@ export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
         const registerData = {
           // firstName: formData.get('firstName') as string,
           // lastName: formData.get('lastName') as string,
-          name: formData.get('firstName') + " " + formData.get('lastName'),
+          name: `${formData.get('firstName')} ${formData.get('lastName')}`.trim(),
           email: formData.get('registerEmail') as string,
           phone: formData.get('phone') as string,
           password: formData.get('registerPassword') as string,
           role: userRole,
           ...(userRole === 'patient' && { nationalId: formData.get('nationalId') as string }),
-          ...(userRole === 'doctor' && { medicalLicense: formData.get('license') as string }),
-          ...(userRole === 'pharmacy' && { pharmacyName: formData.get('pharmacyName') as string }),
         };
         
         await register(registerData);
