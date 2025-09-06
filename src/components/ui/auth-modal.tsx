@@ -6,6 +6,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User, Stethoscope, Building2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -16,12 +18,55 @@ interface AuthModalProps {
 export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
   const [activeTab, setActiveTab] = useState(type);
   const [userRole, setUserRole] = useState<'patient' | 'doctor' | 'pharmacy'>('patient');
+  const [loading, setLoading] = useState(false);
+  const { login, signup } = useAuth();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle authentication logic here
-    console.log('Form submitted');
-    onClose();
+    setLoading(true);
+
+    const formData = new FormData(e.target as HTMLFormElement);
+    
+    try {
+      if (activeTab === 'login') {
+        await login(
+          formData.get('email') as string,
+          formData.get('password') as string
+        );
+        toast({
+          title: "Login successful",
+          description: "Welcome back to MediLink!",
+        });
+      } else {
+        const signupData = {
+          firstName: formData.get('firstName') as string,
+          lastName: formData.get('lastName') as string,
+          email: formData.get('signupEmail') as string,
+          phone: formData.get('phone') as string,
+          password: formData.get('signupPassword') as string,
+          role: userRole,
+          ...(userRole === 'patient' && { nationalId: formData.get('nationalId') as string }),
+          ...(userRole === 'doctor' && { medicalLicense: formData.get('license') as string }),
+          ...(userRole === 'pharmacy' && { pharmacyName: formData.get('pharmacyName') as string }),
+        };
+        
+        await signup(signupData);
+        toast({
+          title: "Account created successfully",
+          description: "Welcome to MediLink!",
+        });
+      }
+      onClose();
+    } catch (error: any) {
+      toast({
+        title: "Authentication failed",
+        description: error.message || "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -45,6 +90,7 @@ export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
                 <Label htmlFor="email">Email</Label>
                 <Input 
                   id="email" 
+                  name="email"
                   type="email" 
                   placeholder="Enter your email"
                   required
@@ -55,14 +101,19 @@ export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
                 <Label htmlFor="password">Password</Label>
                 <Input 
                   id="password" 
+                  name="password"
                   type="password" 
                   placeholder="Enter your password"
                   required
                 />
               </div>
 
-              <Button type="submit" className="w-full bg-gradient-primary">
-                Login
+              <Button 
+                type="submit" 
+                className="w-full bg-gradient-primary"
+                disabled={loading}
+              >
+                {loading ? "Logging in..." : "Login"}
               </Button>
             </form>
             
@@ -114,6 +165,7 @@ export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
                   <Label htmlFor="firstName">First Name</Label>
                   <Input 
                     id="firstName" 
+                    name="firstName"
                     placeholder="First name"
                     required
                   />
@@ -122,6 +174,7 @@ export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
                   <Label htmlFor="lastName">Last Name</Label>
                   <Input 
                     id="lastName" 
+                    name="lastName"
                     placeholder="Last name"
                     required
                   />
@@ -132,6 +185,7 @@ export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
                 <Label htmlFor="signupEmail">Email</Label>
                 <Input 
                   id="signupEmail" 
+                  name="signupEmail"
                   type="email" 
                   placeholder="Enter your email"
                   required
@@ -142,6 +196,7 @@ export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
                 <Label htmlFor="phone">Phone Number</Label>
                 <Input 
                   id="phone" 
+                  name="phone"
                   type="tel" 
                   placeholder="+94 XX XXX XXXX"
                   required
@@ -153,6 +208,7 @@ export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
                   <Label htmlFor="nationalId">National ID</Label>
                   <Input 
                     id="nationalId" 
+                    name="nationalId"
                     placeholder="National ID number"
                     required
                   />
@@ -164,6 +220,7 @@ export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
                   <Label htmlFor="license">Medical License Number</Label>
                   <Input 
                     id="license" 
+                    name="license"
                     placeholder="Medical license number"
                     required
                   />
@@ -175,6 +232,7 @@ export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
                   <Label htmlFor="pharmacyName">Pharmacy Name</Label>
                   <Input 
                     id="pharmacyName" 
+                    name="pharmacyName"
                     placeholder="Pharmacy name"
                     required
                   />
@@ -185,6 +243,7 @@ export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
                 <Label htmlFor="signupPassword">Password</Label>
                 <Input 
                   id="signupPassword" 
+                  name="signupPassword"
                   type="password" 
                   placeholder="Create a password"
                   required
@@ -195,14 +254,19 @@ export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <Input 
                   id="confirmPassword" 
+                  name="confirmPassword"
                   type="password" 
                   placeholder="Confirm your password"
                   required
                 />
               </div>
 
-              <Button type="submit" className="w-full bg-gradient-primary">
-                Create Account
+              <Button 
+                type="submit" 
+                className="w-full bg-gradient-primary"
+                disabled={loading}
+              >
+                {loading ? "Creating Account..." : "Create Account"}
               </Button>
             </form>
           </TabsContent>

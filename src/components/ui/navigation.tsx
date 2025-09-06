@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Pill, Stethoscope, UserPlus, LogIn } from "lucide-react";
+import { Menu, X, Pill, Stethoscope, UserPlus, LogIn, LogOut, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface NavigationProps {
   onAuthClick: (type: 'login' | 'signup') => void;
@@ -8,6 +9,7 @@ interface NavigationProps {
 
 export function Navigation({ onAuthClick }: NavigationProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   return (
     <nav className="bg-background border-b border-border">
@@ -39,21 +41,45 @@ export function Navigation({ onAuthClick }: NavigationProps) {
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button 
-              variant="ghost" 
-              onClick={() => onAuthClick('login')}
-              className="flex items-center space-x-2"
-            >
-              <LogIn className="h-4 w-4" />
-              <span>Login</span>
-            </Button>
-            <Button 
-              onClick={() => onAuthClick('signup')}
-              className="flex items-center space-x-2 bg-gradient-primary hover:opacity-90"
-            >
-              <UserPlus className="h-4 w-4" />
-              <span>Sign Up</span>
-            </Button>
+            {user ? (
+              <>
+                <div className="flex items-center space-x-2 text-sm">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-foreground">
+                    {user.firstName} {user.lastName}
+                  </span>
+                  <span className="text-xs text-muted-foreground px-2 py-1 bg-secondary rounded-full">
+                    {user.role}
+                  </span>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  onClick={logout}
+                  className="flex items-center space-x-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Logout</span>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => onAuthClick('login')}
+                  className="flex items-center space-x-2"
+                >
+                  <LogIn className="h-4 w-4" />
+                  <span>Login</span>
+                </Button>
+                <Button 
+                  onClick={() => onAuthClick('signup')}
+                  className="flex items-center space-x-2 bg-gradient-primary hover:opacity-90"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  <span>Sign Up</span>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -84,21 +110,47 @@ export function Navigation({ onAuthClick }: NavigationProps) {
               Pharmacies
             </a>
             <div className="flex flex-col space-y-2 pt-4 border-t border-border">
-              <Button 
-                variant="ghost" 
-                onClick={() => onAuthClick('login')}
-                className="justify-start"
-              >
-                <LogIn className="h-4 w-4 mr-2" />
-                Login
-              </Button>
-              <Button 
-                onClick={() => onAuthClick('signup')}
-                className="justify-start bg-gradient-primary"
-              >
-                <UserPlus className="h-4 w-4 mr-2" />
-                Sign Up
-              </Button>
+              {user ? (
+                <>
+                  <div className="flex items-center space-x-2 px-3 py-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex flex-col">
+                      <span className="text-sm text-foreground">
+                        {user.firstName} {user.lastName}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {user.role}
+                      </span>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    onClick={logout}
+                    className="justify-start"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => onAuthClick('login')}
+                    className="justify-start"
+                  >
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Login
+                  </Button>
+                  <Button 
+                    onClick={() => onAuthClick('signup')}
+                    className="justify-start bg-gradient-primary"
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Sign Up
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         )}
