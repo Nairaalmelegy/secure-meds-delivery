@@ -103,40 +103,40 @@ export interface AuthResponse {
 // Auth API functions
 export const authApi = {
   login: (data: LoginRequest): Promise<AuthResponse> => 
-    apiClient.post<AuthResponse>('/auth/login', data),
+    apiClient.post<AuthResponse>('/api/auth/login', data),
     
   signup: (data: SignupRequest): Promise<AuthResponse> => 
-    apiClient.post<AuthResponse>('/auth/signup', data),
+    apiClient.post<AuthResponse>('/api/auth/signup', data),
     
   logout: (): Promise<void> => 
-    apiClient.post<void>('/auth/logout'),
+    apiClient.post<void>('/api/auth/logout'),
 };
 
 // Medicine API functions
 export const medicineApi = {
   search: (query: string): Promise<any[]> => 
-    apiClient.get(`/medicines/search?q=${encodeURIComponent(query)}`),
+    apiClient.get(`/api/medicines/search?q=${encodeURIComponent(query)}`),
     
   getAll: (): Promise<any[]> => 
-    apiClient.get('/medicines'),
+    apiClient.get('/api/medicines'),
     
   getById: (id: string): Promise<any> => 
-    apiClient.get(`/medicines/${id}`),
+    apiClient.get(`/api/medicines/${id}`),
 };
 
 // Order API functions  
 export const orderApi = {
   create: (data: any): Promise<any> => 
-    apiClient.post('/orders', data),
+    apiClient.post('/api/orders', data),
     
   getMyOrders: (): Promise<any[]> => 
-    apiClient.get('/orders/my'),
+    apiClient.get('/api/orders/my'),
     
   getById: (id: string): Promise<any> => 
-    apiClient.get(`/orders/${id}`),
+    apiClient.get(`/api/orders/${id}`),
     
   updateStatus: (id: string, status: string): Promise<any> => 
-    apiClient.put(`/orders/${id}/status`, { status }),
+    apiClient.put(`/api/orders/${id}/status`, { status }),
 };
 
 // Prescription API functions
@@ -146,7 +146,7 @@ export const prescriptionApi = {
     formData.append('prescription', file);
     if (doctorId) formData.append('doctorId', doctorId);
     
-    return fetch(`${API_BASE_URL}/prescriptions/upload`, {
+    return fetch(`${API_BASE_URL}/api/prescriptions/upload`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -156,20 +156,20 @@ export const prescriptionApi = {
   },
   
   getMyPrescriptions: (): Promise<any[]> => 
-    apiClient.get('/prescriptions/my'),
+    apiClient.get('/api/prescriptions/my'),
     
   verify: (id: string, approved: boolean): Promise<any> => 
-    apiClient.put(`/prescriptions/${id}/verify`, { approved }),
+    apiClient.put(`/api/prescriptions/${id}/verify`, { approved }),
 };
 
 // Doctor API functions
 export const doctorApi = {
   search: (query: string): Promise<any[]> => 
-    apiClient.get(`/doctors/search?q=${encodeURIComponent(query)}`),
+    apiClient.get(`/api/doctors/search?q=${encodeURIComponent(query)}`),
     
   getById: (id: string): Promise<any> => 
-    apiClient.get(`/doctors/${id}`),
+    apiClient.get(`/api/doctors/${id}`),
     
   getPatients: (): Promise<any[]> => 
-    apiClient.get('/doctors/patients'),
+    apiClient.get('/api/doctors/patients'),
 };
