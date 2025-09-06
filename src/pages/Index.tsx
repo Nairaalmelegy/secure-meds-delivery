@@ -9,10 +9,10 @@ import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authType, setAuthType] = useState<'login' | 'signup'>('login');
+  const [authType, setAuthType] = useState<'login' | 'register'>('login');
   const { toast } = useToast();
 
-  const handleAuthClick = (type: 'login' | 'signup') => {
+  const handleAuthClick = (type: 'login' | 'register') => {
     setAuthType(type);
     setIsAuthModalOpen(true);
   };

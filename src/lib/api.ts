@@ -77,7 +77,7 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface SignupRequest {
+export interface registerRequest {
   firstName: string;
   lastName: string;
   email: string;
@@ -105,8 +105,8 @@ export const authApi = {
   login: (data: LoginRequest): Promise<AuthResponse> => 
     apiClient.post<AuthResponse>('/api/auth/login', data),
     
-  signup: (data: SignupRequest): Promise<AuthResponse> => 
-    apiClient.post<AuthResponse>('/api/auth/signup', data),
+  register: (data: registerRequest): Promise<AuthResponse> => 
+    apiClient.post<AuthResponse>('/api/auth/register', data),
     
   logout: (): Promise<void> => 
     apiClient.post<void>('/api/auth/logout'),

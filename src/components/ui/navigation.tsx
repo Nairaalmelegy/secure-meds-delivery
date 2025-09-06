@@ -4,7 +4,7 @@ import { Menu, X, Pill, Stethoscope, UserPlus, LogIn, LogOut, User } from "lucid
 import { useAuth } from "@/contexts/AuthContext";
 
 interface NavigationProps {
-  onAuthClick: (type: 'login' | 'signup') => void;
+  onAuthClick: (type: 'login' | 'register') => void;
 }
 
 export function Navigation({ onAuthClick }: NavigationProps) {
@@ -72,7 +72,7 @@ export function Navigation({ onAuthClick }: NavigationProps) {
                   <span>Login</span>
                 </Button>
                 <Button 
-                  onClick={() => onAuthClick('signup')}
+                  onClick={() => onAuthClick('register')}
                   className="flex items-center space-x-2 bg-gradient-primary hover:opacity-90"
                 >
                   <UserPlus className="h-4 w-4" />
@@ -143,7 +143,7 @@ export function Navigation({ onAuthClick }: NavigationProps) {
                     Login
                   </Button>
                   <Button 
-                    onClick={() => onAuthClick('signup')}
+                    onClick={() => onAuthClick('register')}
                     className="justify-start bg-gradient-primary"
                   >
                     <UserPlus className="h-4 w-4 mr-2" />

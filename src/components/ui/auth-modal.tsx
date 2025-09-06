@@ -12,14 +12,14 @@ import { useToast } from "@/hooks/use-toast";
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  type: 'login' | 'signup';
+  type: 'login' | 'register';
 }
 
 export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
   const [activeTab, setActiveTab] = useState(type);
   const [userRole, setUserRole] = useState<'patient' | 'doctor' | 'pharmacy'>('patient');
   const [loading, setLoading] = useState(false);
-  const { login, signup } = useAuth();
+  const { login, register } = useAuth();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,19 +39,19 @@ export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
           description: "Welcome back to MediLink!",
         });
       } else {
-        const signupData = {
+        const registerData = {
           firstName: formData.get('firstName') as string,
           lastName: formData.get('lastName') as string,
-          email: formData.get('signupEmail') as string,
+          email: formData.get('registerEmail') as string,
           phone: formData.get('phone') as string,
-          password: formData.get('signupPassword') as string,
+          password: formData.get('registerPassword') as string,
           role: userRole,
           ...(userRole === 'patient' && { nationalId: formData.get('nationalId') as string }),
           ...(userRole === 'doctor' && { medicalLicense: formData.get('license') as string }),
           ...(userRole === 'pharmacy' && { pharmacyName: formData.get('pharmacyName') as string }),
         };
         
-        await signup(signupData);
+        await register(registerData);
         toast({
           title: "Account created successfully",
           description: "Welcome to MediLink!",
@@ -78,10 +78,10 @@ export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'login' | 'signup')}>
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'login' | 'register')}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            <TabsTrigger value="register">Sign Up</TabsTrigger>
           </TabsList>
 
           <TabsContent value="login" className="space-y-4">
@@ -124,7 +124,7 @@ export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
             </div>
           </TabsContent>
 
-          <TabsContent value="signup" className="space-y-4">
+          <TabsContent value="register" className="space-y-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Role Selection */}
               <div className="space-y-2">
@@ -182,10 +182,10 @@ export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="signupEmail">Email</Label>
+                <Label htmlFor="registerEmail">Email</Label>
                 <Input 
-                  id="signupEmail" 
-                  name="signupEmail"
+                  id="registerEmail" 
+                  name="registerEmail"
                   type="email" 
                   placeholder="Enter your email"
                   required
@@ -240,10 +240,10 @@ export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
               )}
               
               <div className="space-y-2">
-                <Label htmlFor="signupPassword">Password</Label>
+                <Label htmlFor="registerPassword">Password</Label>
                 <Input 
-                  id="signupPassword" 
-                  name="signupPassword"
+                  id="registerPassword" 
+                  name="registerPassword"
                   type="password" 
                   placeholder="Create a password"
                   required

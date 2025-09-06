@@ -13,7 +13,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
-  signup: (data: any) => Promise<void>;
+  register: (data: any) => Promise<void>;
   logout: () => void;
   loading: boolean;
 }
@@ -59,9 +59,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signup = async (data: any) => {
+  const register = async (data: any) => {
     try {
-      const response: AuthResponse = await authApi.signup(data);
+      const response: AuthResponse = await authApi.register(data);
       
       setToken(response.token);
       setUser(response.user);
@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
     } catch (error) {
-      console.error('Signup error:', error);
+      console.error('register error:', error);
       throw error;
     }
   };
@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     token,
     login,
-    signup,
+    register,
     logout,
     loading,
   };
