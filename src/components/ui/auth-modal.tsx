@@ -40,8 +40,9 @@ export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
         });
       } else {
         const registerData = {
-          firstName: formData.get('firstName') as string,
-          lastName: formData.get('lastName') as string,
+          // firstName: formData.get('firstName') as string,
+          // lastName: formData.get('lastName') as string,
+          name: `${formData.get('firstName')} ${formData.get('lastName')}`.trim(),
           email: formData.get('registerEmail') as string,
           phone: formData.get('phone') as string,
           password: formData.get('registerPassword') as string,
