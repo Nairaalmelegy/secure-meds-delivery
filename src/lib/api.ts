@@ -15,8 +15,11 @@ class ApiClient {
     const url = `${this.baseURL}${endpoint}`;
     
     const config: RequestInit = {
+      mode: 'cors',
+      credentials: 'omit',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         ...options.headers,
       },
       ...options,
@@ -92,9 +95,8 @@ export interface AuthResponse {
   token: string;
   user: {
     id: string;
+    name: string;
     email: string;
-    firstName: string;
-    lastName: string;
     role: string;
   };
 }

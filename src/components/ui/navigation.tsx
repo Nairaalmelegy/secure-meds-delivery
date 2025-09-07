@@ -46,7 +46,7 @@ export function Navigation({ onAuthClick }: NavigationProps) {
                 <div className="flex items-center space-x-2 text-sm">
                   <User className="h-4 w-4 text-muted-foreground" />
                   <span className="text-foreground">
-                    {user.firstName} {user.lastName}
+                    {user.name}
                   </span>
                   <span className="text-xs text-muted-foreground px-2 py-1 bg-secondary rounded-full">
                     {user.role}
@@ -116,7 +116,7 @@ export function Navigation({ onAuthClick }: NavigationProps) {
                     <User className="h-4 w-4 text-muted-foreground" />
                     <div className="flex flex-col">
                       <span className="text-sm text-foreground">
-                        {user.firstName} {user.lastName}
+                        {user.name}
                       </span>
                       <span className="text-xs text-muted-foreground">
                         {user.role}

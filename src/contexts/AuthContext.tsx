@@ -3,9 +3,8 @@ import { AuthResponse, authApi } from '@/lib/api';
 
 interface User {
   id: string;
+  name: string;
   email: string;
-  firstName: string;
-  lastName: string;
   role: string;
 }
 
