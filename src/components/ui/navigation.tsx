@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Pill, Stethoscope, UserPlus, LogIn, LogOut, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
 
 interface NavigationProps {
   onAuthClick: (type: 'login' | 'register') => void;
@@ -52,6 +53,15 @@ export function Navigation({ onAuthClick }: NavigationProps) {
                     {user.role}
                   </span>
                 </div>
+                <Button 
+                  asChild
+                  variant="outline"
+                  size="sm"
+                >
+                  <Link to={user.role === 'doctor' ? '/doctor-dashboard' : '/dashboard'}>
+                    Dashboard
+                  </Link>
+                </Button>
                 <Button 
                   variant="ghost" 
                   onClick={logout}
@@ -123,6 +133,15 @@ export function Navigation({ onAuthClick }: NavigationProps) {
                       </span>
                     </div>
                   </div>
+                  <Button 
+                    asChild
+                    variant="outline"
+                    className="justify-start"
+                  >
+                    <Link to={user.role === 'doctor' ? '/doctor-dashboard' : '/dashboard'}>
+                      Dashboard
+                    </Link>
+                  </Button>
                   <Button 
                     variant="ghost" 
                     onClick={logout}
