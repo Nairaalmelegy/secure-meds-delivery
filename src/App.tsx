@@ -13,6 +13,9 @@ import OrderMedicines from "./pages/OrderMedicines";
 import Orders from "./pages/Orders";
 import Checkout from "./pages/Checkout";
 import DoctorDashboard from "./pages/DoctorDashboard";
+import PharmacyDashboard from "./pages/PharmacyDashboard";
+import Profile from "./pages/Profile";
+import MedicalRecords from "./pages/MedicalRecords";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,10 +58,30 @@ const App = () => (
                 </ProtectedRoute>
               } />
               
+              <Route path="/medical-records" element={
+                <ProtectedRoute allowedRoles={['patient']}>
+                  <MedicalRecords />
+                </ProtectedRoute>
+              } />
+              
               {/* Doctor Routes */}
               <Route path="/doctor-dashboard" element={
                 <ProtectedRoute allowedRoles={['doctor']}>
                   <DoctorDashboard />
+                </ProtectedRoute>
+              } />
+              
+              {/* Pharmacy Routes */}
+              <Route path="/pharmacy-dashboard" element={
+                <ProtectedRoute allowedRoles={['pharmacy']}>
+                  <PharmacyDashboard />
+                </ProtectedRoute>
+              } />
+              
+              {/* Shared Routes */}
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <Profile />
                 </ProtectedRoute>
               } />
               

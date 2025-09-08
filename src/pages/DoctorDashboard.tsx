@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Users, FileText, DollarSign, CheckCircle, X } from 'lucide-react';
+import { Search, Users, FileText, DollarSign, CheckCircle, XCircle, TrendingUp, Activity, Stethoscope, Award, Clock } from 'lucide-react';
 import { doctorApi, prescriptionApi } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -166,7 +167,7 @@ export default function DoctorDashboard() {
                           onClick={() => handleVerifyPrescription(prescription.id, false)}
                           className="flex items-center gap-1"
                         >
-                          <X className="h-4 w-4" />
+                          <XCircle className="h-4 w-4" />
                           Reject
                         </Button>
                       </div>
