@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,8 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Package, ShoppingCart, DollarSign, TrendingUp, Users, FileText, Plus, Edit, Trash2, CheckCircle, Clock, Activity } from 'lucide-react';
-import { medicineApi, orderApi } from '@/lib/api';
+import { userApi, medicineApi, orderApi } from '@/lib/api';
+import { Search, Package, ShoppingCart, DollarSign, TrendingUp, Users, FileText, Plus, Edit, Trash2, CheckCircle, Clock, Activity, UserCheck, UserX } from 'lucide-react';
 
 export default function PharmacyDashboard() {
   const [searchQuery, setSearchQuery] = useState('');

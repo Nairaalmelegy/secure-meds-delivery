@@ -6,7 +6,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AdminRoute } from "@/components/AdminRoute";
 import Index from "./pages/Index";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import UploadPrescription from "./pages/UploadPrescription";
 import OrderMedicines from "./pages/OrderMedicines";
@@ -16,6 +19,7 @@ import DoctorDashboard from "./pages/DoctorDashboard";
 import PharmacyDashboard from "./pages/PharmacyDashboard";
 import Profile from "./pages/Profile";
 import MedicalRecords from "./pages/MedicalRecords";
+import AccountSettings from "./pages/AccountSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +34,8 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
               
               {/* Patient Routes */}
               <Route path="/dashboard" element={
@@ -71,7 +77,12 @@ const App = () => (
                 </ProtectedRoute>
               } />
               
-              {/* Pharmacy Routes */}
+              {/* Admin/Pharmacy Routes */}
+              <Route path="/admin" element={
+                <AdminRoute>
+                  <PharmacyDashboard />
+                </AdminRoute>
+              } />
               <Route path="/pharmacy-dashboard" element={
                 <ProtectedRoute allowedRoles={['pharmacy']}>
                   <PharmacyDashboard />
@@ -82,6 +93,11 @@ const App = () => (
               <Route path="/profile" element={
                 <ProtectedRoute>
                   <Profile />
+                </ProtectedRoute>
+              } />
+              <Route path="/account-settings" element={
+                <ProtectedRoute>
+                  <AccountSettings />
                 </ProtectedRoute>
               } />
               

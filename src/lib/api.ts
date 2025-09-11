@@ -163,6 +163,39 @@ export const prescriptionApi = {
     apiClient.put(`/api/prescriptions/${id}/verify`, { approved }),
 };
 
+// User API functions
+export const userApi = {
+  getProfile: (): Promise<any> => 
+    apiClient.get('/api/users/me'),
+    
+  updateProfile: (data: any): Promise<any> => 
+    apiClient.put('/api/users/me', data),
+    
+  changePassword: (data: { currentPassword: string, newPassword: string }): Promise<any> => 
+    apiClient.put('/api/users/me/password', data),
+    
+  search: (query: string, role?: string): Promise<{ users: any[], count: number }> => 
+    apiClient.get(`/api/users?q=${encodeURIComponent(query)}&role=${role || ''}`),
+    
+  getById: (id: string): Promise<any> => 
+    apiClient.get(`/api/users/${id}`),
+    
+  updateUser: (id: string, data: any): Promise<any> => 
+    apiClient.put(`/api/users/${id}`, data),
+    
+  deleteUser: (id: string): Promise<any> => 
+    apiClient.delete(`/api/users/${id}`),
+    
+  getPendingDoctors: (): Promise<any[]> => 
+    apiClient.get('/api/users?role=doctor&status=pending'),
+    
+  approveDoctor: (id: string): Promise<any> => 
+    apiClient.put(`/api/users/${id}/approve`, {}),
+    
+  rejectDoctor: (id: string): Promise<any> => 
+    apiClient.put(`/api/users/${id}/reject`, {}),
+};
+
 // Doctor API functions
 export const doctorApi = {
   search: (query: string): Promise<any[]> => 
