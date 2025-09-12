@@ -35,7 +35,22 @@ export default function Login() {
         title: "Welcome back!",
         description: "You have been logged in successfully",
       });
-      navigate('/dashboard');
+      // Redirect based on user role
+      const userStr = localStorage.getItem('user');
+      let role = '';
+      try {
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          role = user.role;
+        }
+      } catch {}
+      if (role === 'admin' || role === 'pharmacy') {
+        navigate('/admin-dashboard');
+      } else if (role === 'doctor') {
+        navigate('/doctor-dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error: any) {
       toast({
         title: "Login failed",
