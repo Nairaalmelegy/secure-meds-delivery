@@ -1,29 +1,39 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { apiClient } from '../lib/api';
 
-async function fetchWithAuth(url: string) {
-  const token = localStorage.getItem('token');
-  return fetch(url, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  }).then(r => r.json());
+interface Doctor {
+  verifiedDoctor?: boolean;
+  // add other fields as needed
+}
+
+interface DoctorsResponse {
+  users: Doctor[];
+  count: number;
+}
+
+interface Order {
+  status: string;
+  // add other fields as needed
+}
+
+interface Prescription {
+  status: string;
+  // add other fields as needed
 }
 
 async function fetchStats() {
   const [meds, doctors, orders, prescriptions] = await Promise.all([
-    fetchWithAuth('https://medilinkback-production.up.railway.app/api/medicines'),
-    fetchWithAuth('https://medilinkback-production.up.railway.app/api/users?role=doctor'),
-    fetchWithAuth('https://medilinkback-production.up.railway.app/api/orders'),
-    fetchWithAuth('https://medilinkback-production.up.railway.app/api/prescriptions'),
+    apiClient.get<any[]>('/api/medicines'),
+    apiClient.get<DoctorsResponse>('/api/users?role=doctor'),
+    apiClient.get<Order[]>('/api/orders'),
+    apiClient.get<Prescription[]>('/api/prescriptions'),
   ]);
   return {
     totalStocks: meds.length || 0,
-    pendingDoctors: (doctors.users || []).filter((d:any) => !d.verifiedDoctor).length,
-    pendingOrders: (orders || []).filter((o:any) => o.status === 'pending').length,
-    prescriptionsToReview: (prescriptions || []).filter((p:any) => p.status === 'pending').length,
+    pendingDoctors: (doctors.users || []).filter(d => !d.verifiedDoctor).length,
+    pendingOrders: (orders || []).filter(o => o.status === 'pending').length,
+    prescriptionsToReview: (prescriptions || []).filter(p => p.status === 'pending').length,
   };
 }
 
