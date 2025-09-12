@@ -43,11 +43,11 @@ export default function AdminAppliedDoctors() {
   });
   const approveMutation = useMutation({
     mutationFn: approveDoctor,
-    onSuccess: () => queryClient.invalidateQueries(['pending-doctors']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pending-doctors'] }),
   });
   const rejectMutation = useMutation({
     mutationFn: rejectDoctor,
-    onSuccess: () => queryClient.invalidateQueries(['pending-doctors']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pending-doctors'] }),
   });
 
   return (

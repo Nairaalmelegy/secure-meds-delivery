@@ -6,8 +6,22 @@ import { Package, Truck, CheckCircle, Clock } from 'lucide-react';
 import { orderApi } from '@/lib/api';
 import { Link } from 'react-router-dom';
 
+type OrderItem = {
+  name: string;
+  quantity: number;
+};
+
+type Order = {
+  id: string | number;
+  status: string;
+  createdAt: string;
+  total: number;
+  address?: string;
+  items?: OrderItem[];
+};
+
 export default function Orders() {
-  const { data: orders, isLoading } = useQuery({
+  const { data: orders, isLoading } = useQuery<Order[]>({
     queryKey: ['orders'],
     queryFn: orderApi.getMyOrders,
   });
@@ -64,7 +78,7 @@ export default function Orders() {
 
       {orders && orders.length > 0 ? (
         <div className="space-y-4">
-          {orders.map((order: any) => (
+          {orders.map((order: Order) => (
             <Card key={order.id}>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -84,11 +98,12 @@ export default function Orders() {
                     <p className="text-sm text-muted-foreground">
                       Date: {new Date(order.createdAt).toLocaleDateString()}
                     </p>
-                    <p className="text-sm text-muted-foreground">
-                      Total: EGP {order.total}
-                    </p>
+                    {order.items?.map((item: OrderItem, index: number) => (
+                      <p key={index} className="text-sm text-muted-foreground">
+                        {item.name} × {item.quantity}
+                      </p>
+                    ))}
                   </div>
-
                   <div>
                     <h4 className="font-medium mb-2">Delivery Address</h4>
                     <p className="text-sm text-muted-foreground">
@@ -98,7 +113,7 @@ export default function Orders() {
 
                   <div>
                     <h4 className="font-medium mb-2">Items</h4>
-                    {order.items?.map((item: any, index: number) => (
+                    {order.items?.map((item: OrderItem, index: number) => (
                       <p key={index} className="text-sm text-muted-foreground">
                         {item.name} × {item.quantity}
                       </p>

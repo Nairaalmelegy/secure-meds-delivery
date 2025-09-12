@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 async function fetchPrescriptions() {
   const res = await fetch('https://medilinkback-production.up.railway.app/api/prescriptions');
   return (await res.json()).filter((p:any) => p.status === 'pending');
