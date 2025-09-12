@@ -36,6 +36,7 @@ export function PharmacyOrderForm({ prescription }: PharmacyOrderFormProps) {
         deliveryAddress: '', // Optionally prompt for address
         pharmacyId: '', // Optionally set pharmacyId
         paymentMethod: 'cash', // Or prompt for method
+        patientId: typeof prescription.patient === 'object' ? prescription.patient._id : prescription.patient,
       });
       toast({ title: 'Order sent for confirmation!' });
       setSelected({});

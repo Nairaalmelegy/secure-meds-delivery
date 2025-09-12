@@ -1,9 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Package, Truck, CheckCircle, Clock, Bell } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Package, Truck, CheckCircle, Clock } from 'lucide-react';
 import { orderApi } from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 
 type OrderItem = {
@@ -21,9 +22,35 @@ type Order = {
 };
 
 export default function Orders() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
   const { data: orders, isLoading } = useQuery<Order[]>({
     queryKey: ['orders'],
     queryFn: orderApi.getMyOrders,
+  });
+  const pendingCount = orders?.filter(o => o.status === 'pending').length || 0;
+  const confirmMutation = useMutation({
+    mutationFn: async ({ id, action }: { id: string, action: 'accept' | 'reject' }) => {
+      // Accept: set status to 'processing', Reject: set status to 'cancelled'
+      return orderApi.updateStatus(id, action === 'accept' ? 'processing' : 'cancelled');
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      toast({
+        title: variables.action === 'accept' ? 'Order confirmed!' : 'Order rejected',
+        description: variables.action === 'accept'
+          ? 'Your order has been confirmed and is being processed.'
+          : 'You have rejected this order.',
+      });
+      // Optionally scroll to pending orders
+      setTimeout(() => {
+        const el = document.querySelector('.bg-yellow-400');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
+    },
+    onError: () => {
+      toast({ title: 'Error', description: 'Failed to update order status', variant: 'destructive' });
+    },
   });
 
   const getStatusIcon = (status: string) => {
@@ -67,9 +94,11 @@ export default function Orders() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-8 flex items-center justify-between">
-        <div>
+        <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold text-foreground">My Orders</h1>
-          <p className="text-muted-foreground">Track your medicine orders</p>
+          {pendingCount > 0 && (
+            <Badge className="bg-yellow-400 text-black flex items-center gap-1"><Bell className="h-4 w-4" /> {pendingCount}</Badge>
+          )}
         </div>
         <Button asChild>
           <Link to="/order-medicines">Order New Medicines</Link>
@@ -120,6 +149,29 @@ export default function Orders() {
                     ))}
                   </div>
                 </div>
+
+                {/* Confirm Order section for pending orders */}
+                {order.status === 'pending' && (
+                  <div className="mt-4 pt-4 border-t">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-semibold text-yellow-700">This order is awaiting your confirmation.</div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="default"
+                          disabled={confirmMutation.isPending}
+                          onClick={() => confirmMutation.mutate({ id: String(order.id), action: 'accept' })}
+                        >Accept</Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          disabled={confirmMutation.isPending}
+                          onClick={() => confirmMutation.mutate({ id: String(order.id), action: 'reject' })}
+                        >Reject</Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="mt-4 pt-4 border-t">
                   <div className="flex items-center justify-between">
