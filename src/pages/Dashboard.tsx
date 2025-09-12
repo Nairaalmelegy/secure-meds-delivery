@@ -120,15 +120,21 @@ export default function Dashboard() {
             <CardContent>
               <div className="space-y-2">
                 <Button asChild size="sm" className="w-full bg-white/20 hover:bg-white/30 text-white border-white/20">
-                  <Link to="/upload-prescription">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Upload Prescription
+                  <Link to="/order-medicines">
+                    <Pill className="h-4 w-4 mr-2" />
+                    Order Medicine
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="sm" className="w-full border-white/20 text-white hover:bg-white/10">
-                  <Link to="/order-medicines">
-                    <Pill className="h-4 w-4 mr-2" />
-                    Order Medicines
+                  <Link to="#find-doctor">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Find Doctor
+                  </Link>
+                </Button>
+                <Button asChild variant="ghost" size="sm" className="w-full border-white/20 text-white hover:bg-white/10">
+                  <Link to="#track-order">
+                    <Package className="h-4 w-4 mr-2" />
+                    Track Order
                   </Link>
                 </Button>
               </div>

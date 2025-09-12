@@ -1,9 +1,16 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
+
+async function fetchMedicines() {
+  const res = await fetch('https://medilinkback-production.up.railway.app/api/medicines');
+  return await res.json();
+}
 
 export default function InventoryPage() {
   const { user } = useAuth();
@@ -12,6 +19,10 @@ export default function InventoryPage() {
     name: '', brand: '', sku: '', description: '', price: '', stock: '', category: ''
   });
   const [loading, setLoading] = useState(false);
+  const { data: medicines, isLoading } = useQuery({
+    queryKey: ['medicines'],
+    queryFn: fetchMedicines,
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -67,7 +78,43 @@ export default function InventoryPage() {
           </form>
         </CardContent>
       </Card>
-      {/* TODO: Add inventory table here */}
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle>Inventory</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div>Loading...</div>
+          ) : medicines && medicines.length > 0 ? (
+            <table className="w-full text-sm">
+              <thead>
+                <tr>
+                  <th className="text-left">Name</th>
+                  <th>Brand</th>
+                  <th>SKU</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Stock</th>
+                </tr>
+              </thead>
+              <tbody>
+                {medicines.map((med:any) => (
+                  <tr key={med._id} className="border-b">
+                    <td>{med.name}</td>
+                    <td>{med.brand}</td>
+                    <td>{med.sku}</td>
+                    <td>{med.category}</td>
+                    <td>{med.price}</td>
+                    <td>{med.stock}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div>No medicines in inventory.</div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

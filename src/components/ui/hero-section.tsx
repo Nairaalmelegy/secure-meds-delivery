@@ -29,15 +29,14 @@ export function HeroSection({ onOrderClick, onFindDoctorClick, onTrackOrderClick
               </p>
             </div>
 
-            {/* Quick Access Buttons */}
+            {/* Hero Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Button 
                 size="lg" 
                 onClick={onOrderClick}
                 className="bg-gradient-primary hover:opacity-90 shadow-hero flex items-center space-x-2"
               >
-                <Pill className="h-5 w-5" />
-                <span>Order Medicine</span>
+                <span>Get Started</span>
               </Button>
               <Button 
                 size="lg" 
@@ -45,17 +44,7 @@ export function HeroSection({ onOrderClick, onFindDoctorClick, onTrackOrderClick
                 onClick={onFindDoctorClick}
                 className="border-primary text-primary hover:bg-primary hover:text-primary-foreground flex items-center space-x-2"
               >
-                <Stethoscope className="h-5 w-5" />
-                <span>Find Doctor</span>
-              </Button>
-              <Button 
-                size="lg" 
-                variant="ghost" 
-                onClick={onTrackOrderClick}
-                className="hover:bg-primary/10 flex items-center space-x-2"
-              >
-                <Truck className="h-5 w-5" />
-                <span>Track Order</span>
+                <span>Learn More</span>
               </Button>
             </div>
 
