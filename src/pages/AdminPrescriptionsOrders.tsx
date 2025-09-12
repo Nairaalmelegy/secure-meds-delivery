@@ -1,8 +1,44 @@
+import React, { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { apiClient } from '../lib/api';
 import { PharmacyOrderForm } from './PharmacyOrderForm';
+
+// Helper component to fetch and display prescription image using apiClient
+function PrescriptionImage({ fileUrl }: { fileUrl: string }) {
+  const [imgUrl, setImgUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let revoked = false;
+    async function fetchImage() {
+      try {
+        const response = await fetch(apiClient.baseURL + fileUrl, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        if (!response.ok) throw new Error('Failed to fetch image');
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        if (!revoked) setImgUrl(url);
+      } catch {
+        if (!revoked) setImgUrl(null);
+      }
+    }
+    fetchImage();
+    return () => {
+      revoked = true;
+      if (imgUrl) URL.revokeObjectURL(imgUrl);
+    };
+    // eslint-disable-next-line
+  }, [fileUrl]);
+  if (!imgUrl) return <div className="text-xs text-muted-foreground">Image unavailable</div>;
+  return (
+    <div className="mt-2">
+      <img src={imgUrl} alt="Prescription" className="max-h-48 border rounded" />
+    </div>
+  );
+}
 
 async function fetchPrescriptions() {
   const prescriptions = await apiClient.get<any[]>('/api/prescriptions');
@@ -61,11 +97,7 @@ export default function AdminPrescriptionsOrders() {
                     </div>
                     <Button size="sm" onClick={() => approvePresMutation.mutate({ id: pres._id })} disabled={approvePresMutation.isPending}>Approve</Button>
                   </div>
-                  {pres.fileUrl && (
-                    <div className="mt-2">
-                      <img src={pres.fileUrl} alt="Prescription" className="max-h-48 border rounded" />
-                    </div>
-                  )}
+                  {pres.fileUrl && <PrescriptionImage fileUrl={pres.fileUrl} />}
                   {pres.ocrText && (
                     <div className="mt-2 p-2 bg-gray-100 rounded">
                       <div className="font-medium text-xs mb-1">Extracted Text:</div>
