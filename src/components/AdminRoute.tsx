@@ -23,7 +23,7 @@ export function AdminRoute({ children }: AdminRouteProps) {
     return <Navigate to="/login" replace />;
   }
 
-  if (user.role !== 'pharmacy') {
+  if (user.role !== 'admin') {
     return <Navigate to="/dashboard" replace />;
   }
 

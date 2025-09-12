@@ -17,7 +17,7 @@ interface AuthModalProps {
 
 export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
   const [activeTab, setActiveTab] = useState(type);
-  const [userRole, setUserRole] = useState<'patient' | 'doctor' | 'pharmacy'>('patient');
+  const [userRole, setUserRole] = useState<'patient' | 'doctor'>('patient');
   const [loading, setLoading] = useState(false);
   const { login, register } = useAuth();
   const { toast } = useToast();
@@ -128,7 +128,7 @@ export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
               {/* Role Selection */}
               <div className="space-y-2">
                 <Label>I am a</Label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   <Button
                     type="button"
                     variant={userRole === 'patient' ? 'default' : 'outline'}
@@ -146,15 +146,6 @@ export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
                   >
                     <Stethoscope className="h-5 w-5" />
                     <span className="text-xs">Doctor</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={userRole === 'pharmacy' ? 'default' : 'outline'}
-                    onClick={() => setUserRole('pharmacy')}
-                    className="flex flex-col items-center space-y-1 h-16"
-                  >
-                    <Building2 className="h-5 w-5" />
-                    <span className="text-xs">Pharmacy</span>
                   </Button>
                 </div>
               </div>
@@ -226,17 +217,7 @@ export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
                 </div>
               )}
 
-              {userRole === 'pharmacy' && (
-                <div className="space-y-2">
-                  <Label htmlFor="pharmacyName">Pharmacy Name</Label>
-                  <Input 
-                    id="pharmacyName" 
-                    name="pharmacyName"
-                    placeholder="Pharmacy name"
-                    required
-                  />
-                </div>
-              )}
+
               
               <div className="space-y-2">
                 <Label htmlFor="registerPassword">Password</Label>

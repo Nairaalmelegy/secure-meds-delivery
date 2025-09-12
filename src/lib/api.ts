@@ -85,10 +85,9 @@ export interface registerRequest {
   email: string;
   phone: string;
   password: string;
-  role: 'patient' | 'doctor' | 'pharmacy';
+  role: 'patient' | 'doctor';
   nationalId?: string;
   medicalLicense?: string;
-  pharmacyName?: string;
 }
 
 export interface AuthResponse {

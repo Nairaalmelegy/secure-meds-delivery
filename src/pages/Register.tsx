@@ -16,10 +16,9 @@ export default function Register() {
     phone: '',
     password: '',
     confirmPassword: '',
-    role: 'patient' as 'patient' | 'doctor' | 'pharmacy',
+    role: 'patient' as 'patient' | 'doctor',
     nationalId: '',
     medicalLicense: '',
-    pharmacyName: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -76,8 +75,6 @@ export default function Register() {
         registrationData.nationalId = formData.nationalId;
       } else if (formData.role === 'doctor' && formData.medicalLicense) {
         registrationData.medicalLicense = formData.medicalLicense;
-      } else if (formData.role === 'pharmacy' && formData.pharmacyName) {
-        registrationData.pharmacyName = formData.pharmacyName;
       }
 
       await register(registrationData);
@@ -85,7 +82,7 @@ export default function Register() {
       if (formData.role === 'doctor') {
         toast({
           title: "Registration successful!",
-          description: "Your account is pending approval from our pharmacy admin. You'll be notified once approved.",
+          description: "Your account is pending approval from our admin. You'll be notified once approved.",
           duration: 5000,
         });
       } else {
@@ -110,7 +107,6 @@ export default function Register() {
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'doctor': return 'bg-primary/10 text-primary border-primary/20';
-      case 'pharmacy': return 'bg-secondary/10 text-secondary border-secondary/20';
       default: return 'bg-success/10 text-success border-success/20';
     }
   };
@@ -133,7 +129,7 @@ export default function Register() {
           <div className="space-y-3">
             <Label>Account Type</Label>
             <div className="flex gap-2">
-              {(['patient', 'doctor', 'pharmacy'] as const).map((role) => (
+              {(['patient', 'doctor'] as const).map((role) => (
                 <Button
                   key={role}
                   type="button"
@@ -150,7 +146,6 @@ export default function Register() {
             <Badge className={getRoleColor(formData.role)} variant="outline">
               {formData.role === 'patient' && 'Patients can order medicines and upload prescriptions'}
               {formData.role === 'doctor' && 'Doctors can verify prescriptions (requires admin approval)'}
-              {formData.role === 'pharmacy' && 'Pharmacies can manage medicines and orders'}
             </Badge>
           </div>
 
@@ -230,18 +225,7 @@ export default function Register() {
               </div>
             )}
 
-            {formData.role === 'pharmacy' && (
-              <div className="space-y-2">
-                <Label htmlFor="pharmacyName">Pharmacy Name (Optional)</Label>
-                <Input
-                  id="pharmacyName"
-                  placeholder="Enter your pharmacy name"
-                  value={formData.pharmacyName}
-                  onChange={(e) => handleInputChange('pharmacyName', e.target.value)}
-                  disabled={loading}
-                />
-              </div>
-            )}
+
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">

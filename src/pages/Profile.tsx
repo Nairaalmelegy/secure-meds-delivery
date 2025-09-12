@@ -39,7 +39,6 @@ export default function Profile() {
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case 'doctor': return 'bg-primary/10 text-primary border-primary/20';
-      case 'pharmacy': return 'bg-secondary/10 text-secondary border-secondary/20';
       case 'patient': return 'bg-success/10 text-success border-success/20';
       default: return 'bg-muted/10 text-muted-foreground border-muted/20';
     }

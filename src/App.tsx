@@ -87,7 +87,7 @@ const App = () => (
 
               {/* Admin/Pharmacy Routes with Sidebar */}
               <Route path="/admin-dashboard" element={
-                <ProtectedRoute allowedRoles={['pharmacy','admin']}>
+                <ProtectedRoute allowedRoles={['admin']}>
                   <AdminLayout />
                 </ProtectedRoute>
               }>

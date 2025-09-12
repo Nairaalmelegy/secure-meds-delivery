@@ -44,7 +44,7 @@ export default function Login() {
           role = user.role;
         }
       } catch {}
-      if (role === 'admin' || role === 'pharmacy') {
+      if (role === 'admin') {
         navigate('/admin-dashboard');
       } else if (role === 'doctor') {
         navigate('/doctor-dashboard');
