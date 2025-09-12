@@ -2,6 +2,10 @@
 
 A comprehensive healthcare platform for medicine delivery, prescription management, and doctor-patient interactions.
 
+## Author
+
+Naira Mohammed Farouk Almelegy: `nairaalmelegy@gmail.com`
+
 ## 🚀 Getting Started
 
 ### Prerequisites
