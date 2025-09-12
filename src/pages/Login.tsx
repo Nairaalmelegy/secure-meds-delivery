@@ -145,7 +145,7 @@ export default function Login() {
             <p className="text-xs text-muted-foreground text-center">
               Default admin credentials for testing:
               <br />
-              <span className="font-mono">Pharmatec@fayoum.org.com</span>
+              <span className="font-mono">Pharmatec@fayoum.com</span>
               <br />
               <span className="font-mono">Pharmatec@5173</span>
             </p>

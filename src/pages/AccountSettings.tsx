@@ -20,7 +20,7 @@ export default function AccountSettings() {
   const [loading, setLoading] = useState(false);
   
   // Check if this is the default admin account that needs password change
-  const isDefaultAdmin = user?.email === 'Pharmatec@fayoum.org.com';
+  const isDefaultAdmin = user?.email === 'Pharmatec@fayoum.com';
   const [forcePasswordChange, setForcePasswordChange] = useState(isDefaultAdmin);
 
   const [profileData, setProfileData] = useState({

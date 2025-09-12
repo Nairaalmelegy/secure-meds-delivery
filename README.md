@@ -62,7 +62,7 @@ npm run dev
 - Role-based access control (RBAC)
 
 ### Default Admin Credentials
-- **Email**: `Pharmatec@fayoum.org.com`
+- **Email**: `Pharmatec@fayoum.com`
 - **Password**: `Pharmatec@5173`
 - ⚠️ **Security Notice**: Admin must change password on first login
 
