@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
+
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -16,11 +17,17 @@ import OrderMedicines from "./pages/OrderMedicines";
 import Orders from "./pages/Orders";
 import Checkout from "./pages/Checkout";
 import DoctorDashboard from "./pages/DoctorDashboard";
-import PharmacyDashboard from "./pages/PharmacyDashboard";
 import Profile from "./pages/Profile";
 import MedicalRecords from "./pages/MedicalRecords";
 import AccountSettings from "./pages/AccountSettings";
 import NotFound from "./pages/NotFound";
+import AdminLayout from "./pages/AdminLayout";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminOverview from "./pages/AdminOverview";
+import AdminInventory from "./pages/AdminInventory";
+import AdminAppliedDoctors from "./pages/AdminAppliedDoctors";
+import AdminPrescriptionsOrders from "./pages/AdminPrescriptionsOrders";
+import AdminSettings from "./pages/AdminSettings";
 
 const queryClient = new QueryClient();
 
@@ -77,17 +84,19 @@ const App = () => (
                 </ProtectedRoute>
               } />
               
-              {/* Admin/Pharmacy Routes */}
-              <Route path="/admin" element={
-                <AdminRoute>
-                  <PharmacyDashboard />
-                </AdminRoute>
-              } />
-              <Route path="/pharmacy-dashboard" element={
-                <ProtectedRoute allowedRoles={['pharmacy']}>
-                  <PharmacyDashboard />
+
+              {/* Admin/Pharmacy Routes with Sidebar */}
+              <Route path="/admin-dashboard" element={
+                <ProtectedRoute allowedRoles={['pharmacy','admin']}>
+                  <AdminLayout />
                 </ProtectedRoute>
-              } />
+              }>
+                <Route index element={<AdminOverview />} />
+                <Route path="inventory" element={<AdminInventory />} />
+                <Route path="applied-doctors" element={<AdminAppliedDoctors />} />
+                <Route path="prescriptions-orders" element={<AdminPrescriptionsOrders />} />
+                <Route path="settings" element={<AdminSettings />} />
+              </Route>
               
               {/* Shared Routes */}
               <Route path="/profile" element={
