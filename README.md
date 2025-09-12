@@ -4,7 +4,7 @@ A comprehensive healthcare platform for medicine delivery, prescription manageme
 
 ## Author
 
-Naira Mohammed Farouk Almelegy: `nairaalmelegy@gmail.com`
+Naira Almelegy: `nairaalmelegy@gmail.com`
 
 ## 🚀 Getting Started
 
