@@ -1,38 +1,19 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { apiClient } from '../lib/api';
 
 async function fetchPendingDoctors() {
-  const res = await fetch('https://medilinkback-production.up.railway.app/api/users?role=doctor');
-  const data = await res.json();
-  return (data.users || []).filter((d:any) => !d.verifiedDoctor);
+  const data = await apiClient.get<{ users: any[] }>('/api/users?role=doctor');
+  return (data.users || []).filter((d: any) => !d.verifiedDoctor);
 }
 
 async function approveDoctor(id: string) {
-  const token = localStorage.getItem('token');
-  const res = await fetch(`https://medilinkback-production.up.railway.app/api/users/${id}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify({ verifiedDoctor: true }),
-  });
-  if (!res.ok) throw new Error('Failed to approve doctor');
-  return res.json();
+  return apiClient.put(`/api/users/${id}`, { verifiedDoctor: true });
 }
 
 async function rejectDoctor(id: string) {
-  const token = localStorage.getItem('token');
-  const res = await fetch(`https://medilinkback-production.up.railway.app/api/users/${id}`, {
-    method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  });
-  if (!res.ok) throw new Error('Failed to reject doctor');
-  return res.json();
+  return apiClient.delete(`/api/users/${id}`);
 }
 
 export default function AdminAppliedDoctors() {
@@ -61,7 +42,7 @@ export default function AdminAppliedDoctors() {
             <div>Loading...</div>
           ) : doctors && doctors.length > 0 ? (
             <div className="space-y-4">
-              {doctors.map((doc:any) => (
+              {doctors.map((doc: any) => (
                 <div key={doc._id} className="flex items-center justify-between border-b pb-2">
                   <div>
                     <div className="font-semibold">{doc.name}</div>

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -6,10 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '../lib/api';
 
 async function fetchMedicines() {
-  const res = await fetch('https://medilinkback-production.up.railway.app/api/medicines');
-  return await res.json();
+  return await apiClient.get<any[]>('/api/medicines');
 }
 
 export default function InventoryPage() {

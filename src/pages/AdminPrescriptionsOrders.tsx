@@ -1,43 +1,24 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { apiClient } from '../lib/api';
+
 async function fetchPrescriptions() {
-  const res = await fetch('https://medilinkback-production.up.railway.app/api/prescriptions');
-  return (await res.json()).filter((p:any) => p.status === 'pending');
+  const prescriptions = await apiClient.get<any[]>('/api/prescriptions');
+  return prescriptions.filter((p: any) => p.status === 'pending');
 }
 
 async function fetchOrders() {
-  const res = await fetch('https://medilinkback-production.up.railway.app/api/orders');
-  return (await res.json()).filter((o:any) => o.status === 'pending');
+  const orders = await apiClient.get<any[]>('/api/orders');
+  return orders.filter((o: any) => o.status === 'pending');
 }
 
 async function approvePrescription(id: string, doctorId?: string) {
-  const token = localStorage.getItem('token');
-  const res = await fetch(`https://medilinkback-production.up.railway.app/api/prescriptions/${id}/verify`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify({ action: 'verify', doctorId }),
-  });
-  if (!res.ok) throw new Error('Failed to approve prescription');
-  return res.json();
+  return apiClient.put(`/api/prescriptions/${id}/verify`, { action: 'verify', doctorId });
 }
 
 async function approveOrder(id: string) {
-  const token = localStorage.getItem('token');
-  const res = await fetch(`https://medilinkback-production.up.railway.app/api/orders/${id}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify({ status: 'processing' }),
-  });
-  if (!res.ok) throw new Error('Failed to approve order');
-  return res.json();
+  return apiClient.put(`/api/orders/${id}`, { status: 'processing' });
 }
 
 export default function AdminPrescriptionsOrders() {
@@ -70,7 +51,7 @@ export default function AdminPrescriptionsOrders() {
             <div>Loading...</div>
           ) : prescriptions && prescriptions.length > 0 ? (
             <div className="space-y-4">
-              {prescriptions.map((pres:any) => (
+              {prescriptions.map((pres: any) => (
                 <div key={pres._id} className="flex items-center justify-between border-b pb-2">
                   <div>
                     <div className="font-semibold">Prescription #{pres._id.slice(-6)}</div>
@@ -94,7 +75,7 @@ export default function AdminPrescriptionsOrders() {
             <div>Loading...</div>
           ) : orders && orders.length > 0 ? (
             <div className="space-y-4">
-              {orders.map((order:any) => (
+              {orders.map((order: any) => (
                 <div key={order._id} className="flex items-center justify-between border-b pb-2">
                   <div>
                     <div className="font-semibold">Order #{order._id.slice(-6)}</div>
