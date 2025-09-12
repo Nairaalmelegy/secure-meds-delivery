@@ -9,12 +9,14 @@ import { User, Stethoscope, Building2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
+interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   type: 'login' | 'register';
   role?: 'patient' | 'doctor' | null;
 }
 
+const AuthModal = ({ isOpen, onClose, type, role }: AuthModalProps) => {
   const [activeTab, setActiveTab] = useState(type);
   const [userRole, setUserRole] = useState<'patient' | 'doctor'>('patient');
   // Set userRole from prop when modal opens
@@ -71,8 +73,6 @@ import { useToast } from "@/hooks/use-toast";
     } finally {
       setLoading(false);
     }
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
@@ -266,4 +266,6 @@ import { useToast } from "@/hooks/use-toast";
       </DialogContent>
     </Dialog>
   );
-}
+};
+
+export default AuthModal;
