@@ -35,8 +35,8 @@ export function Navigation({ onAuthClick }: NavigationProps) {
             <a href="#for-doctors" className="text-foreground hover:text-primary transition-colors">
               For Doctors
             </a>
-            <a href="#pharmacies" className="text-foreground hover:text-primary transition-colors">
-              Pharmacies
+            <a href="#demo" className="text-foreground hover:text-primary transition-colors">
+              Tour Guide
             </a>
           </div>
 
@@ -116,8 +116,8 @@ export function Navigation({ onAuthClick }: NavigationProps) {
             <a href="#for-doctors" className="block text-foreground hover:text-primary">
               For Doctors
             </a>
-            <a href="#pharmacies" className="block text-foreground hover:text-primary">
-              Pharmacies
+            <a href="#demo" className="block text-foreground hover:text-primary">
+              Tour Guide
             </a>
             <div className="flex flex-col space-y-2 pt-4 border-t border-border">
               {user ? (

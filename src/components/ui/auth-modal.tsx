@@ -76,7 +76,7 @@ const AuthModal = ({ isOpen, onClose, type, role }: AuthModalProps) => {
   };
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+  <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl font-bold text-foreground">
             Welcome to MediLink
