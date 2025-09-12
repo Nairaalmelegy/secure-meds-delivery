@@ -43,7 +43,9 @@ export default function Login() {
           const user = JSON.parse(userStr);
           role = user.role;
         }
-      } catch {}
+      } catch {
+        // Ignore JSON parse errors
+      }
       if (role === 'admin') {
         navigate('/admin-dashboard');
       } else if (role === 'doctor') {
@@ -51,10 +53,14 @@ export default function Login() {
       } else {
         navigate('/dashboard');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      let message = "Invalid credentials";
+      if (error instanceof Error) {
+        message = error.message;
+      }
       toast({
         title: "Login failed",
-        description: error.message || "Invalid credentials",
+        description: message,
         variant: "destructive",
       });
     } finally {
