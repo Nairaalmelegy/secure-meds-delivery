@@ -73,6 +73,7 @@ const AuthModal = ({ isOpen, onClose, type, role }: AuthModalProps) => {
     } finally {
       setLoading(false);
     }
+  };
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
