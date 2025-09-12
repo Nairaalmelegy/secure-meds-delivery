@@ -55,7 +55,7 @@ export default function AdminPrescriptionsOrders() {
                 <div key={pres._id} className="flex items-center justify-between border-b pb-2">
                   <div>
                     <div className="font-semibold">Prescription #{pres._id.slice(-6)}</div>
-                    <div className="text-xs text-muted-foreground">Patient: {pres.patient}</div>
+                    <div className="text-xs text-muted-foreground">Patient: {typeof pres.patient === 'object' ? (pres.patient?.name || pres.patient?._id || JSON.stringify(pres.patient)) : pres.patient}</div>
                   </div>
                   <Button size="sm" onClick={() => approvePresMutation.mutate({ id: pres._id })} disabled={approvePresMutation.isPending}>Approve</Button>
                 </div>
@@ -79,7 +79,7 @@ export default function AdminPrescriptionsOrders() {
                 <div key={order._id} className="flex items-center justify-between border-b pb-2">
                   <div>
                     <div className="font-semibold">Order #{order._id.slice(-6)}</div>
-                    <div className="text-xs text-muted-foreground">Patient: {order.patient}</div>
+                    <div className="text-xs text-muted-foreground">Patient: {typeof order.patient === 'object' ? (order.patient?.name || order.patient?._id || JSON.stringify(order.patient)) : order.patient}</div>
                   </div>
                   <Button size="sm" onClick={() => approveOrderMutation.mutate(order._id)} disabled={approveOrderMutation.isPending}>Approve</Button>
                 </div>
