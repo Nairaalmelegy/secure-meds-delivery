@@ -2,12 +2,22 @@
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
+async function fetchWithAuth(url: string) {
+  const token = localStorage.getItem('token');
+  return fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  }).then(r => r.json());
+}
+
 async function fetchStats() {
   const [meds, doctors, orders, prescriptions] = await Promise.all([
-    fetch('https://medilinkback-production.up.railway.app/api/medicines').then(r => r.json()),
-    fetch('https://medilinkback-production.up.railway.app/api/users?role=doctor').then(r => r.json()),
-    fetch('https://medilinkback-production.up.railway.app/api/orders').then(r => r.json()),
-    fetch('https://medilinkback-production.up.railway.app/api/prescriptions').then(r => r.json()),
+    fetchWithAuth('https://medilinkback-production.up.railway.app/api/medicines'),
+    fetchWithAuth('https://medilinkback-production.up.railway.app/api/users?role=doctor'),
+    fetchWithAuth('https://medilinkback-production.up.railway.app/api/orders'),
+    fetchWithAuth('https://medilinkback-production.up.railway.app/api/prescriptions'),
   ]);
   return {
     totalStocks: meds.length || 0,
