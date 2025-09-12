@@ -113,7 +113,7 @@ export function InfoSections() {
                 </div>
               </div>
               
-              <Button size="lg" className="bg-gradient-primary">
+              <Button size="lg" className="bg-gradient-primary" onClick={() => window.dispatchEvent(new CustomEvent('open-auth-modal', { detail: { type: 'login', role: 'patient' } }))}>
                 Start Ordering Now
               </Button>
             </div>
@@ -209,60 +209,42 @@ export function InfoSections() {
                 </div>
               </div>
               
-              <Button size="lg" variant="outline" className="border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground">
-                Join as Doctor
+              <Button size="lg" variant="outline" className="border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground" onClick={() => window.dispatchEvent(new CustomEvent('open-auth-modal', { detail: { type: 'register', role: 'doctor' } }))}>
+                Sign up as a doctor
               </Button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* For Pharmacies Section */}
-      <section id="pharmacies" className="py-16 bg-muted/30">
+      {/* Demo Section */}
+      <section id="demo" className="py-16 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-4 mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground">
-              For Pharmacies
+              Platform Demo
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Partner with us to expand your reach and serve more patients
+              Watch a quick demo of how MediLink works for Doctors and Patients.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 gap-8">
             <Card className="text-center p-8 shadow-card">
               <CardContent className="space-y-4">
-                <div className="bg-primary/10 p-4 rounded-full w-16 h-16 mx-auto flex items-center justify-center">
-                  <Building2 className="h-8 w-8 text-primary" />
+                <h3 className="text-xl font-semibold text-foreground">Doctor Demo</h3>
+                <div className="w-full aspect-video bg-muted flex items-center justify-center rounded-lg">
+                  <span className="text-muted-foreground">Doctor demo video coming soon...</span>
                 </div>
-                <h3 className="text-xl font-semibold text-foreground">Inventory Management</h3>
-                <p className="text-muted-foreground">
-                  Manage your medicine stock and pricing through our admin panel.
-                </p>
               </CardContent>
             </Card>
 
             <Card className="text-center p-8 shadow-card">
               <CardContent className="space-y-4">
-                <div className="bg-secondary/10 p-4 rounded-full w-16 h-16 mx-auto flex items-center justify-center">
-                  <Truck className="h-8 w-8 text-secondary" />
+                <h3 className="text-xl font-semibold text-foreground">Patient Demo</h3>
+                <div className="w-full aspect-video bg-muted flex items-center justify-center rounded-lg">
+                  <span className="text-muted-foreground">Patient demo video coming soon...</span>
                 </div>
-                <h3 className="text-xl font-semibold text-foreground">Order Processing</h3>
-                <p className="text-muted-foreground">
-                  Receive and process orders efficiently with our streamlined system.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center p-8 shadow-card">
-              <CardContent className="space-y-4">
-                <div className="bg-info/10 p-4 rounded-full w-16 h-16 mx-auto flex items-center justify-center">
-                  <Shield className="h-8 w-8 text-info" />
-                </div>
-                <h3 className="text-xl font-semibold text-foreground">Secure Payments</h3>
-                <p className="text-muted-foreground">
-                  Get paid securely and on time for all your processed orders.
-                </p>
               </CardContent>
             </Card>
           </div>

@@ -4,12 +4,12 @@ import { Pill, Stethoscope, Truck, Shield, Clock, MapPin } from "lucide-react";
 import heroImage from "@/assets/hero-medical.jpg";
 
 interface HeroSectionProps {
-  onOrderClick: () => void;
-  onFindDoctorClick: () => void;
-  onTrackOrderClick: () => void;
+  onOrderClick: () => void; // 'Get Started'
+  onFindDoctorClick: () => void; // 'Learn More'
+  onTrackOrderClick?: () => void;
 }
 
-export function HeroSection({ onOrderClick, onFindDoctorClick, onTrackOrderClick }: HeroSectionProps) {
+export function HeroSection({ onOrderClick, onFindDoctorClick }: HeroSectionProps) {
   return (
     <section className="relative bg-gradient-to-br from-primary-light/20 to-secondary-light/20 py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

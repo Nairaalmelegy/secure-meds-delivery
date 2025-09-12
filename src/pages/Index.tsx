@@ -17,18 +17,19 @@ const Index = () => {
     setIsAuthModalOpen(true);
   };
 
+
+  // 'Get Started' button: go to signup
   const handleOrderClick = () => {
-    toast({
-      title: "Feature Coming Soon",
-      description: "Medicine ordering will be available once you sign up and login.",
-    });
+    setAuthType('register');
+    setIsAuthModalOpen(true);
   };
 
+  // 'Learn More' button: scroll to How it Works
   const handleFindDoctorClick = () => {
-    toast({
-      title: "Feature Coming Soon", 
-      description: "Doctor search will be available in the next update.",
-    });
+    const section = document.getElementById('how-it-works');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   const handleTrackOrderClick = () => {
