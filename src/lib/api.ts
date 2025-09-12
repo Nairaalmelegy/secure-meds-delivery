@@ -141,18 +141,20 @@ export const orderApi = {
 
 // Prescription API functions
 export const prescriptionApi = {
-  upload: (file: File, doctorId?: string): Promise<any> => {
+  upload: async (file: File, doctorId?: string): Promise<any> => {
     const formData = new FormData();
     formData.append('prescription', file);
     if (doctorId) formData.append('doctorId', doctorId);
-    
-    return fetch(`${API_BASE_URL}/api/prescriptions/upload`, {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API_BASE_URL}/api/prescriptions/upload`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       },
       body: formData,
-    }).then(res => res.json());
+    });
+    if (!res.ok) throw new Error('Failed to upload prescription');
+    return res.json();
   },
   
   getMyPrescriptions: (): Promise<any[]> => 

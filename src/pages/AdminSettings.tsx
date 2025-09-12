@@ -4,7 +4,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+
 import { useToast } from '@/hooks/use-toast';
+import { apiClient } from '../lib/api';
 
 export default function AdminSettings() {
   const { user } = useAuth();
@@ -17,16 +19,7 @@ export default function AdminSettings() {
     e.preventDefault();
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`https://medilinkback-production.up.railway.app/api/users/me`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ name, ...(password ? { password } : {}) }),
-      });
-      if (!res.ok) throw new Error('Failed to update profile');
+      await apiClient.put('/api/users/me', { name, ...(password ? { password } : {}) });
       toast({ title: 'Profile updated!' });
       setPassword('');
     } catch (err: unknown) {

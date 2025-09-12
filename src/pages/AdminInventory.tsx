@@ -31,20 +31,11 @@ export default function InventoryPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('https://medilinkback-production.up.railway.app/api/medicines', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          ...form,
-          price: parseFloat(form.price),
-          stock: parseInt(form.stock, 10),
-        }),
+      await apiClient.post('/api/medicines', {
+        ...form,
+        price: parseFloat(form.price),
+        stock: parseInt(form.stock, 10),
       });
-      if (!res.ok) throw new Error('Failed to add medicine');
       toast({ title: 'Medicine added!' });
       setForm({ name: '', brand: '', sku: '', description: '', price: '', stock: '', category: '' });
     } catch (err: unknown) {
