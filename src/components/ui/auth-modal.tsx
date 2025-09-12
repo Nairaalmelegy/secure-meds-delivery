@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,15 +9,20 @@ import { User, Stethoscope, Building2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
-interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   type: 'login' | 'register';
+  role?: 'patient' | 'doctor' | null;
 }
 
-export function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
   const [activeTab, setActiveTab] = useState(type);
   const [userRole, setUserRole] = useState<'patient' | 'doctor'>('patient');
+  // Set userRole from prop when modal opens
+  useEffect(() => {
+    if (isOpen && role) {
+      setUserRole(role);
+    }
+  }, [isOpen, role]);
   const [loading, setLoading] = useState(false);
   const { login, register } = useAuth();
   const { toast } = useToast();

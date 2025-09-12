@@ -1,21 +1,36 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Navigation } from "@/components/ui/navigation";
 import { HeroSection } from "@/components/ui/hero-section";
 import { InfoSections } from "@/components/ui/info-sections";
 import { Testimonials } from "@/components/ui/testimonials";
 import { Footer } from "@/components/ui/footer";
-import { AuthModal } from "@/components/ui/auth-modal";
+import AuthModal from "@/components/ui/auth-modal";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authType, setAuthType] = useState<'login' | 'register'>('login');
+  const [signupRole, setSignupRole] = useState<'patient' | 'doctor' | null>(null);
   const { toast } = useToast();
 
   const handleAuthClick = (type: 'login' | 'register') => {
     setAuthType(type);
+    setSignupRole(null);
     setIsAuthModalOpen(true);
   };
+
+  // Listen for custom events from InfoSections buttons
+  // (e.g. Start Ordering Now, Sign up as a doctor)
+  // detail: { type: 'login' | 'register', role: 'patient' | 'doctor' }
+  React.useEffect(() => {
+    const handler = (e: any) => {
+      setAuthType(e.detail.type);
+      setSignupRole(e.detail.role || null);
+      setIsAuthModalOpen(true);
+    };
+    window.addEventListener('open-auth-modal', handler);
+    return () => window.removeEventListener('open-auth-modal', handler);
+  }, []);
 
 
   // 'Get Started' button: go to signup
@@ -59,6 +74,7 @@ const Index = () => {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         type={authType}
+        role={signupRole}
       />
     </div>
   );
