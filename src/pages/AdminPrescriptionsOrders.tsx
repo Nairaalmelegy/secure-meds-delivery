@@ -50,8 +50,13 @@ async function fetchOrders() {
   return orders.filter((o: any) => o.status === 'pending');
 }
 
-async function approvePrescription(id: string, doctorId?: string) {
-  return apiClient.put(`/api/prescriptions/${id}/verify`, { action: 'verify', doctorId });
+// Approve prescription with required fields for backend
+async function approvePrescription(id: string, doctorId?: string, notes?: string) {
+  return apiClient.put(`/api/prescriptions/${id}/verify`, {
+    id,
+    doctorId,
+    notes: notes || 'Verified by admin',
+  });
 }
 
 async function approveOrder(id: string) {
@@ -69,13 +74,33 @@ export default function AdminPrescriptionsOrders() {
     queryFn: fetchOrders,
   });
   const approvePresMutation = useMutation({
-    mutationFn: ({ id, doctorId }: { id: string, doctorId?: string }) => approvePrescription(id, doctorId),
+    mutationFn: ({ id, doctorId, notes }: { id: string, doctorId?: string, notes?: string }) => approvePrescription(id, doctorId, notes),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pending-prescriptions'] }),
   });
   const approveOrderMutation = useMutation({
     mutationFn: (id: string) => approveOrder(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pending-orders'] }),
   });
+
+  // Store notes for each prescription (by prescription id)
+  const [prescriptionNotes, setPrescriptionNotes] = useState<Record<string, Record<string, string>>>({});
+
+  // Handle note change for a specific medicine in a prescription
+  const handleNoteChange = (presId: string, medName: string, value: string) => {
+    setPrescriptionNotes((prev) => ({
+      ...prev,
+      [presId]: {
+        ...(prev[presId] || {}),
+        [medName]: value,
+      },
+    }));
+  };
+
+  // Compose notes string for backend (JSON string of medicine: note)
+  const getNotesString = (presId: string) => {
+    const notesObj = prescriptionNotes[presId] || {};
+    return Object.keys(notesObj).length > 0 ? JSON.stringify(notesObj) : 'Verified by admin';
+  };
 
   return (
     <div className="grid md:grid-cols-2 gap-8">
@@ -95,9 +120,29 @@ export default function AdminPrescriptionsOrders() {
                       <div className="font-semibold">Prescription #{pres._id.slice(-6)}</div>
                       <div className="text-xs text-muted-foreground">Patient: {typeof pres.patient === 'object' ? (pres.patient?.name || pres.patient?._id || JSON.stringify(pres.patient)) : pres.patient}</div>
                     </div>
-                    <Button size="sm" onClick={() => approvePresMutation.mutate({ id: pres._id })} disabled={approvePresMutation.isPending}>Approve</Button>
+                    <Button size="sm" onClick={() => approvePresMutation.mutate({ id: pres._id, doctorId: pres.doctor?._id, notes: getNotesString(pres._id) })} disabled={approvePresMutation.isPending}>Approve</Button>
                   </div>
                   {pres.fileUrl && <PrescriptionImage fileUrl={pres.fileUrl} />}
+                  {/* Medicine notes UI */}
+                  {Array.isArray(pres.medicines) && pres.medicines.length > 0 && (
+                    <div className="mt-2">
+                      <div className="font-medium text-xs mb-1">Doctor Notes for Medicines:</div>
+                      <div className="space-y-2">
+                        {pres.medicines.map((med: any) => (
+                          <div key={med.name} className="flex items-center gap-2">
+                            <span className="text-xs w-32 font-semibold">{med.name}</span>
+                            <input
+                              type="text"
+                              className="border rounded px-2 py-1 text-xs flex-1"
+                              placeholder="Enter note for this medicine"
+                              value={prescriptionNotes[pres._id]?.[med.name] || ''}
+                              onChange={e => handleNoteChange(pres._id, med.name, e.target.value)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {pres.ocrText && (
                     <div className="mt-2 p-2 bg-gray-100 rounded">
                       <div className="font-medium text-xs mb-1">Extracted Text:</div>
