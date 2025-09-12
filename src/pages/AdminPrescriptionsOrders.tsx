@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { apiClient } from '../lib/api';
+import { PharmacyOrderForm } from './PharmacyOrderForm';
 
 async function fetchPrescriptions() {
   const prescriptions = await apiClient.get<any[]>('/api/prescriptions');
@@ -52,12 +53,27 @@ export default function AdminPrescriptionsOrders() {
           ) : prescriptions && prescriptions.length > 0 ? (
             <div className="space-y-4">
               {prescriptions.map((pres: any) => (
-                <div key={pres._id} className="flex items-center justify-between border-b pb-2">
-                  <div>
-                    <div className="font-semibold">Prescription #{pres._id.slice(-6)}</div>
-                    <div className="text-xs text-muted-foreground">Patient: {typeof pres.patient === 'object' ? (pres.patient?.name || pres.patient?._id || JSON.stringify(pres.patient)) : pres.patient}</div>
+                <div key={pres._id} className="border-b pb-4 mb-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-semibold">Prescription #{pres._id.slice(-6)}</div>
+                      <div className="text-xs text-muted-foreground">Patient: {typeof pres.patient === 'object' ? (pres.patient?.name || pres.patient?._id || JSON.stringify(pres.patient)) : pres.patient}</div>
+                    </div>
+                    <Button size="sm" onClick={() => approvePresMutation.mutate({ id: pres._id })} disabled={approvePresMutation.isPending}>Approve</Button>
                   </div>
-                  <Button size="sm" onClick={() => approvePresMutation.mutate({ id: pres._id })} disabled={approvePresMutation.isPending}>Approve</Button>
+                  {pres.fileUrl && (
+                    <div className="mt-2">
+                      <img src={pres.fileUrl} alt="Prescription" className="max-h-48 border rounded" />
+                    </div>
+                  )}
+                  {pres.ocrText && (
+                    <div className="mt-2 p-2 bg-gray-100 rounded">
+                      <div className="font-medium text-xs mb-1">Extracted Text:</div>
+                      <div className="text-xs whitespace-pre-line">{pres.ocrText}</div>
+                    </div>
+                  )}
+                  {/* UI for pharmacy to list medicines and send order for confirmation */}
+                  <PharmacyOrderForm prescription={pres} />
                 </div>
               ))}
             </div>
