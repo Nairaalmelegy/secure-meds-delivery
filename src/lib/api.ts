@@ -156,10 +156,24 @@ export const prescriptionApi = {
     if (!res.ok) throw new Error('Failed to upload prescription');
     return res.json();
   },
-  
+
+  // For patients only
   getMyPrescriptions: (): Promise<any[]> => 
     apiClient.get('/api/prescriptions/my'),
-    
+
+  // For doctors: get all prescriptions, optionally filter by doctorId
+  getAll: (params?: { doctor?: string, patient?: string, status?: string }): Promise<any[]> => {
+    let url = '/api/prescriptions';
+    if (params) {
+      const q = Object.entries(params)
+        .filter(([_, v]) => v)
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v as string)}`)
+        .join('&');
+      if (q) url += `?${q}`;
+    }
+    return apiClient.get(url);
+  },
+
   verify: (id: string, approved: boolean): Promise<any> => 
     apiClient.put(`/api/prescriptions/${id}/verify`, { approved }),
 };
@@ -198,10 +212,11 @@ export const userApi = {
 export const doctorApi = {
   search: (query: string): Promise<any[]> => 
     apiClient.get(`/api/doctors/search?q=${encodeURIComponent(query)}`),
-    
+
   getById: (id: string): Promise<any> => 
     apiClient.get(`/api/doctors/${id}`),
-    
-  getPatients: (): Promise<any[]> => 
-    apiClient.get('/api/doctors/patients'),
+
+  // Use the correct endpoint for doctor patient search (by nationalId)
+  getPatientByNationalId: (nationalId: string): Promise<any> =>
+    apiClient.get(`/api/users/search/patient?nationalId=${encodeURIComponent(nationalId)}`),
 };
