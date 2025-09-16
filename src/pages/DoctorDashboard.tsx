@@ -78,7 +78,7 @@ export default function DoctorDashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{patients?.length || 0}</div>
+            <div className="text-2xl font-bold text-muted-foreground">N/A</div>
           </CardContent>
         </Card>
 
