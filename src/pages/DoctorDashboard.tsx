@@ -17,12 +17,16 @@ export default function DoctorDashboard() {
 
   const { data: patients } = useQuery({
     queryKey: ['patients'],
-    queryFn: doctorApi.getPatients,
+    queryFn: () => doctorApi.search(''),
   });
 
   const { data: prescriptions, refetch: refetchPrescriptions } = useQuery({
     queryKey: ['doctor-prescriptions'],
-    queryFn: prescriptionApi.getMyPrescriptions, // This should be updated for doctor's view
+    queryFn: async () => {
+      // Use role-based fetcher for prescriptions
+      const { getPrescriptionsForCurrentUser } = await import('@/lib/api');
+      return getPrescriptionsForCurrentUser();
+    },
   });
 
   const handleVerifyPrescription = async (prescriptionId: string, approved: boolean) => {
