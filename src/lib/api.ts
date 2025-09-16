@@ -168,31 +168,28 @@ export const prescriptionApi = {
 export const userApi = {
   getProfile: (): Promise<any> => 
     apiClient.get('/api/users/me'),
-    
   updateProfile: (data: any): Promise<any> => 
     apiClient.put('/api/users/me', data),
-    
   changePassword: (data: { currentPassword: string, newPassword: string }): Promise<any> => 
     apiClient.put('/api/users/me/password', data),
-    
-  search: (query: string, role?: string): Promise<{ users: any[], count: number }> => 
-    apiClient.get(`/api/users?q=${encodeURIComponent(query)}&role=${role || ''}`),
-    
+  search: (query: string, role?: string): Promise<{ users: any[], count: number }> => {
+    let url = '/api/users';
+    const params = [];
+    if (query && query.trim() !== '') params.push(`q=${encodeURIComponent(query)}`);
+    if (role) params.push(`role=${encodeURIComponent(role)}`);
+    if (params.length > 0) url += '?' + params.join('&');
+    return apiClient.get(url);
+  },
   getById: (id: string): Promise<any> => 
     apiClient.get(`/api/users/${id}`),
-    
   updateUser: (id: string, data: any): Promise<any> => 
     apiClient.put(`/api/users/${id}`, data),
-    
   deleteUser: (id: string): Promise<any> => 
     apiClient.delete(`/api/users/${id}`),
-    
   getPendingDoctors: (): Promise<any[]> => 
     apiClient.get('/api/users?role=doctor&status=pending'),
-    
   approveDoctor: (id: string): Promise<any> => 
     apiClient.put(`/api/users/${id}/approve`, {}),
-    
   rejectDoctor: (id: string): Promise<any> => 
     apiClient.put(`/api/users/${id}/reject`, {}),
 };
