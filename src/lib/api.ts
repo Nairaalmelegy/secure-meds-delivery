@@ -1,3 +1,4 @@
+
 const API_BASE_URL = 'https://medilinkback-production.up.railway.app';
 
 // API client with error handling
@@ -71,6 +72,7 @@ class ApiClient {
     return this.request<T>(endpoint, { method: 'DELETE' });
   }
 }
+
 
 export const apiClient = new ApiClient(API_BASE_URL);
 
@@ -220,3 +222,23 @@ export const doctorApi = {
   getPatientByNationalId: (nationalId: string): Promise<any> =>
     apiClient.get(`/api/users/search/patient?nationalId=${encodeURIComponent(nationalId)}`),
 };
+
+/**
+ * Fetch prescriptions for the current user, using the correct endpoint for their role.
+ * - Patients: /api/prescriptions/my
+ * - Doctors: /api/prescriptions?doctor=<doctorId>
+ * - Admins: /api/prescriptions
+ * - Others: returns []
+ */
+export async function getPrescriptionsForCurrentUser(): Promise<any[]> {
+  const profile = await userApi.getProfile();
+  if (profile.role === 'patient') {
+    return prescriptionApi.getMyPrescriptions();
+  } else if (profile.role === 'doctor') {
+    return prescriptionApi.getAll({ doctor: profile._id });
+  } else if (profile.role === 'admin') {
+    return prescriptionApi.getAll();
+  } else {
+    return [];
+  }
+}
