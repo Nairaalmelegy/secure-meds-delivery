@@ -9,6 +9,7 @@ const sidebarLinks = [
   { to: '/admin-dashboard/settings', label: 'Settings' },
 ];
 
+const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -42,4 +43,6 @@ const sidebarLinks = [
       </main>
     </div>
   );
-}
+};
+
+export default AdminLayout;
