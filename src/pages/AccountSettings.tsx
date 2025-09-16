@@ -26,7 +26,9 @@ export default function AccountSettings() {
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
     email: user?.email || '',
-    phone: '',
+    phone: user?.phone || '',
+    role: user?.role || '',
+    clinic: user?.clinic || '',
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -51,14 +53,31 @@ export default function AccountSettings() {
       });
       return;
     }
+    if (!profileData.role) {
+      toast({
+        title: "Error",
+        description: "Role is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (profileData.role === 'doctor' && !profileData.clinic) {
+      toast({
+        title: "Error",
+        description: "Clinic is required for doctors",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setLoading(true);
     try {
       await userApi.updateProfile({
         name: profileData.name,
         phone: profileData.phone,
+        role: profileData.role,
+        clinic: profileData.role === 'doctor' ? profileData.clinic : undefined,
       });
-      
       toast({
         title: "Profile updated",
         description: "Your profile has been updated successfully",
@@ -232,7 +251,7 @@ export default function AccountSettings() {
                     <p className="mt-1 text-foreground font-medium">{user?.name}</p>
                   )}
                 </div>
-                
+
                 <div>
                   <Label htmlFor="email">Email Address</Label>
                   <div className="mt-1 flex items-center gap-2">
@@ -269,11 +288,29 @@ export default function AccountSettings() {
                   <Label htmlFor="role">Account Type</Label>
                   <div className="mt-1 flex items-center gap-2">
                     <Shield className="h-4 w-4 text-muted-foreground" />
-                    <Badge className={getRoleBadgeColor(user?.role || '')}>
-                      {user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1)}
+                    <Badge className={getRoleBadgeColor(profileData.role)}>
+                      {profileData.role?.charAt(0).toUpperCase() + profileData.role?.slice(1)}
                     </Badge>
                   </div>
                 </div>
+
+                {profileData.role === 'doctor' && (
+                  <div>
+                    <Label htmlFor="clinic">Clinic</Label>
+                    {isEditingProfile ? (
+                      <Input
+                        id="clinic"
+                        value={profileData.clinic}
+                        onChange={e => setProfileData({ ...profileData, clinic: e.target.value })}
+                        placeholder="Enter your clinic name"
+                        className="mt-1"
+                        disabled={loading}
+                      />
+                    ) : (
+                      <p className="mt-1 text-foreground font-medium">{user?.clinic || 'Not provided'}</p>
+                    )}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
