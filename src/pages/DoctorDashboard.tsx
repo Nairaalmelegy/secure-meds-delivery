@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { Search, Users, FileText, DollarSign, CheckCircle, XCircle, TrendingUp, Activity, Stethoscope, Award, Clock } from 'lucide-react';
-import { doctorApi, prescriptionApi } from '@/lib/api';
+import { prescriptionApi, doctorApi } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function DoctorDashboard() {
@@ -15,10 +15,28 @@ export default function DoctorDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
 
-  const { data: patients } = useQuery({
-    queryKey: ['patients'],
-    queryFn: () => doctorApi.search(''),
-  });
+  const [patientResult, setPatientResult] = useState<any | null>(null);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+
+  const handlePatientSearch = async () => {
+    setSearching(true);
+    setSearchError(null);
+    setPatientResult(null);
+    try {
+      if (!searchQuery.trim()) {
+        setSearchError('Please enter a national ID.');
+        setSearching(false);
+        return;
+      }
+      const result = await doctorApi.getPatientByNationalId(searchQuery.trim());
+      setPatientResult(result.patient);
+    } catch (err: any) {
+      setSearchError(err?.message || 'Patient not found');
+    } finally {
+      setSearching(false);
+    }
+  };
 
   const { data: prescriptions, refetch: refetchPrescriptions } = useQuery({
     queryKey: ['doctor-prescriptions'],
@@ -101,34 +119,36 @@ export default function DoctorDashboard() {
         <Card>
           <CardHeader>
             <CardTitle>Search Patients</CardTitle>
-            <div className="relative">
+            <div className="relative flex gap-2 items-center">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder="Search by National ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
+                onKeyDown={(e) => { if (e.key === 'Enter') handlePatientSearch(); }}
+                disabled={searching}
               />
+              <Button size="sm" onClick={handlePatientSearch} disabled={searching}>
+                Search
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
-            {patients && patients.length > 0 ? (
-              <div className="space-y-3">
-                {patients.map((patient: any) => (
-                  <div key={patient.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium">{patient.name}</p>
-                      <p className="text-sm text-muted-foreground">{patient.email}</p>
-                      <p className="text-sm text-muted-foreground">ID: {patient.nationalId}</p>
-                    </div>
-                    <Button variant="outline" size="sm">
-                      View Records
-                    </Button>
-                  </div>
-                ))}
+            {searchError && <p className="text-destructive mb-2">{searchError}</p>}
+            {patientResult ? (
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <p className="font-medium">{patientResult.name}</p>
+                  <p className="text-sm text-muted-foreground">{patientResult.email}</p>
+                  <p className="text-sm text-muted-foreground">ID: {patientResult.nationalId}</p>
+                </div>
+                <Button variant="outline" size="sm">
+                  View Records
+                </Button>
               </div>
             ) : (
-              <p className="text-muted-foreground">No patients found</p>
+              searchError ? null : <p className="text-muted-foreground">Enter a national ID and search</p>
             )}
           </CardContent>
         </Card>
