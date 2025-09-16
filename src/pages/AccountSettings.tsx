@@ -307,7 +307,7 @@ export default function AccountSettings() {
                         disabled={loading}
                       />
                     ) : (
-                      <p className="mt-1 text-foreground font-medium">{user?.clinic || 'Not provided'}</p>
+                      <p className="mt-1 text-foreground font-medium">{profileData.clinic || 'Not provided'}</p>
                     )}
                   </div>
                 )}
