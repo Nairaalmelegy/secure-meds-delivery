@@ -28,14 +28,12 @@ async function approveDoctor(id: string) {
     _id: doc._id,
     name: doc.name,
     email: doc.email,
-    phone: doc.phone,
+    phone: doc.phone || '',
     role: doc.role,
-    clinic: doc.clinic,
+    clinic: doc.role === 'doctor' ? (doc.clinic || '') : '',
     medicalLicense: doc.medicalLicense,
     verifiedDoctor: true,
   };
-  // Only include clinic if doctor
-  if (doc.role !== 'doctor') delete payload.clinic;
   return apiClient.put(`/api/users/${id}`, payload);
 }
 
