@@ -1,28 +1,57 @@
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { medicineApi, orderApi, userApi } from '../lib/api';
 
 // Set your main pharmacy ID here
 const MAIN_PHARMACY_ID = 'F82qwa123sd';
+// Types
+export interface Medicine {
+  _id: string;
+  name: string;
+  stock: number;
+}
+
+export interface Prescription {
+  _id: string;
+  patient: { _id: string; name: string } | string;
+  medicines?: Array<{ name: string; qty: number }>;
+  fileUrl?: string;
+  ocrText?: string;
+  // Add any additional known fields here as needed
+}
+
+export interface Pharmacy {
+  _id: string;
+  name: string;
+}
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 
 interface PharmacyOrderFormProps {
-  prescription: any;
+  prescription: Prescription;
 }
 
 export function PharmacyOrderForm({ prescription }: PharmacyOrderFormProps) {
   const { toast } = useToast();
-  const [selected, setSelected] = useState<{ [id: string]: number }>({});
+  // selectedMedicines: { id, name, stock, qty }
+  const [selectedMedicines, setSelectedMedicines] = useState<Array<Medicine & { qty: number }>>([]);
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [pharmacyId, setPharmacyId] = useState(MAIN_PHARMACY_ID);
-  const { data: medicines, isLoading } = useQuery({
+  const { data: medicines, isLoading } = useQuery<Medicine[]>({
     queryKey: ['medicines'],
     queryFn: medicineApi.getAll,
   });
+
+  // Filtered medicines for search/autocomplete
+  const filteredMedicines = useMemo(() => {
+    if (!search.trim()) return [];
+    if (!medicines) return [];
+    return medicines.filter((m) => m.name.toLowerCase().includes(search.toLowerCase()) && !selectedMedicines.some(sel => sel._id === m._id));
+  }, [search, medicines, selectedMedicines]);
   // Fetch pharmacies
   const { data: pharmacies, isLoading: loadingPharmacies } = useQuery({
     queryKey: ['pharmacies'],
@@ -33,33 +62,43 @@ export function PharmacyOrderForm({ prescription }: PharmacyOrderFormProps) {
   });
 
   const handleQtyChange = (id: string, qty: number) => {
-    setSelected((prev) => ({ ...prev, [id]: qty }));
+    setSelectedMedicines(prev => prev.map(m => m._id === id ? { ...m, qty } : m));
+  };
+
+  const handleAddMedicine = (med: Medicine) => {
+    setSelectedMedicines(prev => [...prev, { ...med, qty: 1 }]);
+    setSearch('');
+  };
+
+  const handleRemoveMedicine = (id: string) => {
+    setSelectedMedicines(prev => prev.filter(m => m._id !== id));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const items = Object.entries(selected)
-        .filter(([_, qty]) => qty > 0)
-        .map(([medicine, qty]) => ({ medicine, qty }));
+      const items = selectedMedicines
+        .filter(m => m.qty > 0)
+        .map(m => ({ medicine: m._id, qty: m.qty }));
       if (items.length === 0) throw new Error('Select at least one medicine');
       if (!deliveryAddress.trim()) throw new Error('Delivery address is required');
-  if (!pharmacyId) throw new Error('Pharmacy selection is required');
+      if (!pharmacyId) throw new Error('Pharmacy selection is required');
       await orderApi.create({
         items,
         prescriptionId: prescription._id,
         deliveryAddress,
-  pharmacyId,
+        pharmacyId,
         paymentMethod: 'cash',
         patientId: typeof prescription.patient === 'object' ? prescription.patient._id : prescription.patient,
       });
       toast({ title: 'Order sent for confirmation!' });
-      setSelected({});
+      setSelectedMedicines([]);
       setDeliveryAddress('');
       setPharmacyId('');
     } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      const errorMsg = (err as Error).message || 'Failed to send order';
+      toast({ title: errorMsg, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -68,28 +107,50 @@ export function PharmacyOrderForm({ prescription }: PharmacyOrderFormProps) {
   return (
     <form onSubmit={handleSubmit} className="mt-4 border-t pt-2 space-y-3">
       <div className="font-medium mb-2">Select Medicines:</div>
-      {isLoading ? (
-        <div>Loading medicines...</div>
-      ) : medicines && medicines.length > 0 ? (
-        <div className="space-y-2">
-          {medicines.map((med: any) => (
+      {/* Search/autocomplete UI */}
+      <div className="mb-2">
+        <Input
+          type="text"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search medicines..."
+          className="w-full"
+        />
+        {search && filteredMedicines.length > 0 && (
+          <div className="border rounded bg-white shadow z-10 mt-1 max-h-40 overflow-y-auto absolute">
+            {filteredMedicines.map((med) => (
+              <div
+                key={med._id}
+                className="px-3 py-2 hover:bg-primary/10 cursor-pointer flex items-center justify-between"
+                onClick={() => handleAddMedicine(med)}
+              >
+                <span>{med.name}</span>
+                <span className="text-xs text-muted-foreground ml-2">Stock: {med.stock}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      {/* Selected medicines with quantity controls */}
+      {selectedMedicines.length > 0 && (
+        <div className="space-y-2 mt-2">
+          {selectedMedicines.map(med => (
             <div key={med._id} className="flex items-center gap-2">
               <span className="w-32 truncate">{med.name}</span>
               <Input
                 type="number"
-                min={0}
+                min={1}
                 max={med.stock}
-                value={selected[med._id] || ''}
-                onChange={e => handleQtyChange(med._id, Number(e.target.value))}
+                value={med.qty}
+                onChange={e => handleQtyChange(med._id, Math.max(1, Math.min(Number(e.target.value), med.stock)))}
                 className="w-20"
                 placeholder="Qty"
               />
               <span className="text-xs text-muted-foreground">Stock: {med.stock}</span>
+              <Button type="button" size="sm" variant="destructive" onClick={() => handleRemoveMedicine(med._id)}>Remove</Button>
             </div>
           ))}
         </div>
-      ) : (
-        <div>No medicines available.</div>
       )}
       <div>
         <label className="block text-xs font-medium mb-1">Delivery Address<span className="text-red-500">*</span></label>
