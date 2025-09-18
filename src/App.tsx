@@ -11,6 +11,7 @@ import { AdminRoute } from "@/components/AdminRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+
 import Dashboard from "./pages/Dashboard";
 import UploadPrescription from "./pages/UploadPrescription";
 import OrderMedicines from "./pages/OrderMedicines";
@@ -28,6 +29,7 @@ import AdminInventory from "./pages/AdminInventory";
 import AdminAppliedDoctors from "./pages/AdminAppliedDoctors";
 import AdminPrescriptionsOrders from "./pages/AdminPrescriptionsOrders";
 import AdminSettings from "./pages/AdminSettings";
+import PatientLayout from "./pages/PatientLayout";
 
 const queryClient = new QueryClient();
 
@@ -44,38 +46,20 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               
-              {/* Patient Routes */}
-              <Route path="/dashboard" element={
+
+              {/* Patient Routes with Sidebar Layout */}
+              <Route element={
                 <ProtectedRoute allowedRoles={['patient']}>
-                  <Dashboard />
+                  <PatientLayout />
                 </ProtectedRoute>
-              } />
-              <Route path="/upload-prescription" element={
-                <ProtectedRoute allowedRoles={['patient']}>
-                  <UploadPrescription />
-                </ProtectedRoute>
-              } />
-              <Route path="/order-medicines" element={
-                <ProtectedRoute allowedRoles={['patient']}>
-                  <OrderMedicines />
-                </ProtectedRoute>
-              } />
-              <Route path="/orders" element={
-                <ProtectedRoute allowedRoles={['patient']}>
-                  <Orders />
-                </ProtectedRoute>
-              } />
-              <Route path="/checkout" element={
-                <ProtectedRoute allowedRoles={['patient']}>
-                  <Checkout />
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/medical-records" element={
-                <ProtectedRoute allowedRoles={['patient']}>
-                  <MedicalRecords />
-                </ProtectedRoute>
-              } />
+              }>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/medical-records" element={<MedicalRecords />} />
+                <Route path="/upload-prescription" element={<UploadPrescription />} />
+                <Route path="/orders" element={<Orders />} />
+                <Route path="/order-medicines" element={<OrderMedicines />} />
+                <Route path="/checkout" element={<Checkout />} />
+              </Route>
               
               {/* Doctor Routes */}
               <Route path="/doctor-dashboard" element={
