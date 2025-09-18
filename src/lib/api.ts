@@ -119,7 +119,7 @@ export const authApi = {
 // Medicine API functions
 export const medicineApi = {
   search: (query: string): Promise<any[]> => 
-    apiClient.get(`/api/medicines/search?q=${encodeURIComponent(query)}`),
+    apiClient.get(`/api/medicines/search/name/${encodeURIComponent(query)}`),
     
   getAll: (): Promise<any[]> => 
     apiClient.get('/api/medicines'),
