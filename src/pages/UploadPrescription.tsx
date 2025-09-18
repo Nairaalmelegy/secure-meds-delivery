@@ -9,7 +9,7 @@ import { prescriptionApi } from '@/lib/api';
 import { useQuery } from '@tanstack/react-query';
 
 export default function UploadPrescription() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [doctorId, setDoctorId] = useState('');
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
@@ -20,49 +20,56 @@ export default function UploadPrescription() {
   });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.type.includes('pdf') || file.type.includes('image')) {
-        setSelectedFile(file);
-      } else {
-        toast({
-          title: "Invalid file type",
-          description: "Please upload a PDF or image file",
-          variant: "destructive",
-        });
-      }
+    const files = Array.from(e.target.files || []);
+    const validFiles = files.filter(file => file.type.includes('pdf') || file.type.includes('image'));
+    if (validFiles.length !== files.length) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload only PDF or image files",
+        variant: "destructive",
+      });
     }
+    setSelectedFiles(validFiles);
   };
 
   const handleUpload = async () => {
-    if (!selectedFile) {
+    if (selectedFiles.length === 0) {
       toast({
         title: "No file selected",
-        description: "Please select a prescription file to upload",
+        description: "Please select one or more prescription files to upload",
         variant: "destructive",
       });
       return;
     }
 
     setUploading(true);
-    try {
-      await prescriptionApi.upload(selectedFile, doctorId || undefined);
+    let successCount = 0;
+    let failCount = 0;
+    for (const file of selectedFiles) {
+      try {
+        await prescriptionApi.upload(file, doctorId || undefined);
+        successCount++;
+      } catch {
+        failCount++;
+      }
+    }
+    if (successCount > 0) {
       toast({
-        title: "Prescription uploaded",
-        description: "Your prescription has been uploaded successfully",
+        title: `Uploaded ${successCount} prescription${successCount > 1 ? 's' : ''}`,
+        description: failCount > 0 ? `${failCount} failed to upload.` : 'All uploaded successfully.',
       });
-      setSelectedFile(null);
+      setSelectedFiles([]);
       setDoctorId('');
       refetch();
-    } catch (error) {
+    }
+    if (failCount > 0) {
       toast({
         title: "Upload failed",
-        description: "Failed to upload prescription. Please try again.",
+        description: `${failCount} prescription${failCount > 1 ? 's' : ''} failed to upload.`,
         variant: "destructive",
       });
-    } finally {
-      setUploading(false);
     }
+    setUploading(false);
   };
 
   return (
@@ -87,13 +94,16 @@ export default function UploadPrescription() {
                 id="prescription-file"
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png"
+                multiple
                 onChange={handleFileChange}
                 className="mt-2"
               />
-              {selectedFile && (
-                <p className="text-sm text-muted-foreground mt-2">
-                  Selected: {selectedFile.name}
-                </p>
+              {selectedFiles.length > 0 && (
+                <ul className="text-sm text-muted-foreground mt-2">
+                  {selectedFiles.map(file => (
+                    <li key={file.name}>{file.name}</li>
+                  ))}
+                </ul>
               )}
             </div>
 
@@ -110,10 +120,10 @@ export default function UploadPrescription() {
 
             <Button 
               onClick={handleUpload} 
-              disabled={!selectedFile || uploading}
+              disabled={selectedFiles.length === 0 || uploading}
               className="w-full"
             >
-              {uploading ? 'Uploading...' : 'Upload Prescription'}
+              {uploading ? 'Uploading...' : 'Upload Prescription(s)'}
             </Button>
           </CardContent>
         </Card>
