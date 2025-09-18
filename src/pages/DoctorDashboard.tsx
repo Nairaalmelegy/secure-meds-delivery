@@ -4,10 +4,42 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Users, FileText, DollarSign, CheckCircle, XCircle, TrendingUp, Activity, Stethoscope, Award, Clock } from 'lucide-react';
-import { prescriptionApi, doctorApi } from '@/lib/api';
+import { Search, Users, FileText, DollarSign, CheckCircle, XCircle } from 'lucide-react';
+import { prescriptionApi, doctorApi, orderApi, apiClient } from '@/lib/api';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  nationalId?: string;
+}
+
+interface Prescription {
+  _id: string;
+  id?: string;
+  patient: string | User;
+  doctor: string | User;
+  status: string;
+  createdAt: string;
+  patientName?: string;
+}
+
+interface Order {
+  _id: string;
+  id?: string;
+  patient: string | User;
+  prescription: string | Prescription;
+  doctor?: string | User;
+}
+
+interface Commission {
+  _id: string;
+  doctor: string | User;
+  amount: number;
+  createdAt: string;
+}
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function DoctorDashboard() {
@@ -15,10 +47,62 @@ export default function DoctorDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
 
-  const [patientResult, setPatientResult] = useState<any | null>(null);
+  const [patientResult, setPatientResult] = useState<User | null>(null);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
 
+  // Fetch all orders for this doctor (to count unique patients)
+  const { data: orders, isLoading: loadingOrders } = useQuery<Order[]>({
+    queryKey: ['doctor-orders'],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const allOrders: Order[] = await apiClient.get('/api/orders');
+      return allOrders.filter((order) => {
+        if (order.prescription && typeof order.prescription === 'object') {
+          return (order.prescription as Prescription).doctor === user.id;
+        }
+        if (order.doctor && typeof order.doctor === 'string') {
+          return order.doctor === user.id;
+        }
+        return false;
+      });
+    },
+    enabled: !!user?.id,
+  });
+
+  // Fetch all prescriptions for this doctor
+  const { data: prescriptions, isLoading: loadingPrescriptions } = useQuery<Prescription[]>({
+    queryKey: ['doctor-prescriptions'],
+    queryFn: async () => {
+      const { getPrescriptionsForCurrentUser } = await import('@/lib/api');
+      return getPrescriptionsForCurrentUser() as Promise<Prescription[]>;
+    },
+    enabled: !!user?.id,
+  });
+
+  // Fetch commissions for this doctor for the current month
+  const { data: commissions, isLoading: loadingCommissions } = useQuery<Commission[]>({
+    queryKey: ['doctor-commissions'],
+    queryFn: async () => {
+      const allComms: Commission[] = await apiClient.get('/api/commissions');
+      const now = new Date();
+      const thisMonth = now.getMonth();
+      const thisYear = now.getFullYear();
+      return allComms.filter(
+        (c) => {
+          const docId = typeof c.doctor === 'object' ? (c.doctor as User).id : c.doctor;
+          return (
+            docId === user.id &&
+            new Date(c.createdAt).getMonth() === thisMonth &&
+            new Date(c.createdAt).getFullYear() === thisYear
+          );
+        }
+      );
+    },
+    enabled: !!user?.id,
+  });
+
+  // Patient search logic
   const handlePatientSearch = async () => {
     setSearching(true);
     setSearchError(null);
@@ -30,22 +114,13 @@ export default function DoctorDashboard() {
         return;
       }
       const result = await doctorApi.getPatientByNationalId(searchQuery.trim());
-      setPatientResult(result.patient);
-    } catch (err: any) {
-      setSearchError(err?.message || 'Patient not found');
+      setPatientResult(result.patient as User);
+    } catch (err) {
+      setSearchError((err as Error)?.message || 'Patient not found');
     } finally {
       setSearching(false);
     }
   };
-
-  const { data: prescriptions, refetch: refetchPrescriptions } = useQuery({
-    queryKey: ['doctor-prescriptions'],
-    queryFn: async () => {
-      // Use role-based fetcher for prescriptions
-      const { getPrescriptionsForCurrentUser } = await import('@/lib/api');
-      return getPrescriptionsForCurrentUser();
-    },
-  });
 
   const handleVerifyPrescription = async (prescriptionId: string, approved: boolean) => {
     try {
@@ -54,7 +129,7 @@ export default function DoctorDashboard() {
         title: approved ? "Prescription approved" : "Prescription rejected",
         description: `Prescription has been ${approved ? 'approved' : 'rejected'} successfully`,
       });
-      refetchPrescriptions();
+      // Optionally refetch prescriptions
     } catch (error) {
       toast({
         title: "Error",
@@ -63,6 +138,21 @@ export default function DoctorDashboard() {
       });
     }
   };
+
+  // Calculate statistics
+  const totalPatients = orders
+    ? new Set(orders.map((o) => typeof o.patient === 'object' ? (o.patient as User).id : o.patient)).size
+    : 0;
+
+  const pendingPrescriptions = prescriptions
+    ? prescriptions.filter((p) => p.status === 'pending').length
+    : 0;
+
+  const totalPoints = prescriptions ? prescriptions.length : 0;
+
+  const commissionAmount = commissions
+    ? commissions.reduce((sum, c) => sum + (c.amount || 0), 0)
+    : 0;
 
   return (
     <div className="container mx-auto p-6">
@@ -78,7 +168,9 @@ export default function DoctorDashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-muted-foreground">N/A</div>
+            <div className="text-2xl font-bold text-muted-foreground">
+              {loadingOrders ? '...' : isNaN(totalPatients) ? 'N/A' : totalPatients}
+            </div>
           </CardContent>
         </Card>
 
@@ -89,7 +181,7 @@ export default function DoctorDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {prescriptions?.filter((p: any) => p.status === 'pending').length || 0}
+              {loadingPrescriptions ? '...' : pendingPrescriptions}
             </div>
           </CardContent>
         </Card>
@@ -100,7 +192,9 @@ export default function DoctorDashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">EGP 2,450</div>
+            <div className="text-2xl font-bold">
+              {loadingCommissions ? '...' : `EGP ${commissionAmount.toLocaleString()}`}
+            </div>
           </CardContent>
         </Card>
 
@@ -110,7 +204,9 @@ export default function DoctorDashboard() {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,250</div>
+            <div className="text-2xl font-bold">
+              {loadingPrescriptions ? '...' : totalPoints}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -161,12 +257,12 @@ export default function DoctorDashboard() {
             {prescriptions && prescriptions.length > 0 ? (
               <div className="space-y-3">
                 {prescriptions
-                  .filter((p: any) => p.status === 'pending')
-                  .map((prescription: any) => (
-                    <div key={prescription.id} className="p-4 border rounded-lg">
+                  .filter((p: Prescription) => p.status === 'pending')
+                  .map((prescription: Prescription) => (
+                    <div key={prescription._id || prescription.id} className="p-4 border rounded-lg">
                       <div className="flex items-center justify-between mb-3">
                         <div>
-                          <p className="font-medium">Prescription #{prescription.id}</p>
+                          <p className="font-medium">Prescription #{prescription._id || prescription.id}</p>
                           <p className="text-sm text-muted-foreground">
                             Patient: {prescription.patientName}
                           </p>
@@ -179,7 +275,7 @@ export default function DoctorDashboard() {
                       <div className="flex gap-2">
                         <Button
                           size="sm"
-                          onClick={() => handleVerifyPrescription(prescription.id, true)}
+                          onClick={() => handleVerifyPrescription(prescription._id || prescription.id, true)}
                           className="flex items-center gap-1"
                         >
                           <CheckCircle className="h-4 w-4" />
@@ -188,7 +284,7 @@ export default function DoctorDashboard() {
                         <Button
                           variant="destructive"
                           size="sm"
-                          onClick={() => handleVerifyPrescription(prescription.id, false)}
+                          onClick={() => handleVerifyPrescription(prescription._id || prescription.id, false)}
                           className="flex items-center gap-1"
                         >
                           <XCircle className="h-4 w-4" />
