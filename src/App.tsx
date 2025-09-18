@@ -16,7 +16,7 @@ import Dashboard from "./pages/Dashboard";
 import UploadPrescription from "./pages/UploadPrescription";
 import OrderMedicines from "./pages/OrderMedicines";
 import Orders from "./pages/Orders";
-import Checkout from "./pages/Checkout";
+import { Checkout } from "./pages/Checkout";
 import DoctorDashboard from "./pages/DoctorDashboard";
 import Profile from "./pages/Profile";
 import MedicalRecords from "./pages/MedicalRecords";

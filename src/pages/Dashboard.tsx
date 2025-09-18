@@ -138,7 +138,11 @@ return (
                       setNotification('Order confirmed!');
                       setConfirmingId(null);
                       setConfirmingLoading(false);
-                      navigate('/checkout');
+                      navigate('/checkout', {
+                        state: {
+                          extractedMedicines: pres.extractedMedicines || []
+                        }
+                      });
                     }}
                   >Confirm</Button>
                 </div>

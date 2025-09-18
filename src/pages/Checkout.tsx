@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,16 +9,40 @@ import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 import { orderApi } from '@/lib/api';
 import { CreditCard, MapPin, Package } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-export default function Checkout() {
-  const { items, total, clearCart } = useCart();
+export function Checkout() {
+  const { items, total, clearCart, addItem } = useCart();
+  const location = useLocation();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
+
+  // Prefill cart with extractedMedicines from navigation state if present
+  useEffect(() => {
+    const state = location.state as { extractedMedicines?: any[] } | undefined;
+    if (state && state.extractedMedicines && state.extractedMedicines.length > 0 && items.length === 0) {
+      state.extractedMedicines.forEach(med => {
+        addItem({
+          id: med.medicine,
+          name: med.name,
+          price: med.price,
+        });
+        // Set correct quantity
+        for (let i = 1; i < med.qty; i++) {
+          addItem({
+            id: med.medicine,
+            name: med.name,
+            price: med.price,
+          });
+        }
+      });
+    }
+    // eslint-disable-next-line
+  }, []);
 
   const handlePlaceOrder = async () => {
     if (!address.trim()) {
@@ -127,7 +151,6 @@ export default function Checkout() {
                   placeholder="Enter your phone number"
                 />
               </div>
-
               <div>
                 <Label htmlFor="notes">Order Notes (Optional)</Label>
                 <Textarea
