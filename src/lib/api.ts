@@ -145,6 +145,9 @@ export const orderApi = {
 
 // Prescription API functions
 export const prescriptionApi = {
+  // Patient confirms or rejects prescription order
+  confirmPrescription: (id: string, confirm: boolean): Promise<any> =>
+    apiClient.put(`/api/prescriptions/${id}/patient-confirm`, { confirm }),
   upload: async (file: File, doctorId?: string): Promise<any> => {
     const formData = new FormData();
     formData.append('prescription', file);

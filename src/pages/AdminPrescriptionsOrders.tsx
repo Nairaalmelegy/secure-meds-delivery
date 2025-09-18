@@ -15,7 +15,82 @@ function Modal({ open, onClose, children }: { open: boolean, onClose: () => void
     </div>
   );
 }
-import { apiClient } from '../lib/api';
+import { apiClient, medicineApi } from '../lib/api';
+import { useQuery as useReactQuery } from '@tanstack/react-query';
+// Medicine selector for admin modal
+interface ExtractedMedicine {
+  medicine: string;
+  name: string;
+  qty: number;
+  price: number;
+}
+
+function MedicineSelector({ value, onChange }: { value: ExtractedMedicine[]; onChange: (val: ExtractedMedicine[]) => void }) {
+  const [search, setSearch] = useState('');
+  const { data: options, isLoading } = useReactQuery({
+    queryKey: ['medicines', search],
+    queryFn: () => search.length > 1 ? medicineApi.search(search) : Promise.resolve([]),
+    enabled: search.length > 1,
+  });
+  const addMedicine = (med: { _id: string; name: string; price: number }) => {
+    if (!value.some((m) => m.medicine === med._id)) {
+      onChange([...value, { medicine: med._id, name: med.name, qty: 1, price: med.price }]);
+    }
+  };
+  const setQty = (idx: number, qty: number) => {
+    const arr = [...value];
+    arr[idx].qty = qty;
+    onChange(arr);
+  };
+  const remove = (idx: number) => {
+    const arr = [...value];
+    arr.splice(idx, 1);
+    onChange(arr);
+  };
+  const total = value.reduce((sum, m) => sum + (m.qty * m.price), 0);
+  return (
+    <div>
+      <div className="flex gap-2 mb-2">
+        <input
+          className="border rounded px-2 py-1 text-xs flex-1"
+          placeholder="Search medicine by name"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+      </div>
+      {isLoading && <div className="text-xs text-muted-foreground">Loading...</div>}
+      {options && options.length > 0 && (
+        <ul className="border rounded bg-white max-h-32 overflow-auto mb-2">
+          {options.map((med: { _id: string; name: string; price: number }) => (
+            <li key={med._id} className="px-2 py-1 text-xs cursor-pointer hover:bg-primary/10" onClick={() => addMedicine(med)}>
+              {med.name} (${med.price})
+            </li>
+          ))}
+        </ul>
+      )}
+      {value.length > 0 && (
+        <div className="mb-2">
+          {value.map((med, idx) => (
+            <div key={med.medicine} className="flex items-center gap-2 mb-1">
+              <span className="text-xs w-32 font-semibold">{med.name}</span>
+              <input
+                type="number"
+                min={1}
+                className="border rounded px-2 py-1 text-xs w-16"
+                value={med.qty}
+                onChange={e => setQty(idx, Math.max(1, Number(e.target.value)))}
+              />
+              <span className="text-xs">x ${med.price}</span>
+              <span className="text-xs font-bold">= ${med.qty * med.price}</span>
+              <button className="text-xs text-red-500 ml-2" onClick={() => remove(idx)}>Remove</button>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="font-semibold text-sm">Total: ${total}</div>
+    </div>
+  );
+}
 
 interface Medicine {
   name: string;
@@ -30,6 +105,7 @@ interface Prescription {
   medicines: Medicine[];
   ocrText?: string;
   status: string;
+  extractedMedicines?: ExtractedMedicine[];
 }
 
 interface Order {
@@ -123,11 +199,17 @@ async function fetchOrders(): Promise<Order[]> {
 }
 
 // Approve prescription with required fields for backend
-async function approvePrescription(id: string, doctorId?: string, notes?: string) {
+async function approvePrescription(
+  id: string,
+  doctorId?: string,
+  notes?: string,
+  extractedMedicines?: ExtractedMedicine[]
+) {
   return apiClient.put(`/api/prescriptions/${id}/verify`, {
     id,
     doctorId,
     notes: notes || 'Verified by admin',
+    extractedMedicines,
     action: 'verify',
   });
 }
@@ -138,7 +220,7 @@ async function approveOrder(id: string) {
 
 export default function AdminPrescriptionsOrders() {
   const [selectedPrescription, setSelectedPrescription] = useState<Prescription | null>(null);
-  const [extractedMedicine, setExtractedMedicine] = useState('');
+  const [extractedMedicines, setExtractedMedicines] = useState<ExtractedMedicine[]>([]);
   const queryClient = useQueryClient();
   const { data: prescriptions, isLoading: loadingPres } = useQuery({
     queryKey: ['pending-prescriptions'],
@@ -149,7 +231,8 @@ export default function AdminPrescriptionsOrders() {
     queryFn: fetchOrders,
   });
   const approvePresMutation = useMutation({
-    mutationFn: ({ id, doctorId, notes }: { id: string, doctorId?: string, notes?: string }) => approvePrescription(id, doctorId, notes),
+    mutationFn: ({ id, doctorId, notes, extractedMedicines }: { id: string, doctorId?: string, notes?: string, extractedMedicines?: ExtractedMedicine[] }) =>
+      approvePrescription(id, doctorId, notes, extractedMedicines),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pending-prescriptions'] }),
   });
   const approveOrderMutation = useMutation({
@@ -188,10 +271,12 @@ export default function AdminPrescriptionsOrders() {
             <div>Loading...</div>
           ) : prescriptions && prescriptions.length > 0 ? (
             <div className="space-y-4">
-              {prescriptions.map((pres) => (
+              {prescriptions
+                .filter(p => p.status === 'pending' || p.status === 'awaiting_patient_confirmation')
+                .map((pres) => (
                 <div key={pres._id} className="border-b pb-4 mb-4 cursor-pointer hover:bg-gray-50" onClick={() => {
                   setSelectedPrescription(pres);
-                  setExtractedMedicine(pres.ocrText || '');
+                  setExtractedMedicines(pres.extractedMedicines || []);
                 }}>
                   <div className="flex items-center justify-between">
                     <div>
@@ -213,12 +298,8 @@ export default function AdminPrescriptionsOrders() {
               {selectedPrescription.fileUrl && <PrescriptionImage fileUrl={selectedPrescription.fileUrl} />}
             </div>
             <div className="mb-4">
-              <div className="font-medium text-xs mb-1">Extracted Medicine (edit/confirm):</div>
-              <textarea
-                className="border rounded px-2 py-1 text-xs w-full min-h-[60px]"
-                value={extractedMedicine}
-                onChange={e => setExtractedMedicine(e.target.value)}
-              />
+              <div className="font-medium text-xs mb-1">Extracted Medicines (search, set qty):</div>
+              <MedicineSelector value={extractedMedicines} onChange={setExtractedMedicines} />
             </div>
             {/* Medicine notes UI */}
             {Array.isArray(selectedPrescription.medicines) && selectedPrescription.medicines.length > 0 && (
@@ -248,12 +329,11 @@ export default function AdminPrescriptionsOrders() {
                     id: selectedPrescription._id,
                     doctorId: selectedPrescription.doctor?._id,
                     notes: getNotesString(selectedPrescription._id),
-                    extractedMedicine,
-                    action: 'verify',
+                    extractedMedicines,
                   });
                   setSelectedPrescription(null);
                 }}
-                disabled={!extractedMedicine.trim() || approvePresMutation.isPending}
+                disabled={extractedMedicines.length === 0 || approvePresMutation.isPending}
               >
                 Approve & Send
               </Button>
