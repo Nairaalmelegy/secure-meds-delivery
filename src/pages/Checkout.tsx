@@ -65,12 +65,20 @@ export function Checkout() {
 
     setLoading(true);
     try {
+      // Get prescriptionId and pharmacyId from navigation state if present
+      const state = location.state as { prescriptionId?: string, pharmacyId?: string } | undefined;
+      const prescriptionId = state?.prescriptionId || undefined;
+      // Use a default pharmacyId (replace with your actual default pharmacy ObjectId)
+      const pharmacyId = state?.pharmacyId || "1";
       const orderData = {
-        medicines: items.map(item => ({
-          id: item.id,
+        items: items.map(item => ({
+          medicine: item.id,
           qty: item.quantity,
         })),
-        address,
+        prescriptionId,
+        deliveryAddress: address,
+        pharmacyId,
+        paymentMethod: "cod",
         phone,
         notes,
       };
