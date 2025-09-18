@@ -1,6 +1,4 @@
-import React from "react";
-import * as ReactAll from "react";
-const useState = ReactAll.useState, useRef = ReactAll.useRef, useEffect = ReactAll.useEffect;
+import { useState, useRef } from "react";
 import { Input } from "./input";
 
 interface AutocompleteOption {
@@ -30,8 +28,8 @@ export function Autocomplete({
   label,
   disabled,
 }: AutocompleteProps) {
-  const [open, setOpen] = React.useState(false);
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const [open, setOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className="relative w-full">
