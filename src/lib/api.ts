@@ -4,6 +4,9 @@ const API_BASE_URL = 'https://medilinkback-production.up.railway.app';
 // API client with error handling
 class ApiClient {
   private baseURL: string;
+  public getBaseUrl() {
+    return this.baseURL;
+  }
 
   constructor(baseURL: string) {
     this.baseURL = baseURL;

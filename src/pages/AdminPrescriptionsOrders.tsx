@@ -3,6 +3,27 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { apiClient } from '../lib/api';
+
+interface Medicine {
+  name: string;
+  qty: number;
+}
+
+interface Prescription {
+  _id: string;
+  patient: string | { _id: string; name: string };
+  doctor?: { _id: string; name?: string };
+  fileUrl?: string;
+  medicines: Medicine[];
+  ocrText?: string;
+  status: string;
+}
+
+interface Order {
+  _id: string;
+  patient: string | { _id: string; name?: string };
+  status: string;
+}
 import { PharmacyOrderForm } from './PharmacyOrderForm';
 
 // Helper component to fetch and display prescription image using apiClient
@@ -12,7 +33,8 @@ function PrescriptionImage({ fileUrl }: { fileUrl: string }) {
     let revoked = false;
     async function fetchImage() {
       try {
-        const response = await fetch(apiClient.baseURL + fileUrl, {
+        const baseUrl = apiClient.getBaseUrl();
+        const response = await fetch(baseUrl + fileUrl, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
           },
@@ -40,14 +62,14 @@ function PrescriptionImage({ fileUrl }: { fileUrl: string }) {
   );
 }
 
-async function fetchPrescriptions() {
-  const prescriptions = await apiClient.get<any[]>('/api/prescriptions');
-  return prescriptions.filter((p: any) => p.status === 'pending');
+async function fetchPrescriptions(): Promise<Prescription[]> {
+  const prescriptions = await apiClient.get<Prescription[]>('/api/prescriptions');
+  return prescriptions.filter((p) => p.status === 'pending');
 }
 
-async function fetchOrders() {
-  const orders = await apiClient.get<any[]>('/api/orders');
-  return orders.filter((o: any) => o.status === 'pending');
+async function fetchOrders(): Promise<Order[]> {
+  const orders = await apiClient.get<Order[]>('/api/orders');
+  return orders.filter((o) => o.status === 'pending');
 }
 
 // Approve prescription with required fields for backend
@@ -56,6 +78,7 @@ async function approvePrescription(id: string, doctorId?: string, notes?: string
     id,
     doctorId,
     notes: notes || 'Verified by admin',
+    action: 'approve',
   });
 }
 
@@ -113,7 +136,7 @@ export default function AdminPrescriptionsOrders() {
             <div>Loading...</div>
           ) : prescriptions && prescriptions.length > 0 ? (
             <div className="space-y-4">
-              {prescriptions.map((pres: any) => (
+              {prescriptions.map((pres) => (
                 <div key={pres._id} className="border-b pb-4 mb-4">
                   <div className="flex items-center justify-between">
                     <div>
@@ -128,7 +151,7 @@ export default function AdminPrescriptionsOrders() {
                     <div className="mt-2">
                       <div className="font-medium text-xs mb-1">Doctor Notes for Medicines:</div>
                       <div className="space-y-2">
-                        {pres.medicines.map((med: any) => (
+                        {pres.medicines.map((med) => (
                           <div key={med.name} className="flex items-center gap-2">
                             <span className="text-xs w-32 font-semibold">{med.name}</span>
                             <input
@@ -168,7 +191,7 @@ export default function AdminPrescriptionsOrders() {
             <div>Loading...</div>
           ) : orders && orders.length > 0 ? (
             <div className="space-y-4">
-              {orders.map((order: any) => (
+              {orders.map((order) => (
                 <div key={order._id} className="flex items-center justify-between border-b pb-2">
                   <div>
                     <div className="font-semibold">Order #{order._id.slice(-6)}</div>
