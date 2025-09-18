@@ -67,7 +67,16 @@ export function Checkout() {
     try {
       // Get prescriptionId and pharmacyId from navigation state if present
       const state = location.state as { prescriptionId?: string, pharmacyId?: string } | undefined;
-      const prescriptionId = state?.prescriptionId || undefined;
+      const prescriptionId = state?.prescriptionId;
+      if (!prescriptionId) {
+        toast({
+          title: "Prescription error",
+          description: "Prescription ID is required. Please return to your dashboard and try again.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
       // Use a default pharmacyId (replace with your actual default pharmacy ObjectId)
       const pharmacyId = state?.pharmacyId || "1";
       const orderData = {

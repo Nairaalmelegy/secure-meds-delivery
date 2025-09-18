@@ -140,7 +140,8 @@ return (
                       setConfirmingLoading(false);
                       navigate('/checkout', {
                         state: {
-                          extractedMedicines: pres.extractedMedicines || []
+                          extractedMedicines: pres.extractedMedicines || [],
+                          prescriptionId: pres._id
                         }
                       });
                     }}
