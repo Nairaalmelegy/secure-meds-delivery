@@ -1,4 +1,6 @@
-import * as React from "react";
+import React from "react";
+import * as ReactAll from "react";
+const useState = ReactAll.useState, useRef = ReactAll.useRef, useEffect = ReactAll.useEffect;
 import { Input } from "./input";
 
 interface AutocompleteOption {
