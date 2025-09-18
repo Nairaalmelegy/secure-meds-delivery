@@ -39,6 +39,7 @@ interface Commission {
   doctor: string | User;
   amount: number;
   createdAt: string;
+  requestedAt: string;
 }
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -80,23 +81,17 @@ export default function DoctorDashboard() {
     enabled: !!user?.id,
   });
 
-  // Fetch commissions for this doctor for the current month
+  // Fetch commissions for this doctor for the current month using /api/commissions/mine
   const { data: commissions, isLoading: loadingCommissions } = useQuery<Commission[]>({
     queryKey: ['doctor-commissions'],
     queryFn: async () => {
-      const allComms: Commission[] = await apiClient.get('/api/commissions');
+      const res = await apiClient.get<{ commissions: Commission[] }>('/api/commissions/mine');
       const now = new Date();
       const thisMonth = now.getMonth();
       const thisYear = now.getFullYear();
-      return allComms.filter(
-        (c) => {
-          const docId = typeof c.doctor === 'object' ? (c.doctor as User).id : c.doctor;
-          return (
-            docId === user.id &&
-            new Date(c.createdAt).getMonth() === thisMonth &&
-            new Date(c.createdAt).getFullYear() === thisYear
-          );
-        }
+      return res.commissions.filter(
+        (c) => new Date(c.requestedAt).getMonth() === thisMonth &&
+                new Date(c.requestedAt).getFullYear() === thisYear
       );
     },
     enabled: !!user?.id,
