@@ -78,7 +78,7 @@ async function approvePrescription(id: string, doctorId?: string, notes?: string
     id,
     doctorId,
     notes: notes || 'Verified by admin',
-    action: 'approve',
+    action: 'verify',
   });
 }
 
