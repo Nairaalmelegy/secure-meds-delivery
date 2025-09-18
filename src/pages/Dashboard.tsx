@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Plus, FileText, ShoppingCart, Activity, Clock, CheckCircle, Package, TrendingUp, Heart, Pill } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { prescriptionApi, orderApi } from '@/lib/api';
 
@@ -27,6 +27,7 @@ interface Prescription {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [confirmingLoading, setConfirmingLoading] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
@@ -137,7 +138,7 @@ return (
                       setNotification('Order confirmed!');
                       setConfirmingId(null);
                       setConfirmingLoading(false);
-                      window.location.reload();
+                      navigate('/checkout');
                     }}
                   >Confirm</Button>
                 </div>

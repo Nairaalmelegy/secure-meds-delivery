@@ -15,7 +15,7 @@ function Modal({ open, onClose, children }: { open: boolean, onClose: () => void
     </div>
   );
 }
-import { apiClient, medicineApi } from '../lib/api';
+import { apiClient, medicineApi, orderApi } from '../lib/api';
 import { useQuery as useReactQuery } from '@tanstack/react-query';
 // Medicine selector for admin modal
 interface ExtractedMedicine {
@@ -235,9 +235,13 @@ export default function AdminPrescriptionsOrders() {
       approvePrescription(id, doctorId, notes, extractedMedicines),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pending-prescriptions'] }),
   });
-  const approveOrderMutation = useMutation({
-    mutationFn: (id: string) => approveOrder(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pending-orders'] }),
+  const shipOrderMutation = useMutation({
+    mutationFn: (id: string) => orderApi.updateStatus(id, 'dispatched'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pending-orders'] });
+      // Optionally show a toast or notification here
+      // toast({ title: 'Order shipped', description: 'Patient has been notified.' });
+    },
   });
 
   // Store notes for each prescription (by prescription id)
@@ -362,7 +366,7 @@ export default function AdminPrescriptionsOrders() {
                     <div className="font-semibold">Order #{order._id.slice(-6)}</div>
                     <div className="text-xs text-muted-foreground">Patient: {typeof order.patient === 'object' ? (order.patient?.name || order.patient?._id || JSON.stringify(order.patient)) : order.patient}</div>
                   </div>
-                  <Button size="sm" onClick={() => approveOrderMutation.mutate(order._id)} disabled={approveOrderMutation.isPending}>Approve</Button>
+                  <Button size="sm" onClick={() => shipOrderMutation.mutate(order._id)} disabled={shipOrderMutation.isPending}>Ship</Button>
                 </div>
               ))}
             </div>
