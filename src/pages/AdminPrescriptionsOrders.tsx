@@ -2,6 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Dialog } from '@/components/ui/dialog';
+// Simple Dialog component (if not already present in your UI library)
+function Modal({ open, onClose, children }: { open: boolean, onClose: () => void, children: React.ReactNode }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60" onClick={onClose}>
+      <div className="bg-white rounded shadow-lg max-w-2xl w-full p-6 relative" onClick={e => e.stopPropagation()}>
+        <button className="absolute top-2 right-2 text-2xl text-gray-500 hover:text-black" onClick={onClose}>&times;</button>
+        {children}
+      </div>
+    </div>
+  );
+}
 import { apiClient } from '../lib/api';
 
 interface Medicine {
@@ -124,6 +137,8 @@ async function approveOrder(id: string) {
 }
 
 export default function AdminPrescriptionsOrders() {
+  const [selectedPrescription, setSelectedPrescription] = useState<Prescription | null>(null);
+  const [extractedMedicine, setExtractedMedicine] = useState('');
   const queryClient = useQueryClient();
   const { data: prescriptions, isLoading: loadingPres } = useQuery({
     queryKey: ['pending-prescriptions'],
@@ -174,45 +189,78 @@ export default function AdminPrescriptionsOrders() {
           ) : prescriptions && prescriptions.length > 0 ? (
             <div className="space-y-4">
               {prescriptions.map((pres) => (
-                <div key={pres._id} className="border-b pb-4 mb-4">
+                <div key={pres._id} className="border-b pb-4 mb-4 cursor-pointer hover:bg-gray-50" onClick={() => {
+                  setSelectedPrescription(pres);
+                  setExtractedMedicine(pres.ocrText || '');
+                }}>
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="font-semibold">Prescription #{pres._id.slice(-6)}</div>
                       <div className="text-xs text-muted-foreground">Patient: {typeof pres.patient === 'object' ? (pres.patient?.name || pres.patient?._id || JSON.stringify(pres.patient)) : pres.patient}</div>
                     </div>
-                    <Button size="sm" onClick={() => approvePresMutation.mutate({ id: pres._id, doctorId: pres.doctor?._id, notes: getNotesString(pres._id) })} disabled={approvePresMutation.isPending}>Approve</Button>
+                    <Button size="sm" variant="outline">Send order for confirmation</Button>
                   </div>
                   {pres.fileUrl && <PrescriptionImage fileUrl={pres.fileUrl} />}
-                  {/* Medicine notes UI */}
-                  {Array.isArray(pres.medicines) && pres.medicines.length > 0 && (
-                    <div className="mt-2">
-                      <div className="font-medium text-xs mb-1">Doctor Notes for Medicines:</div>
-                      <div className="space-y-2">
-                        {pres.medicines.map((med) => (
-                          <div key={med.name} className="flex items-center gap-2">
-                            <span className="text-xs w-32 font-semibold">{med.name}</span>
-                            <input
-                              type="text"
-                              className="border rounded px-2 py-1 text-xs flex-1"
-                              placeholder="Enter note for this medicine"
-                              value={prescriptionNotes[pres._id]?.[med.name] || ''}
-                              onChange={e => handleNoteChange(pres._id, med.name, e.target.value)}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {pres.ocrText && (
-                    <div className="mt-2 p-2 bg-gray-100 rounded">
-                      <div className="font-medium text-xs mb-1">Extracted Text:</div>
-                      <div className="text-xs whitespace-pre-line">{pres.ocrText}</div>
-                    </div>
-                  )}
-                  {/* UI for pharmacy to list medicines and send order for confirmation */}
-                  <PharmacyOrderForm prescription={pres} />
                 </div>
               ))}
+      {/* Modal for prescription details and verify/fill step */}
+      <Modal open={!!selectedPrescription} onClose={() => setSelectedPrescription(null)}>
+        {selectedPrescription && (
+          <div>
+            <div className="mb-4">
+              <div className="font-semibold text-lg mb-2">Prescription #{selectedPrescription._id.slice(-6)}</div>
+              <div className="text-xs text-muted-foreground mb-2">Patient: {typeof selectedPrescription.patient === 'object' ? (selectedPrescription.patient?.name || selectedPrescription.patient?._id || JSON.stringify(selectedPrescription.patient)) : selectedPrescription.patient}</div>
+              {selectedPrescription.fileUrl && <PrescriptionImage fileUrl={selectedPrescription.fileUrl} />}
+            </div>
+            <div className="mb-4">
+              <div className="font-medium text-xs mb-1">Extracted Medicine (edit/confirm):</div>
+              <textarea
+                className="border rounded px-2 py-1 text-xs w-full min-h-[60px]"
+                value={extractedMedicine}
+                onChange={e => setExtractedMedicine(e.target.value)}
+              />
+            </div>
+            {/* Medicine notes UI */}
+            {Array.isArray(selectedPrescription.medicines) && selectedPrescription.medicines.length > 0 && (
+              <div className="mb-4">
+                <div className="font-medium text-xs mb-1">Doctor Notes for Medicines:</div>
+                <div className="space-y-2">
+                  {selectedPrescription.medicines.map((med) => (
+                    <div key={med.name} className="flex items-center gap-2">
+                      <span className="text-xs w-32 font-semibold">{med.name}</span>
+                      <input
+                        type="text"
+                        className="border rounded px-2 py-1 text-xs flex-1"
+                        placeholder="Enter note for this medicine"
+                        value={prescriptionNotes[selectedPrescription._id]?.[med.name] || ''}
+                        onChange={e => handleNoteChange(selectedPrescription._id, med.name, e.target.value)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setSelectedPrescription(null)}>Cancel</Button>
+              <Button
+                onClick={() => {
+                  approvePresMutation.mutate({
+                    id: selectedPrescription._id,
+                    doctorId: selectedPrescription.doctor?._id,
+                    notes: getNotesString(selectedPrescription._id),
+                    extractedMedicine,
+                    action: 'verify',
+                  });
+                  setSelectedPrescription(null);
+                }}
+                disabled={!extractedMedicine.trim() || approvePresMutation.isPending}
+              >
+                Approve & Send
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
             </div>
           ) : (
             <div>No pending prescriptions.</div>
