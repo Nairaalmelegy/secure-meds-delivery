@@ -1,4 +1,3 @@
-
 const API_BASE_URL = 'https://medilinkback-production.up.railway.app';
 
 // API client with error handling
@@ -185,6 +184,10 @@ export const prescriptionApi = {
 
 // User API functions
 export const userApi = {
+  searchDoctors: (query: string, limit = 10): Promise<{ doctors: any[], count: number }> =>
+    apiClient.get(`/api/users/search/doctor?q=${encodeURIComponent(query)}&limit=${limit}`),
+  // Public: search doctors by name or email (for patient prescription upload)
+
   getProfile: (): Promise<any> => 
     apiClient.get('/api/users/me'),
   updateProfile: (data: any): Promise<any> => 

@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Autocomplete } from '@/components/ui/autocomplete';
+import { userApi } from '@/lib/api';
+import { useQuery as useReactQuery } from '@tanstack/react-query';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, FileText, Check, X } from 'lucide-react';
@@ -10,7 +13,27 @@ import { useQuery } from '@tanstack/react-query';
 
 export default function UploadPrescription() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [doctorSearch, setDoctorSearch] = useState('');
   const [doctorId, setDoctorId] = useState('');
+  const [doctorOptions, setDoctorOptions] = useState<any[]>([]);
+  const [doctorLoading, setDoctorLoading] = useState(false);
+  // Autocomplete doctor search
+  React.useEffect(() => {
+    if (doctorSearch.length < 2) {
+      setDoctorOptions([]);
+      return;
+    }
+    setDoctorLoading(true);
+    userApi.searchDoctors(doctorSearch, 8)
+      .then(res => {
+        setDoctorOptions(res.doctors.map((doc: any) => ({
+          label: `${doc.name} (${doc.email})${doc.verifiedDoctor ? ' ✔️' : ''}`,
+          value: doc._id,
+          ...doc
+        })));
+      })
+      .finally(() => setDoctorLoading(false));
+  }, [doctorSearch]);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
@@ -109,14 +132,23 @@ export default function UploadPrescription() {
             </div>
 
             <div>
-              <Label htmlFor="doctor-id">Doctor ID (Optional)</Label>
-              <Input
-                id="doctor-id"
-                value={doctorId}
-                onChange={(e) => setDoctorId(e.target.value)}
-                placeholder="Enter doctor ID if known"
-                className="mt-2"
+              <Label htmlFor="doctor-autocomplete">Doctor (Optional)</Label>
+              <Autocomplete
+                value={doctorSearch}
+                onChange={setDoctorSearch}
+                onSelect={option => {
+                  setDoctorId(option.value);
+                  setDoctorSearch(option.label);
+                }}
+                options={doctorOptions}
+                loading={doctorLoading}
+                placeholder="Search doctor by name or email"
+                label={undefined}
+                disabled={uploading}
               />
+              {doctorId && (
+                <div className="text-xs text-muted-foreground mt-1">Selected doctor ID: {doctorId}</div>
+              )}
             </div>
 
             <Button 
