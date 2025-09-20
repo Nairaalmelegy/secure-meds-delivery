@@ -19,6 +19,7 @@ export default function AdminCommissions() {
   const [paying, setPaying] = useState<string | null>(null);
   const [commissionRate, setCommissionRate] = useState<number>(5);
   const [savingRate, setSavingRate] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
 
   // Fetch commission rate from backend (optional, fallback to 5%)
   const fetchCommissionRate = async () => {
@@ -61,6 +62,34 @@ export default function AdminCommissions() {
     await fetchCommissions();
   };
 
+
+  const [recalculating, setRecalculating] = useState(false);
+
+  const handleRecalculate = async (ids?: string[]) => {
+  const url = '/api/commissions/recalculate';
+  let body = {};
+    if (ids && ids.length > 0) {
+      body = { ids };
+    }
+    if (!window.confirm(ids && ids.length > 0 ? 'Recalculate selected commission amounts?' : 'Recalculate all commission amounts using the current rate?')) return;
+    setRecalculating(true);
+    await apiClient.post(url, body);
+    await fetchCommissions();
+    setRecalculating(false);
+  };
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelected(commissions.map(c => c._id));
+    } else {
+      setSelected([]);
+    }
+  };
+
+  const handleSelect = (id: string) => {
+    setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
   return (
     <>
       <Card className="mb-6">
@@ -83,6 +112,16 @@ export default function AdminCommissions() {
             <Button size="sm" onClick={saveCommissionRate} disabled={savingRate}>
               {savingRate ? 'Saving...' : 'Save Rate'}
             </Button>
+            <Button size="sm" variant="secondary" onClick={() => handleRecalculate()} disabled={recalculating}>
+              {recalculating ? 'Recalculating...' : 'Recalculate All Amounts'}
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => handleRecalculate(selected)} disabled={recalculating || selected.length === 0}>
+              {recalculating ? 'Recalculating...' : 'Recalculate Selected'}
+            </Button>
+            <label className="flex items-center gap-1 ml-2">
+              <input type="checkbox" checked={selected.length === commissions.length && commissions.length > 0} onChange={handleSelectAll} />
+              <span>Select All</span>
+            </label>
           </div>
         </CardContent>
       </Card>
@@ -96,6 +135,7 @@ export default function AdminCommissions() {
             <table className="w-full text-xs">
               <thead>
                 <tr>
+                  <th></th>
                   <th>Doctor</th>
                   <th>Email</th>
                   <th>Order</th>
@@ -109,6 +149,9 @@ export default function AdminCommissions() {
               <tbody>
                 {commissions.map(c => (
                   <tr key={c._id} className={c.status === 'paid' ? 'text-green-600' : ''}>
+                    <td>
+                      <input type="checkbox" checked={selected.includes(c._id)} onChange={() => handleSelect(c._id)} />
+                    </td>
                     <td>{c.doctor?.name}</td>
                     <td>{c.doctor?.email}</td>
                     <td>{c.order}</td>
