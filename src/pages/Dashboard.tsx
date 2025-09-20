@@ -17,6 +17,14 @@ interface ExtractedMedicine {
   price: number;
 }
 
+
+interface Order {
+  _id: string;
+  id?: string;
+  total?: number;
+  status: string;
+}
+
 interface Prescription {
   _id: string;
   id?: string;
@@ -34,14 +42,18 @@ export default function Dashboard() {
 
   const { user } = useAuth();
 
+
+  // Poll every 3 seconds for real-time updates
   const { data: prescriptions, isLoading: loadingPrescriptions } = useQuery({
     queryKey: ['prescriptions'],
     queryFn: prescriptionApi.getMyPrescriptions,
+    refetchInterval: 3000,
   });
 
   const { data: orders, isLoading: loadingOrders } = useQuery({
     queryKey: ['orders'],
     queryFn: orderApi.getMyOrders,
+    refetchInterval: 3000,
   });
 
 // Find prescriptions awaiting patient confirmation
@@ -50,10 +62,11 @@ const awaitingConfirm: Prescription[] = prescriptions?.filter((p: Prescription) 
 const recentPrescriptions = prescriptions?.slice(0, 3) || [];
 const recentOrders = orders?.slice(0, 3) || [];
 
-const totalSpent = orders?.reduce((sum: number, order: any) => sum + (order.total || 0), 0) || 0;
-const approvedPrescriptions = prescriptions?.filter((p: any) => p.status === 'approved').length || 0;
-const pendingOrders = orders?.filter((o: any) => o.status === 'pending').length || 0;
-const deliveredOrders = orders?.filter((o: any) => o.status === 'delivered').length || 0;
+
+const totalSpent = orders?.reduce((sum: number, order: Order) => sum + (order.total || 0), 0) || 0;
+const approvedPrescriptions = prescriptions?.filter((p: Prescription) => p.status === 'approved').length || 0;
+const pendingOrders = orders?.filter((o: Order) => o.status === 'pending').length || 0;
+const deliveredOrders = orders?.filter((o: Order) => o.status === 'delivered').length || 0;
 
 const getStatusIcon = (status: string) => {
   switch (status) {
@@ -266,7 +279,7 @@ return (
                 </div>
               ) : recentPrescriptions.length > 0 ? (
                 <div className="space-y-3">
-                  {recentPrescriptions.map((prescription: any) => (
+                  {recentPrescriptions.map((prescription: Prescription) => (
                     <div key={prescription.id} className="flex items-center justify-between p-4 border border-border/50 rounded-xl hover:bg-muted/30 transition-colors">
                       <div className="flex items-center gap-3">
                         {getStatusIcon(prescription.status)}
@@ -311,7 +324,7 @@ return (
                 </div>
               ) : recentOrders.length > 0 ? (
                 <div className="space-y-3">
-                  {recentOrders.map((order: any) => (
+                  {recentOrders.map((order: Order) => (
                     <div key={order.id} className="flex items-center justify-between p-4 border border-border/50 rounded-xl hover:bg-muted/30 transition-colors">
                       <div className="flex items-center gap-3">
                         {getStatusIcon(order.status)}

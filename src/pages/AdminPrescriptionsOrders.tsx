@@ -226,21 +226,32 @@ export default function AdminPrescriptionsOrders() {
     queryKey: ['pending-prescriptions'],
     queryFn: fetchPrescriptions,
   });
-  const { data: orders, isLoading: loadingOrders } = useQuery({
-    queryKey: ['pending-orders'],
-    queryFn: fetchOrders,
+  interface OrderItem {
+    medicine: { _id: string; name: string } | string;
+    qty: number;
+  }
+  interface FullOrder {
+    _id: string;
+    patient: string | { _id: string; name?: string };
+    items?: OrderItem[];
+    notes?: string;
+    deliveryAddress?: string;
+    status: string;
+  }
+  const { data: orders, isLoading: loadingOrders } = useQuery<FullOrder[]>({
+    queryKey: ['all-orders'],
+    queryFn: async () => apiClient.get<FullOrder[]>('/api/orders'),
+    refetchInterval: 3000, // Poll every 3 seconds for real-time updates
   });
   const approvePresMutation = useMutation({
     mutationFn: ({ id, doctorId, notes, extractedMedicines }: { id: string, doctorId?: string, notes?: string, extractedMedicines?: ExtractedMedicine[] }) =>
       approvePrescription(id, doctorId, notes, extractedMedicines),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pending-prescriptions'] }),
   });
-  const shipOrderMutation = useMutation({
-    mutationFn: (id: string) => orderApi.updateStatus(id, 'dispatched'),
+  const updateOrderStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string, status: string }) => orderApi.updateStatus(id, status),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pending-orders'] });
-      // Optionally show a toast or notification here
-      // toast({ title: 'Order shipped', description: 'Patient has been notified.' });
+      queryClient.invalidateQueries({ queryKey: ['all-orders'] });
     },
   });
 
@@ -353,25 +364,66 @@ export default function AdminPrescriptionsOrders() {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Pending Orders</CardTitle>
+          <CardTitle>All Patient Orders</CardTitle>
         </CardHeader>
         <CardContent>
           {loadingOrders ? (
             <div>Loading...</div>
-          ) : orders && orders.length > 0 ? (
-            <div className="space-y-4">
-              {orders.map((order) => (
-                <div key={order._id} className="flex items-center justify-between border-b pb-2">
-                  <div>
-                    <div className="font-semibold">Order #{order._id.slice(-6)}</div>
-                    <div className="text-xs text-muted-foreground">Patient: {typeof order.patient === 'object' ? (order.patient?.name || order.patient?._id || JSON.stringify(order.patient)) : order.patient}</div>
-                  </div>
-                  <Button size="sm" onClick={() => shipOrderMutation.mutate(order._id)} disabled={shipOrderMutation.isPending}>Ship</Button>
-                </div>
-              ))}
+          ) : Array.isArray(orders) && orders.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-xs border">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="p-2 border">Order #</th>
+                    <th className="p-2 border">Patient</th>
+                    <th className="p-2 border">Medicines</th>
+                    <th className="p-2 border">Notes</th>
+                    <th className="p-2 border">Address</th>
+                    <th className="p-2 border">Status</th>
+                    <th className="p-2 border">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map((order) => (
+                    <tr key={order._id} className="border-b">
+                      <td className="p-2 border font-semibold">{order._id.slice(-6)}</td>
+                      <td className="p-2 border">{typeof order.patient === 'object' ? (order.patient?.name || order.patient?._id || JSON.stringify(order.patient)) : order.patient}</td>
+                      <td className="p-2 border">
+                        {order.items && order.items.length > 0 ? (
+                          order.items.map((item) => (
+                            <div key={typeof item.medicine === 'object' ? item.medicine._id : item.medicine}>
+                              {typeof item.medicine === 'object' ? item.medicine.name : item.medicine} x {item.qty}
+                            </div>
+                          ))
+                        ) : (
+                          <span>-</span>
+                        )}
+                      </td>
+                      <td className="p-2 border">{order.notes || '-'}</td>
+                      <td className="p-2 border">{order.deliveryAddress || '-'}</td>
+                      <td className="p-2 border">
+                        <select
+                          value={order.status}
+                          onChange={e => updateOrderStatusMutation.mutate({ id: order._id, status: e.target.value })}
+                          className="border rounded px-2 py-1 text-xs"
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="processing">Processing</option>
+                          <option value="dispatched">Delivering</option>
+                          <option value="delivered">Delivered</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
+                      </td>
+                      <td className="p-2 border">
+                        <Button size="sm" variant="outline" onClick={() => alert(JSON.stringify(order, null, 2))}>View</Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           ) : (
-            <div>No pending orders.</div>
+            <div>No orders found.</div>
           )}
         </CardContent>
       </Card>
