@@ -152,44 +152,24 @@ export default function MedicalRecords() {
     uploadScanMutation.mutate({ file: scanFile, meta: scanMeta });
   };
 
-  // Fetch signed URLs for all scans and prescriptions when medicalRecords or prescriptions change
+  // Fetch signed URL for the scan only when the modal is opened (viewScan changes)
   useEffect(() => {
-    const fetchSignedUrls = async () => {
-      const urls: { [key: string]: string } = {};
-      // Scans
-      for (const scan of medicalRecords.scans || []) {
-        if (scan.fileUrl) {
-          const path = extractStoragePath(scan.fileUrl);
-          if (path) {
-            try {
-              const res = await fetch(`/api/users/scan/signed-url?path=${encodeURIComponent(path)}`);
-              const data = await res.json();
-              if (data.url) urls[scan.fileUrl] = data.url;
-            } catch (err) {
-              // Optionally log error
-            }
+    async function fetchSigned() {
+      if (viewScan?.fileUrl && !signedUrls[viewScan.fileUrl]) {
+        const path = viewScan.fileUrl.replace(/^\/uploads\//, '').replace(/^\//, '');
+        try {
+          const res = await fetch(`/api/users/scan/signed-url?path=${encodeURIComponent(path)}`);
+          const data = await res.json();
+          if (data.url) {
+            setSignedUrls(prev => ({ ...prev, [viewScan.fileUrl]: data.url }));
           }
+        } catch (err) {
+          // Optionally log error
         }
       }
-      // Prescriptions
-      for (const pres of (prescriptions as Prescription[] || [])) {
-        if (pres.fileUrl) {
-          const path = extractStoragePath(pres.fileUrl);
-          if (path) {
-            try {
-              const res = await fetch(`/api/users/scan/signed-url?path=${encodeURIComponent(path)}`);
-              const data = await res.json();
-              if (data.url) urls[pres.fileUrl] = data.url;
-            } catch (err) {
-              // Optionally log error
-            }
-          }
-        }
-      }
-      setSignedUrls(urls);
-    };
-    fetchSignedUrls();
-  }, [medicalRecords.scans, prescriptions]);
+    }
+    fetchSigned();
+  }, [viewScan?.fileUrl]);
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
@@ -390,18 +370,16 @@ export default function MedicalRecords() {
               <div><b>Notes:</b> {viewScan.notes}</div>
               {viewScan.fileUrl && signedUrls[viewScan.fileUrl] && (
                 <div>
+                  {/* Show PDF in iframe, otherwise show image. Fallback: show nothing if not found. */}
                   {(() => {
-                    const type = (viewScan.type || '').toLowerCase();
                     const url = signedUrls[viewScan.fileUrl];
-                    if (type.includes('pdf') || url.match(/\.pdf($|\?)/i)) {
+                    if (url.match(/\.pdf($|\?)/i)) {
                       return <iframe src={url} title="Scan PDF" className="w-full h-64 border rounded bg-white" />;
                     }
-                    if (
-                      type.includes('image') ||
-                      url.match(/\.(jpg|jpeg|png|gif|bmp|webp|svg)($|\?)/i)
-                    ) {
-                      return <img src={url} alt="Scan" className="max-w-full max-h-64 rounded border bg-white" />;
+                    if (url.match(/\.(jpg|jpeg|png|gif|bmp|webp|svg)($|\?)/i)) {
+                      return <img src={url} alt="Scan" className="max-w-full max-h-64 rounded border bg-white" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />;
                     }
+                    // fallback: try to show as image
                     return <img src={url} alt="Scan" className="max-w-full max-h-64 rounded border bg-white" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />;
                   })()}
                   <a href={signedUrls[viewScan.fileUrl]} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a>
