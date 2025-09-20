@@ -1,3 +1,23 @@
+// Types for medical records
+export interface ScanRecord {
+  fileUrl: string;
+  type?: string;
+  date?: string;
+  notes?: string;
+}
+
+export interface MedicalRecords {
+  chronicDiseases?: string[];
+  allergies?: string[];
+  pastMedications?: string[];
+  scans?: ScanRecord[];
+}
+
+export interface ScanUploadResponse {
+  message: string;
+  scan: ScanRecord;
+  user: any;
+}
 const API_BASE_URL = 'https://medilinkback-production.up.railway.app';
 
 // API client with error handling
@@ -194,6 +214,28 @@ export const prescriptionApi = {
 
 // User API functions
 export const userApi = {
+  // Upload a scan (medical record image/pdf) for current user
+  uploadScan: async (file: File, meta?: { type?: string; date?: string; notes?: string }): Promise<ScanUploadResponse> => {
+    const formData = new FormData();
+    formData.append('scan', file);
+    if (meta?.type) formData.append('type', meta.type);
+    if (meta?.date) formData.append('date', meta.date);
+    if (meta?.notes) formData.append('notes', meta.notes);
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API_BASE_URL}/api/users/me/scan`, {
+      method: 'POST',
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: formData,
+    });
+    if (!res.ok) throw new Error('Failed to upload scan');
+    return res.json();
+  },
+
+  // Update medical records (chronic diseases, allergies, past medications)
+  updateMedicalRecords: (data: MedicalRecords): Promise<any> =>
+    apiClient.put('/api/users/me/medical-records', data),
   searchDoctors: (query: string, limit = 10): Promise<{ doctors: any[], count: number }> =>
     apiClient.get(`/api/users/search/doctor?q=${encodeURIComponent(query)}&limit=${limit}`),
   // Public: search doctors by name or email (for patient prescription upload)
