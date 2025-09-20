@@ -68,37 +68,28 @@ export function Checkout() {
       // Get prescriptionId and pharmacyId from navigation state if present
       const state = location.state as { prescriptionId?: string, pharmacyId?: string } | undefined;
       const prescriptionId = state?.prescriptionId;
-      if (!prescriptionId) {
-        toast({
-          title: "Prescription error",
-          description: "Prescription ID is required. Please return to your dashboard and try again.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
       // Use a default pharmacyId (replace with your actual default pharmacy ObjectId)
       const pharmacyId = state?.pharmacyId || "652c1e0f8b3c2a0012345678";
-      const orderData = {
+      const orderData: any = {
         items: items.map(item => ({
           medicine: item.id,
           qty: item.quantity,
         })),
-        prescriptionId,
         deliveryAddress: address,
         pharmacyId,
         paymentMethod: "cod",
         phone,
         notes,
       };
-
+      // Only include prescriptionId if present
+      if (prescriptionId) {
+        orderData.prescriptionId = prescriptionId;
+      }
       await orderApi.create(orderData);
-      
       toast({
         title: "Order placed successfully",
         description: "Your order has been placed and will be processed soon",
       });
-      
       clearCart();
       navigate('/orders');
     } catch (error) {
