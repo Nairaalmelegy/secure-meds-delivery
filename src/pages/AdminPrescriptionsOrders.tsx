@@ -276,7 +276,7 @@ export default function AdminPrescriptionsOrders() {
   };
 
   return (
-    <div className="grid md:grid-cols-2 gap-8">
+    <div className="grid md:grid-rows-2 gap-8">
       <Card>
         <CardHeader>
           <CardTitle>Prescriptions to Review</CardTitle>
