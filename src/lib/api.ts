@@ -139,8 +139,15 @@ export const orderApi = {
   getById: (id: string): Promise<any> => 
     apiClient.get(`/api/orders/${id}`),
     
-  updateStatus: (id: string, status: string): Promise<any> => 
-    apiClient.put(`/api/orders/${id}/status`, { status }),
+  updateStatus: (id: string, status: string, pharmacyId?: string): Promise<any> => {
+    // If admin, pass pharmacyId in body
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const isAdmin = user && user.role === 'admin';
+    const body: any = { status };
+    if (isAdmin && pharmacyId) body.id = pharmacyId;
+    else body.id = id;
+    return apiClient.put(`/api/orders/${id}/status`, body);
+  },
 };
 
 // Prescription API functions

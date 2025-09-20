@@ -274,8 +274,13 @@ export default function AdminPrescriptionsOrders() {
       approvePrescription(id, doctorId, notes, extractedMedicines),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pending-prescriptions'] }),
   });
+  // Get main pharmacy ID for admin
+  const mainPharmacyId = orders && orders.length > 0 ? (typeof orders[0].pharmacy === 'object' ? orders[0].pharmacy?._id : orders[0].pharmacy) : undefined;
+  const user = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}') : {};
+  const isAdmin = user && user.role === 'admin';
   const updateOrderStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string, status: string }) => orderApi.updateStatus(id, status),
+    mutationFn: ({ id, status, pharmacyId }: { id: string, status: string, pharmacyId?: string }) =>
+      orderApi.updateStatus(id, status, pharmacyId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-orders'] });
     },
@@ -433,7 +438,7 @@ export default function AdminPrescriptionsOrders() {
                         <td className="p-2 border">
                           <select
                             value={order.status}
-                            onChange={e => updateOrderStatusMutation.mutate({ id: order._id, status: e.target.value })}
+                            onChange={e => updateOrderStatusMutation.mutate({ id: order._id, status: e.target.value, pharmacyId: isAdmin ? mainPharmacyId : undefined })}
                             className="border rounded px-2 py-1 text-xs"
                           >
                             <option value="pending">Pending</option>
