@@ -403,13 +403,16 @@ export default function MedicalRecords() {
                       </div>
                       <div>
                         <CardTitle className="text-lg">Prescription #{(prescriptionId || '').slice(-6)}</CardTitle>
-                        <div className="text-xs text-muted-foreground">ID: {prescriptionId}</div>
+                        <div className="text-xs text-muted-foreground">ID: {String(prescriptionId)}</div>
                         <p className="text-sm text-muted-foreground">
-                          {prescription.doctor
-                            ? typeof prescription.doctor === 'object'
-                              ? `Dr. ${prescription.doctor && (prescription.doctor.name || prescription.doctor.email || prescription.doctor._id || 'Unknown')}`
-                              : `Dr. ${prescription.doctor}`
-                            : 'Self-uploaded'}
+                          {(() => {
+                            if (!prescription.doctor) return 'Self-uploaded';
+                            if (typeof prescription.doctor === 'object') {
+                              const d = prescription.doctor;
+                              return `Dr. ${d.name || d.email || d._id || JSON.stringify(d)}`;
+                            }
+                            return `Dr. ${String(prescription.doctor)}`;
+                          })()}
                         </p>
                       </div>
                     </div>
@@ -429,9 +432,13 @@ export default function MedicalRecords() {
                         <User className="h-4 w-4" />
                         <span>
                           Verified by: Dr. {
-                            typeof prescription.verifiedBy === 'object'
-                              ? prescription.verifiedBy && (prescription.verifiedBy.name || prescription.verifiedBy.email || prescription.verifiedBy._id || 'Unknown')
-                              : prescription.verifiedBy
+                            (() => {
+                              const v = prescription.verifiedBy;
+                              if (typeof v === 'object' && v) {
+                                return v.name || v.email || v._id || JSON.stringify(v);
+                              }
+                              return String(v);
+                            })()
                           }
                         </span>
                       </div>
@@ -481,18 +488,25 @@ export default function MedicalRecords() {
               <div><b>ID:</b> {viewPrescription.id}</div>
               <div><b>Status:</b> {viewPrescription.status}</div>
               <div><b>Doctor:</b> {
-                viewPrescription?.doctor
-                  ? typeof viewPrescription.doctor === 'object'
-                    ? viewPrescription.doctor && (viewPrescription.doctor.name || viewPrescription.doctor.email || viewPrescription.doctor._id || 'Unknown')
-                    : viewPrescription.doctor
-                  : 'Self-uploaded'
+                (() => {
+                  const d = viewPrescription?.doctor;
+                  if (!d) return 'Self-uploaded';
+                  if (typeof d === 'object') {
+                    return d.name || d.email || d._id || JSON.stringify(d);
+                  }
+                  return String(d);
+                })()
               }</div>
               <div><b>Uploaded:</b> {new Date(viewPrescription.createdAt).toLocaleDateString()}</div>
               {viewPrescription?.verifiedBy && (
                 <div><b>Verified by:</b> Dr. {
-                  typeof viewPrescription.verifiedBy === 'object'
-                    ? viewPrescription.verifiedBy && (viewPrescription.verifiedBy.name || viewPrescription.verifiedBy.email || viewPrescription.verifiedBy._id || 'Unknown')
-                    : viewPrescription.verifiedBy
+                  (() => {
+                    const v = viewPrescription.verifiedBy;
+                    if (typeof v === 'object' && v) {
+                      return v.name || v.email || v._id || JSON.stringify(v);
+                    }
+                    return String(v);
+                  })()
                 }</div>
               )}
               {viewPrescription.description && <div><b>Description:</b> {viewPrescription.description}</div>}
