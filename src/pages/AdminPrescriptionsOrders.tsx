@@ -1,4 +1,30 @@
 import React, { useEffect, useState } from 'react';
+// Helper to fetch patient name by ID (with local cache)
+const patientNameCache: Record<string, string> = {};
+async function fetchPatientName(id: string): Promise<string> {
+  if (patientNameCache[id]) return patientNameCache[id];
+  try {
+    const res = await apiClient.get<{ name: string }>(`/api/users/${id}`);
+    patientNameCache[id] = res.name;
+    return res.name;
+  } catch {
+    return id;
+  }
+}
+
+// Dedicated cell component for patient name
+type PatientType = string | { _id: string; name?: string; phone?: string };
+function PatientNameCell({ patient }: { patient: PatientType }) {
+  const [name, setName] = useState<string>(typeof patient === 'object' ? (patient?.name || patient?._id || '-') : '-');
+  useEffect(() => {
+    if (typeof patient === 'string') {
+      fetchPatientName(patient).then(setName);
+    } else if (patient?.name) {
+      setName(patient.name);
+    }
+  }, [patient]);
+  return <>{name}</>;
+}
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -385,12 +411,11 @@ export default function AdminPrescriptionsOrders() {
                 </thead>
                 <tbody>
                   {orders.map((order) => {
-                    const patientName = typeof order.patient === 'object' ? (order.patient?.name || order.patient?._id || '-') : order.patient;
                     const patientPhone = typeof order.patient === 'object' ? (order.patient?.phone || '-') : '-';
                     return (
                       <tr key={order._id} className="border-b">
                         <td className="p-2 border font-semibold">{order._id.slice(-6)}</td>
-                        <td className="p-2 border">{patientName}</td>
+                        <td className="p-2 border"><PatientNameCell patient={order.patient} /></td>
                         <td className="p-2 border">{patientPhone}</td>
                         <td className="p-2 border">
                           {order.items && order.items.length > 0 ? (
