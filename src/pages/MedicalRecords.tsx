@@ -19,6 +19,21 @@ function extractStoragePath(fileUrl: string): string | null {
   return match ? match[0].replace(/^uploads\//, '') : null;
 }
 import { apiClient } from '@/lib/api';
+
+import { Dialog as RxDialog, DialogContent as RxDialogContent, DialogHeader as RxDialogHeader, DialogTitle as RxDialogTitle, DialogClose as RxDialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { FileText, Upload, Download, Search, Calendar, User, Eye, Trash2, Filter, Plus } from 'lucide-react';
+import { prescriptionApi, userApi } from '@/lib/api';
+import type { ScanRecord, MedicalRecords } from '@/lib/api';
+import React from 'react';
+
+export default function MedicalRecords() {
   // Map of original fileUrl to signed URL
   const [signedUrls, setSignedUrls] = useState<{ [key: string]: string }>({});
 
@@ -35,12 +50,14 @@ import { apiClient } from '@/lib/api';
               const res = await fetch(`/api/users/scan/signed-url?path=${encodeURIComponent(path)}`);
               const data = await res.json();
               if (data.url) urls[scan.fileUrl] = data.url;
-            } catch {}
+            } catch (err) {
+              // Optionally log error
+            }
           }
         }
       }
       // Prescriptions
-      for (const pres of (prescriptions as any[] || [])) {
+      for (const pres of (prescriptions as Prescription[] || [])) {
         if (pres.fileUrl) {
           const path = extractStoragePath(pres.fileUrl);
           if (path) {
@@ -48,7 +65,9 @@ import { apiClient } from '@/lib/api';
               const res = await fetch(`/api/users/scan/signed-url?path=${encodeURIComponent(path)}`);
               const data = await res.json();
               if (data.url) urls[pres.fileUrl] = data.url;
-            } catch {}
+            } catch (err) {
+              // Optionally log error
+            }
           }
         }
       }
@@ -56,20 +75,6 @@ import { apiClient } from '@/lib/api';
     };
     fetchSignedUrls();
   }, [medicalRecords.scans, prescriptions]);
-import { Dialog as RxDialog, DialogContent as RxDialogContent, DialogHeader as RxDialogHeader, DialogTitle as RxDialogTitle, DialogClose as RxDialogClose } from '@/components/ui/dialog';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { FileText, Upload, Download, Search, Calendar, User, Eye, Trash2, Filter, Plus } from 'lucide-react';
-import { prescriptionApi, userApi } from '@/lib/api';
-import type { ScanRecord, MedicalRecords } from '@/lib/api';
-import React from 'react';
-
-export default function MedicalRecords() {
   type Prescription = {
     id?: string;
     _id?: string;
