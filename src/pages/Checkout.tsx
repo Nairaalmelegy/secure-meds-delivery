@@ -78,7 +78,7 @@ export function Checkout() {
         return;
       }
       // Use a default pharmacyId (replace with your actual default pharmacy ObjectId)
-      const pharmacyId = state?.pharmacyId || "1";
+      const pharmacyId = state?.pharmacyId || "652c1e0f8b3c2a0012345678";
       const orderData = {
         items: items.map(item => ({
           medicine: item.id,
