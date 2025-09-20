@@ -21,7 +21,7 @@ import { Progress } from '@/components/ui/progress';
 import { Plus, FileText, ShoppingCart, Activity, Clock, CheckCircle, Package, TrendingUp, Heart, Pill } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { prescriptionApi, orderApi } from '@/lib/api';
+import { prescriptionApi, orderApi, apiClient } from '@/lib/api';
 
 interface ExtractedMedicine {
   medicine: string;
@@ -49,8 +49,11 @@ interface Prescription {
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
+  // Patient cancel order mutation for overview
   const cancelOrderMutation = useMutation({
-    mutationFn: (id: string) => orderApi.updateStatus(id, 'cancelled'),
+    mutationFn: async (id: string) => {
+      return apiClient.put(`/api/orders/${id}/cancel`, { id });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
@@ -340,7 +343,7 @@ return (
                 <div className="space-y-3">
                   {recentOrders.map((order: Order) => {
                     const isCancelled = order.status === 'cancelled';
-                    const canCancel = order.status === 'processing';
+                    const canCancel = order.status === 'processing' || order.status === 'pending';
                     return (
                       <div
                         key={order.id}
