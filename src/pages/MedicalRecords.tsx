@@ -485,14 +485,18 @@ export default function MedicalRecords() {
           </RxDialogHeader>
           {viewPrescription && (
             <div className="space-y-3">
-              <div><b>ID:</b> {viewPrescription.id}</div>
-              <div><b>Status:</b> {viewPrescription.status}</div>
+              <div><b>ID:</b> {String(viewPrescription.id)}</div>
+              <div><b>Status:</b> {String(viewPrescription.status)}</div>
               <div><b>Doctor:</b> {
                 (() => {
                   const d = viewPrescription?.doctor;
                   if (!d) return 'Self-uploaded';
                   if (typeof d === 'object') {
-                    return d.name || d.email || d._id || JSON.stringify(d);
+                    if (d === null) return 'Unknown';
+                    if (typeof d.name === 'string') return d.name;
+                    if (typeof d.email === 'string') return d.email;
+                    if (typeof d._id === 'string') return d._id;
+                    return JSON.stringify(d);
                   }
                   return String(d);
                 })()
@@ -502,8 +506,11 @@ export default function MedicalRecords() {
                 <div><b>Verified by:</b> Dr. {
                   (() => {
                     const v = viewPrescription.verifiedBy;
-                    if (typeof v === 'object' && v) {
-                      return v.name || v.email || v._id || JSON.stringify(v);
+                    if (typeof v === 'object' && v !== null) {
+                      if (typeof v.name === 'string') return v.name;
+                      if (typeof v.email === 'string') return v.email;
+                      if (typeof v._id === 'string') return v._id;
+                      return JSON.stringify(v);
                     }
                     return String(v);
                   })()
