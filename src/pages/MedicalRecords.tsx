@@ -333,9 +333,24 @@ export default function MedicalRecords() {
               <div><b>Notes:</b> {viewScan.notes}</div>
               {viewScan.fileUrl && (
                 <div>
-                  {viewScan.fileUrl.match(/\.pdf$/i)
-                    ? <iframe src={viewScan.fileUrl} title="Scan PDF" className="w-full h-64 border rounded" />
-                    : <img src={viewScan.fileUrl} alt="Scan" className="max-w-full max-h-64 rounded border" />}
+                  {/* Robust file type handling: prefer scan.type, fallback to extension, default to image */}
+                  {(() => {
+                    const type = (viewScan.type || '').toLowerCase();
+                    const url = viewScan.fileUrl;
+                    // If type or extension indicates PDF
+                    if (type.includes('pdf') || url.match(/\.pdf($|\?)/i)) {
+                      return <iframe src={url} title="Scan PDF" className="w-full h-64 border rounded bg-white" />;
+                    }
+                    // If type or extension indicates image
+                    if (
+                      type.includes('image') ||
+                      url.match(/\.(jpg|jpeg|png|gif|bmp|webp|svg)($|\?)/i)
+                    ) {
+                      return <img src={url} alt="Scan" className="max-w-full max-h-64 rounded border bg-white" />;
+                    }
+                    // Fallback: try image, if fails user can open in new tab
+                    return <img src={url} alt="Scan" className="max-w-full max-h-64 rounded border bg-white" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />;
+                  })()}
                   <a href={viewScan.fileUrl} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a>
                 </div>
               )}

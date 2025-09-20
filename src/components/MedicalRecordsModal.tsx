@@ -47,7 +47,9 @@ export default function MedicalRecordsModal({ open, onOpenChange, patientId }: M
               const res = await fetch(`/api/users/scan/signed-url?path=${encodeURIComponent(path)}`);
               const data = await res.json();
               if (data.url) urls[scan.fileUrl] = data.url;
-            } catch {}
+            } catch {
+              // Ignore errors fetching signed URL
+            }
           }
         }
       }
