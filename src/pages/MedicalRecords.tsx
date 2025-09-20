@@ -407,7 +407,7 @@ export default function MedicalRecords() {
                         <p className="text-sm text-muted-foreground">
                           {prescription.doctor
                             ? typeof prescription.doctor === 'object'
-                              ? `Dr. ${prescription.doctor?.name || prescription.doctor?.email || prescription.doctor?._id || 'Unknown'}`
+                              ? `Dr. ${prescription.doctor && (prescription.doctor.name || prescription.doctor.email || prescription.doctor._id || 'Unknown')}`
                               : `Dr. ${prescription.doctor}`
                             : 'Self-uploaded'}
                         </p>
@@ -430,7 +430,7 @@ export default function MedicalRecords() {
                         <span>
                           Verified by: Dr. {
                             typeof prescription.verifiedBy === 'object'
-                              ? prescription.verifiedBy?.name || prescription.verifiedBy?.email || prescription.verifiedBy?._id || 'Unknown'
+                              ? prescription.verifiedBy && (prescription.verifiedBy.name || prescription.verifiedBy.email || prescription.verifiedBy._id || 'Unknown')
                               : prescription.verifiedBy
                           }
                         </span>
@@ -483,7 +483,7 @@ export default function MedicalRecords() {
               <div><b>Doctor:</b> {
                 viewPrescription?.doctor
                   ? typeof viewPrescription.doctor === 'object'
-                    ? viewPrescription.doctor?.name || viewPrescription.doctor?.email || viewPrescription.doctor?._id || 'Unknown'
+                    ? viewPrescription.doctor && (viewPrescription.doctor.name || viewPrescription.doctor.email || viewPrescription.doctor._id || 'Unknown')
                     : viewPrescription.doctor
                   : 'Self-uploaded'
               }</div>
@@ -491,7 +491,7 @@ export default function MedicalRecords() {
               {viewPrescription?.verifiedBy && (
                 <div><b>Verified by:</b> Dr. {
                   typeof viewPrescription.verifiedBy === 'object'
-                    ? viewPrescription.verifiedBy?.name || viewPrescription.verifiedBy?.email || viewPrescription.verifiedBy?._id || 'Unknown'
+                    ? viewPrescription.verifiedBy && (viewPrescription.verifiedBy.name || viewPrescription.verifiedBy.email || viewPrescription.verifiedBy._id || 'Unknown')
                     : viewPrescription.verifiedBy
                 }</div>
               )}
