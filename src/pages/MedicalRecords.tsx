@@ -368,23 +368,24 @@ export default function MedicalRecords() {
               <div><b>Type:</b> {viewScan.type}</div>
               <div><b>Date:</b> {viewScan.date ? new Date(viewScan.date).toLocaleDateString() : ''}</div>
               <div><b>Notes:</b> {viewScan.notes}</div>
-              {viewScan.fileUrl && signedUrls[viewScan.fileUrl] && (
-                <div>
-                  {/* Show PDF in iframe, otherwise show image. Fallback: show nothing if not found. */}
-                  {(() => {
-                    const url = signedUrls[viewScan.fileUrl];
-                    if (url.match(/\.pdf($|\?)/i)) {
-                      return <iframe src={url} title="Scan PDF" className="w-full h-64 border rounded bg-white" />;
-                    }
-                    if (url.match(/\.(jpg|jpeg|png|gif|bmp|webp|svg)($|\?)/i)) {
-                      return <img src={url} alt="Scan" className="max-w-full max-h-64 rounded border bg-white" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />;
-                    }
-                    // fallback: try to show as image
-                    return <img src={url} alt="Scan" className="max-w-full max-h-64 rounded border bg-white" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />;
-                  })()}
-                  <a href={signedUrls[viewScan.fileUrl]} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a>
-                </div>
-              )}
+              {(() => {
+                // Debug output
+                console.log('viewScan.fileUrl:', viewScan.fileUrl);
+                console.log('signedUrls[viewScan.fileUrl]:', signedUrls[viewScan.fileUrl]);
+                if (viewScan.fileUrl && signedUrls[viewScan.fileUrl]) {
+                  const url = signedUrls[viewScan.fileUrl];
+                  if (url.match(/\.pdf($|\?)/i)) {
+                    return <div><iframe src={url} title="Scan PDF" className="w-full h-64 border rounded bg-white" /><a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a></div>;
+                  }
+                  if (url.match(/\.(jpg|jpeg|png|gif|bmp|webp|svg)($|\?)/i)) {
+                    return <div><img src={url} alt="Scan" className="max-w-full max-h-64 rounded border bg-white" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} /><a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a></div>;
+                  }
+                  // fallback: try to show as image
+                  return <div><img src={url} alt="Scan" className="max-w-full max-h-64 rounded border bg-white" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} /><a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a></div>;
+                }
+                // Fallback: show a message if no image is available
+                return <div className="text-destructive">No image found for this scan (fileUrl: {String(viewScan.fileUrl)})</div>;
+              })()}
             </div>
           )}
         </DialogContent>
