@@ -6,6 +6,7 @@ const sidebarLinks = [
   { to: '/admin-dashboard/applied-doctors', label: 'Applied Doctors' },
   { to: '/admin-dashboard/prescriptions-orders', label: 'Prescriptions & Orders' },
   { to: '/admin-dashboard/inventory', label: 'Inventory' },
+  { to: '/admin-dashboard/commissions', label: 'Commissions' },
   { to: '/admin-dashboard/settings', label: 'Settings' },
 ];
 

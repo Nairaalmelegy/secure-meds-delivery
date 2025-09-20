@@ -1,3 +1,4 @@
+import AdminCommissions from './pages/AdminCommissions';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -79,6 +80,7 @@ const App = () => (
                 <Route path="inventory" element={<AdminInventory />} />
                 <Route path="applied-doctors" element={<AdminAppliedDoctors />} />
                 <Route path="prescriptions-orders" element={<AdminPrescriptionsOrders />} />
+                <Route path="commissions" element={<AdminCommissions />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
               
