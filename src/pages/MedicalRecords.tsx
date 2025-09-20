@@ -121,7 +121,8 @@ export default function MedicalRecords() {
   };
 
   type Prescription = {
-    id: string;
+    id?: string;
+    _id?: string;
     doctor?: string;
     status: string;
     createdAt: string;
@@ -371,7 +372,7 @@ export default function MedicalRecords() {
           <div className="flex flex-col gap-6">
             {filteredPrescriptions.map((prescription) => {
                 // Ensure we always have a valid id for actions
-                const prescriptionId = prescription.id || prescription.id;
+                const prescriptionId = prescription._id || prescription.id;
                 return (
               <Card key={prescriptionId} className="border-0 shadow-card bg-card/50 backdrop-blur-sm hover:shadow-lg transition-shadow overflow-visible">
                 <CardHeader>
