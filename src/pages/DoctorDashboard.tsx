@@ -111,7 +111,16 @@ export default function DoctorDashboard() {
         return;
       }
       const result = await doctorApi.getPatientByNationalId(searchQuery.trim());
-      setPatientResult(result.patient as User);
+      // Ensure patientResult has an id field (map _id to id if needed)
+      const patient = result.patient;
+      if (patient) {
+        setPatientResult({
+          ...patient,
+          id: patient.id || patient._id,
+        });
+      } else {
+        setPatientResult(null);
+      }
     } catch (err) {
       setSearchError((err as Error)?.message || 'Patient not found');
     } finally {
