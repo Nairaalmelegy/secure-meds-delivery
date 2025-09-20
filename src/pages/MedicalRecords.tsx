@@ -34,47 +34,17 @@ import type { ScanRecord, MedicalRecords } from '@/lib/api';
 import React from 'react';
 
 export default function MedicalRecords() {
+
+  // ...existing state declarations...
+
+  // (Removed duplicate declarations here)
+
   // Map of original fileUrl to signed URL
   const [signedUrls, setSignedUrls] = useState<{ [key: string]: string }>({});
 
-  // Fetch signed URLs for all scans and prescriptions when medicalRecords or prescriptions change
-  useEffect(() => {
-    const fetchSignedUrls = async () => {
-      const urls: { [key: string]: string } = {};
-      // Scans
-      for (const scan of medicalRecords.scans || []) {
-        if (scan.fileUrl) {
-          const path = extractStoragePath(scan.fileUrl);
-          if (path) {
-            try {
-              const res = await fetch(`/api/users/scan/signed-url?path=${encodeURIComponent(path)}`);
-              const data = await res.json();
-              if (data.url) urls[scan.fileUrl] = data.url;
-            } catch (err) {
-              // Optionally log error
-            }
-          }
-        }
-      }
-      // Prescriptions
-      for (const pres of (prescriptions as Prescription[] || [])) {
-        if (pres.fileUrl) {
-          const path = extractStoragePath(pres.fileUrl);
-          if (path) {
-            try {
-              const res = await fetch(`/api/users/scan/signed-url?path=${encodeURIComponent(path)}`);
-              const data = await res.json();
-              if (data.url) urls[pres.fileUrl] = data.url;
-            } catch (err) {
-              // Optionally log error
-            }
-          }
-        }
-      }
-      setSignedUrls(urls);
-    };
-    fetchSignedUrls();
-  }, [medicalRecords.scans, prescriptions]);
+  // ...other hooks and state...
+
+  // (Move fetching signedUrls below all state and query declarations)
   type Prescription = {
     id?: string;
     _id?: string;
@@ -181,6 +151,45 @@ export default function MedicalRecords() {
     if (!scanFile) return;
     uploadScanMutation.mutate({ file: scanFile, meta: scanMeta });
   };
+
+  // Fetch signed URLs for all scans and prescriptions when medicalRecords or prescriptions change
+  useEffect(() => {
+    const fetchSignedUrls = async () => {
+      const urls: { [key: string]: string } = {};
+      // Scans
+      for (const scan of medicalRecords.scans || []) {
+        if (scan.fileUrl) {
+          const path = extractStoragePath(scan.fileUrl);
+          if (path) {
+            try {
+              const res = await fetch(`/api/users/scan/signed-url?path=${encodeURIComponent(path)}`);
+              const data = await res.json();
+              if (data.url) urls[scan.fileUrl] = data.url;
+            } catch (err) {
+              // Optionally log error
+            }
+          }
+        }
+      }
+      // Prescriptions
+      for (const pres of (prescriptions as Prescription[] || [])) {
+        if (pres.fileUrl) {
+          const path = extractStoragePath(pres.fileUrl);
+          if (path) {
+            try {
+              const res = await fetch(`/api/users/scan/signed-url?path=${encodeURIComponent(path)}`);
+              const data = await res.json();
+              if (data.url) urls[pres.fileUrl] = data.url;
+            } catch (err) {
+              // Optionally log error
+            }
+          }
+        }
+      }
+      setSignedUrls(urls);
+    };
+    fetchSignedUrls();
+  }, [medicalRecords.scans, prescriptions]);
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
