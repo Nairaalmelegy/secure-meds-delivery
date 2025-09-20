@@ -10,12 +10,22 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { FileText, Upload, Download, Search, Calendar, User, Eye, Trash2, Filter, Plus } from 'lucide-react';
 import { prescriptionApi, userApi } from '@/lib/api';
-import type { MedicalRecords, ScanRecord } from '@/lib/api';
+import type { ScanRecord, MedicalRecords } from '@/lib/api';
 import React from 'react';
 
 export default function MedicalRecords() {
+  type Prescription = {
+    id?: string;
+    _id?: string;
+    doctor?: string | { _id?: string; name?: string; email?: string } | null;
+    status: string;
+    createdAt: string;
+    verifiedBy?: string | { _id?: string; name?: string; email?: string } | null;
+    description?: string;
+    fileUrl?: string;
+  };
   const [viewScan, setViewScan] = useState<ScanRecord | null>(null);
-  const [viewPrescription, setViewPrescription] = useState<any | null>(null);
+  const [viewPrescription, setViewPrescription] = useState<Prescription | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [editMode, setEditMode] = useState(false);
@@ -120,19 +130,16 @@ export default function MedicalRecords() {
     return variants[status] || 'bg-muted/10 text-muted-foreground border-muted/20';
   };
 
-  type Prescription = {
-    id?: string;
-    _id?: string;
-    doctor?: string;
-    status: string;
-    createdAt: string;
-    verifiedBy?: string;
-    description?: string;
-  };
+  // ...existing code...
   const filteredPrescriptions = (prescriptions as Prescription[] | undefined)?.filter((prescription) => {
     const matchesSearch = !searchQuery || 
       prescription.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      prescription.doctor?.toLowerCase().includes(searchQuery.toLowerCase());
+      (typeof prescription.doctor === 'string'
+        ? prescription.doctor.toLowerCase().includes(searchQuery.toLowerCase())
+        : typeof prescription.doctor === 'object' && prescription.doctor?.name &&
+          typeof prescription.doctor.name === 'string'
+          ? prescription.doctor.name.toLowerCase().includes(searchQuery.toLowerCase())
+          : false);
     const matchesFilter = filterStatus === 'all' || prescription.status === filterStatus;
     return matchesSearch && matchesFilter;
   }) || [];
@@ -152,12 +159,25 @@ export default function MedicalRecords() {
         description: "Prescription has been removed from your records",
       });
       queryClient.invalidateQueries({ queryKey: ['prescriptions'] });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      let message = "Failed to delete prescription";
+      if (isErrorWithMessage(error)) {
+        message = error.message;
+      }
       toast({
         title: "Error",
-        description: error?.message || "Failed to delete prescription",
+        description: message,
         variant: "destructive",
       });
+    }
+
+    function isErrorWithMessage(err: unknown): err is { message: string } {
+      return (
+        typeof err === 'object' &&
+        err !== null &&
+        'message' in err &&
+        typeof (err as { message: unknown }).message === 'string'
+      );
     }
   };
 
@@ -385,7 +405,11 @@ export default function MedicalRecords() {
                         <CardTitle className="text-lg">Prescription #{(prescriptionId || '').slice(-6)}</CardTitle>
                         <div className="text-xs text-muted-foreground">ID: {prescriptionId}</div>
                         <p className="text-sm text-muted-foreground">
-                          {prescription.doctor ? `Dr. ${prescription.doctor}` : 'Self-uploaded'}
+                          {prescription.doctor
+                            ? typeof prescription.doctor === 'object'
+                              ? `Dr. ${prescription.doctor?.name || prescription.doctor?.email || prescription.doctor?._id || 'Unknown'}`
+                              : `Dr. ${prescription.doctor}`
+                            : 'Self-uploaded'}
                         </p>
                       </div>
                     </div>
@@ -403,7 +427,13 @@ export default function MedicalRecords() {
                     {prescription.verifiedBy && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <User className="h-4 w-4" />
-                        <span>Verified by: Dr. {prescription.verifiedBy}</span>
+                        <span>
+                          Verified by: Dr. {
+                            typeof prescription.verifiedBy === 'object'
+                              ? prescription.verifiedBy?.name || prescription.verifiedBy?.email || prescription.verifiedBy?._id || 'Unknown'
+                              : prescription.verifiedBy
+                          }
+                        </span>
                       </div>
                     )}
                     {prescription.description && (
@@ -450,9 +480,21 @@ export default function MedicalRecords() {
             <div className="space-y-3">
               <div><b>ID:</b> {viewPrescription.id}</div>
               <div><b>Status:</b> {viewPrescription.status}</div>
-              <div><b>Doctor:</b> {viewPrescription.doctor || 'Self-uploaded'}</div>
+              <div><b>Doctor:</b> {
+                viewPrescription?.doctor
+                  ? typeof viewPrescription.doctor === 'object'
+                    ? viewPrescription.doctor?.name || viewPrescription.doctor?.email || viewPrescription.doctor?._id || 'Unknown'
+                    : viewPrescription.doctor
+                  : 'Self-uploaded'
+              }</div>
               <div><b>Uploaded:</b> {new Date(viewPrescription.createdAt).toLocaleDateString()}</div>
-              {viewPrescription.verifiedBy && <div><b>Verified by:</b> Dr. {viewPrescription.verifiedBy}</div>}
+              {viewPrescription?.verifiedBy && (
+                <div><b>Verified by:</b> Dr. {
+                  typeof viewPrescription.verifiedBy === 'object'
+                    ? viewPrescription.verifiedBy?.name || viewPrescription.verifiedBy?.email || viewPrescription.verifiedBy?._id || 'Unknown'
+                    : viewPrescription.verifiedBy
+                }</div>
+              )}
               {viewPrescription.description && <div><b>Description:</b> {viewPrescription.description}</div>}
               {viewPrescription.fileUrl && (
                 <div>
