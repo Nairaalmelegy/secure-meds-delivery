@@ -93,14 +93,18 @@ export function PharmacyOrderForm({ prescription }: PharmacyOrderFormProps) {
       if (items.length === 0) throw new Error('Select at least one medicine');
       if (!deliveryAddress.trim()) throw new Error('Delivery address is required');
       if (!pharmacyId) throw new Error('Pharmacy selection is required');
-      await orderApi.create({
+      const orderData: any = {
         items,
-        prescriptionId: prescription._id,
         deliveryAddress,
         pharmacyId,
         paymentMethod: 'cash',
         patientId: typeof prescription.patient === 'object' ? prescription.patient._id : prescription.patient,
-      });
+      };
+      // Only include prescriptionId if it is a real value (not empty string/undefined/null)
+      if (prescription._id) {
+        orderData.prescriptionId = prescription._id;
+      }
+      await orderApi.create(orderData);
       toast({ title: 'Order sent for confirmation!' });
       setSelectedMedicines([]);
       setDeliveryAddress('');
