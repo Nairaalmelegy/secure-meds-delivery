@@ -369,8 +369,11 @@ export default function MedicalRecords() {
           </div>
         ) : filteredPrescriptions.length > 0 ? (
           <div className="flex flex-col gap-6">
-            {filteredPrescriptions.map((prescription) => (
-              <Card key={prescription.id} className="border-0 shadow-card bg-card/50 backdrop-blur-sm hover:shadow-lg transition-shadow overflow-visible">
+            {filteredPrescriptions.map((prescription) => {
+                // Ensure we always have a valid id for actions
+                const prescriptionId = prescription.id || prescription.id;
+                return (
+              <Card key={prescriptionId} className="border-0 shadow-card bg-card/50 backdrop-blur-sm hover:shadow-lg transition-shadow overflow-visible">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
@@ -378,8 +381,8 @@ export default function MedicalRecords() {
                         <FileText className="h-6 w-6 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-lg">Prescription #{prescription.id?.slice(-6)}</CardTitle>
-                        <div className="text-xs text-muted-foreground">ID: {prescription.id}</div>
+                        <CardTitle className="text-lg">Prescription #{(prescriptionId || '').slice(-6)}</CardTitle>
+                        <div className="text-xs text-muted-foreground">ID: {prescriptionId}</div>
                         <p className="text-sm text-muted-foreground">
                           {prescription.doctor ? `Dr. ${prescription.doctor}` : 'Self-uploaded'}
                         </p>
@@ -415,14 +418,14 @@ export default function MedicalRecords() {
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        onClick={() => handleDownload(prescription.id)}
+                        onClick={() => handleDownload(prescriptionId)}
                       >
                         <Download className="h-4 w-4" />
                       </Button>
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        onClick={() => handleDelete(prescription.id)}
+                        onClick={() => handleDelete(prescriptionId)}
                         className="text-destructive hover:text-destructive"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -431,7 +434,8 @@ export default function MedicalRecords() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            );
+            })}
       {/* Prescription Details Modal */}
       <RxDialog open={!!viewPrescription} onOpenChange={open => !open && setViewPrescription(null)}>
         <RxDialogContent className="max-w-lg">
