@@ -169,7 +169,7 @@ export default function MedicalRecords() {
       }
     }
     fetchSigned();
-  }, [viewScan?.fileUrl]);
+  }, [viewScan?.fileUrl, signedUrls]);
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
