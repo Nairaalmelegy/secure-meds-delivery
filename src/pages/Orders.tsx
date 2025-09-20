@@ -178,9 +178,20 @@ export default function Orders() {
                     <div className="text-sm text-muted-foreground">
                       Order Status: {order.status}
                     </div>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to={`/orders/${order.id}`}>View Details</Link>
-                    </Button>
+                    {order.status === 'processing' ? (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        disabled={confirmMutation.isPending}
+                        onClick={() => confirmMutation.mutate({ id: String(order.id), action: 'reject' })}
+                      >
+                        Cancel
+                      </Button>
+                    ) : (
+                      <Button variant="outline" size="sm" disabled>
+                        Cancel
+                      </Button>
+                    )}
                   </div>
                 </div>
               </CardContent>
