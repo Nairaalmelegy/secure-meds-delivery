@@ -12,7 +12,50 @@
     return String(person);
   };
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+// Helper to extract the storage path from a Supabase fileUrl
+function extractStoragePath(fileUrl: string): string | null {
+  const match = fileUrl.match(/(?:uploads\/)?(scans|prescriptions)\/[\w\-.]+/i);
+  return match ? match[0].replace(/^uploads\//, '') : null;
+}
+import { apiClient } from '@/lib/api';
+  // Map of original fileUrl to signed URL
+  const [signedUrls, setSignedUrls] = useState<{ [key: string]: string }>({});
+
+  // Fetch signed URLs for all scans and prescriptions when medicalRecords or prescriptions change
+  useEffect(() => {
+    const fetchSignedUrls = async () => {
+      const urls: { [key: string]: string } = {};
+      // Scans
+      for (const scan of medicalRecords.scans || []) {
+        if (scan.fileUrl) {
+          const path = extractStoragePath(scan.fileUrl);
+          if (path) {
+            try {
+              const res = await fetch(`/api/users/scan/signed-url?path=${encodeURIComponent(path)}`);
+              const data = await res.json();
+              if (data.url) urls[scan.fileUrl] = data.url;
+            } catch {}
+          }
+        }
+      }
+      // Prescriptions
+      for (const pres of (prescriptions as any[] || [])) {
+        if (pres.fileUrl) {
+          const path = extractStoragePath(pres.fileUrl);
+          if (path) {
+            try {
+              const res = await fetch(`/api/users/scan/signed-url?path=${encodeURIComponent(path)}`);
+              const data = await res.json();
+              if (data.url) urls[pres.fileUrl] = data.url;
+            } catch {}
+          }
+        }
+      }
+      setSignedUrls(urls);
+    };
+    fetchSignedUrls();
+  }, [medicalRecords.scans, prescriptions]);
 import { Dialog as RxDialog, DialogContent as RxDialogContent, DialogHeader as RxDialogHeader, DialogTitle as RxDialogTitle, DialogClose as RxDialogClose } from '@/components/ui/dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -331,27 +374,23 @@ export default function MedicalRecords() {
               <div><b>Type:</b> {viewScan.type}</div>
               <div><b>Date:</b> {viewScan.date ? new Date(viewScan.date).toLocaleDateString() : ''}</div>
               <div><b>Notes:</b> {viewScan.notes}</div>
-              {viewScan.fileUrl && (
+              {viewScan.fileUrl && signedUrls[viewScan.fileUrl] && (
                 <div>
-                  {/* Robust file type handling: prefer scan.type, fallback to extension, default to image */}
                   {(() => {
                     const type = (viewScan.type || '').toLowerCase();
-                    const url = viewScan.fileUrl;
-                    // If type or extension indicates PDF
+                    const url = signedUrls[viewScan.fileUrl];
                     if (type.includes('pdf') || url.match(/\.pdf($|\?)/i)) {
                       return <iframe src={url} title="Scan PDF" className="w-full h-64 border rounded bg-white" />;
                     }
-                    // If type or extension indicates image
                     if (
                       type.includes('image') ||
                       url.match(/\.(jpg|jpeg|png|gif|bmp|webp|svg)($|\?)/i)
                     ) {
                       return <img src={url} alt="Scan" className="max-w-full max-h-64 rounded border bg-white" />;
                     }
-                    // Fallback: try image, if fails user can open in new tab
                     return <img src={url} alt="Scan" className="max-w-full max-h-64 rounded border bg-white" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />;
                   })()}
-                  <a href={viewScan.fileUrl} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a>
+                  <a href={signedUrls[viewScan.fileUrl]} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a>
                 </div>
               )}
             </div>
@@ -506,12 +545,12 @@ export default function MedicalRecords() {
                 <div><b>Verified by:</b> Dr. {renderPerson(viewPrescription.verifiedBy)}</div>
               )}
               {viewPrescription.description && <div><b>Description:</b> {viewPrescription.description}</div>}
-              {viewPrescription.fileUrl && (
+              {viewPrescription.fileUrl && signedUrls[viewPrescription.fileUrl] && (
                 <div>
-                  {viewPrescription.fileUrl.match(/\.pdf$/i)
-                    ? <iframe src={viewPrescription.fileUrl} title="Prescription PDF" className="w-full h-64 border rounded" />
-                    : <img src={viewPrescription.fileUrl} alt="Prescription" className="w-full max-h-96 object-contain rounded border bg-white" />}
-                  <a href={viewPrescription.fileUrl} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a>
+                  {signedUrls[viewPrescription.fileUrl].match(/\.pdf$/i)
+                    ? <iframe src={signedUrls[viewPrescription.fileUrl]} title="Prescription PDF" className="w-full h-64 border rounded" />
+                    : <img src={signedUrls[viewPrescription.fileUrl]} alt="Prescription" className="w-full max-h-96 object-contain rounded border bg-white" />}
+                  <a href={signedUrls[viewPrescription.fileUrl]} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a>
                 </div>
               )}
             </div>
