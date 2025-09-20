@@ -1,5 +1,7 @@
 
 import { useState, useRef } from 'react';
+import { Dialog as RxDialog, DialogContent as RxDialogContent, DialogHeader as RxDialogHeader, DialogTitle as RxDialogTitle, DialogClose as RxDialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,6 +14,8 @@ import type { MedicalRecords, ScanRecord } from '@/lib/api';
 import React from 'react';
 
 export default function MedicalRecords() {
+  const [viewScan, setViewScan] = useState<ScanRecord | null>(null);
+  const [viewPrescription, setViewPrescription] = useState<any | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [editMode, setEditMode] = useState(false);
@@ -275,9 +279,35 @@ export default function MedicalRecords() {
                   <div className="font-semibold">{scan.type || 'Scan'}</div>
                   <div className="text-sm text-muted-foreground">{scan.date ? new Date(scan.date).toLocaleDateString() : ''}</div>
                   <div className="text-xs text-muted-foreground">{scan.notes}</div>
-                  <a href={scan.fileUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline flex items-center gap-1"><Eye className="h-4 w-4" />View</a>
+                  <button type="button" className="text-primary underline flex items-center gap-1" onClick={() => setViewScan(scan)}><Eye className="h-4 w-4" />View</button>
                 </div>
               ))}
+      {/* Scan Details Modal */}
+      <Dialog open={!!viewScan} onOpenChange={open => !open && setViewScan(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Scan Details</DialogTitle>
+            <DialogClose asChild>
+              <button className="absolute top-2 right-2">×</button>
+            </DialogClose>
+          </DialogHeader>
+          {viewScan && (
+            <div className="space-y-3">
+              <div><b>Type:</b> {viewScan.type}</div>
+              <div><b>Date:</b> {viewScan.date ? new Date(viewScan.date).toLocaleDateString() : ''}</div>
+              <div><b>Notes:</b> {viewScan.notes}</div>
+              {viewScan.fileUrl && (
+                <div>
+                  {viewScan.fileUrl.match(/\.pdf$/i)
+                    ? <iframe src={viewScan.fileUrl} title="Scan PDF" className="w-full h-64 border rounded" />
+                    : <img src={viewScan.fileUrl} alt="Scan" className="max-w-full max-h-64 rounded border" />}
+                  <a href={viewScan.fileUrl} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
             </div>
           </CardContent>
         </Card>
@@ -348,6 +378,7 @@ export default function MedicalRecords() {
                       </div>
                       <div>
                         <CardTitle className="text-lg">Prescription #{prescription.id?.slice(-6)}</CardTitle>
+                        <div className="text-xs text-muted-foreground">ID: {prescription.id}</div>
                         <p className="text-sm text-muted-foreground">
                           {prescription.doctor ? `Dr. ${prescription.doctor}` : 'Self-uploaded'}
                         </p>
@@ -364,22 +395,19 @@ export default function MedicalRecords() {
                       <Calendar className="h-4 w-4" />
                       <span>Uploaded: {new Date(prescription.createdAt).toLocaleDateString()}</span>
                     </div>
-                    
                     {prescription.verifiedBy && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <User className="h-4 w-4" />
                         <span>Verified by: Dr. {prescription.verifiedBy}</span>
                       </div>
                     )}
-
                     {prescription.description && (
                       <p className="text-sm text-muted-foreground line-clamp-2">
                         {prescription.description}
                       </p>
                     )}
-
                     <div className="flex gap-2 pt-3">
-                      <Button variant="outline" size="sm" className="flex-1">
+                      <Button variant="outline" size="sm" className="flex-1" onClick={() => setViewPrescription(prescription)}>
                         <Eye className="h-4 w-4 mr-2" />
                         View
                       </Button>
@@ -403,6 +431,35 @@ export default function MedicalRecords() {
                 </CardContent>
               </Card>
             ))}
+      {/* Prescription Details Modal */}
+      <RxDialog open={!!viewPrescription} onOpenChange={open => !open && setViewPrescription(null)}>
+        <RxDialogContent className="max-w-lg">
+          <RxDialogHeader>
+            <RxDialogTitle>Prescription Details</RxDialogTitle>
+            <RxDialogClose asChild>
+              <button className="absolute top-2 right-2">×</button>
+            </RxDialogClose>
+          </RxDialogHeader>
+          {viewPrescription && (
+            <div className="space-y-3">
+              <div><b>ID:</b> {viewPrescription.id}</div>
+              <div><b>Status:</b> {viewPrescription.status}</div>
+              <div><b>Doctor:</b> {viewPrescription.doctor || 'Self-uploaded'}</div>
+              <div><b>Uploaded:</b> {new Date(viewPrescription.createdAt).toLocaleDateString()}</div>
+              {viewPrescription.verifiedBy && <div><b>Verified by:</b> Dr. {viewPrescription.verifiedBy}</div>}
+              {viewPrescription.description && <div><b>Description:</b> {viewPrescription.description}</div>}
+              {viewPrescription.fileUrl && (
+                <div>
+                  {viewPrescription.fileUrl.match(/\.pdf$/i)
+                    ? <iframe src={viewPrescription.fileUrl} title="Prescription PDF" className="w-full h-64 border rounded" />
+                    : <img src={viewPrescription.fileUrl} alt="Prescription" className="max-w-full max-h-64 rounded border" />}
+                  <a href={viewPrescription.fileUrl} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a>
+                </div>
+              )}
+            </div>
+          )}
+        </RxDialogContent>
+      </RxDialog>
           </div>
         ) : (
           <Card className="border-0 shadow-card bg-card/50 backdrop-blur-sm">
