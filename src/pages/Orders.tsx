@@ -3,7 +3,7 @@ import { Package, Truck, CheckCircle, Clock, Bell } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { orderApi } from '@/lib/api';
+import { orderApi, apiClient } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 
@@ -30,27 +30,21 @@ export default function Orders() {
     queryFn: orderApi.getMyOrders,
   });
   const pendingCount = orders?.filter(o => o.status === 'pending').length || 0;
-  const confirmMutation = useMutation({
-    mutationFn: async ({ id, action }: { id: string, action: 'accept' | 'reject' }) => {
-      // Accept: set status to 'processing', Reject: set status to 'cancelled'
-      return orderApi.updateStatus(id, action === 'accept' ? 'processing' : 'cancelled');
+  // Patient cancel order mutation
+  const cancelOrderMutation = useMutation({
+    mutationFn: async (id: string) => {
+      // Call the patient cancel endpoint
+      return apiClient.put(`/api/orders/${id}/cancel`, { id });
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       toast({
-        title: variables.action === 'accept' ? 'Order confirmed!' : 'Order rejected',
-        description: variables.action === 'accept'
-          ? 'Your order has been confirmed and is being processed.'
-          : 'You have rejected this order.',
+        title: 'Order cancelled',
+        description: 'Your order has been cancelled.',
       });
-      // Optionally scroll to pending orders
-      setTimeout(() => {
-        const el = document.querySelector('.bg-yellow-400');
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 300);
     },
     onError: () => {
-      toast({ title: 'Error', description: 'Failed to update order status', variant: 'destructive' });
+      toast({ title: 'Error', description: 'Failed to cancel order', variant: 'destructive' });
     },
   });
 
@@ -160,34 +154,13 @@ export default function Orders() {
                       <Button
                         size="sm"
                         variant="destructive"
-                        disabled={confirmMutation.isPending}
-                        onClick={() => confirmMutation.mutate({ id: order._id, action: 'reject' })}
+                        disabled={cancelOrderMutation.isPending}
+                        onClick={() => cancelOrderMutation.mutate(order._id)}
                       >Cancel Order</Button>
                     </div>
                   </div>
                 )}
 
-                <div className="mt-4 pt-4 border-t">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">
-                      Order Status: {order.status}
-                    </div>
-                    {order.status === 'processing' ? (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        disabled={confirmMutation.isPending}
-                        onClick={() => confirmMutation.mutate({ id: String(order.id), action: 'reject' })}
-                      >
-                        Cancel
-                      </Button>
-                    ) : (
-                      <Button variant="outline" size="sm" disabled>
-                        Cancel
-                      </Button>
-                    )}
-                  </div>
-                </div>
               </CardContent>
             </Card>
           ))}
