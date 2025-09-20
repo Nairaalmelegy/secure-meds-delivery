@@ -66,7 +66,16 @@ export function PharmacyOrderForm({ prescription }: PharmacyOrderFormProps) {
   };
 
   const handleAddMedicine = (med: Medicine) => {
-    setSelectedMedicines(prev => [...prev, { ...med, qty: 1 }]);
+    // Uniqueness check: only add if not already present
+    setSelectedMedicines(prev => {
+      if (prev.some(m => m._id === med._id)) {
+        console.log('Medicine already selected:', med._id);
+        return prev;
+      }
+      const updated = [...prev, { ...med, qty: 1 }];
+      console.log('Selected medicines:', updated);
+      return updated;
+    });
     setSearch('');
   };
 
@@ -122,10 +131,11 @@ export function PharmacyOrderForm({ prescription }: PharmacyOrderFormProps) {
               <div
                 key={med._id}
                 className="px-3 py-2 hover:bg-primary/10 cursor-pointer flex items-center justify-between"
-                onClick={() => handleAddMedicine(med)}
+                onClick={e => { e.stopPropagation(); handleAddMedicine(med); }}
               >
                 <span>{med.name}</span>
                 <span className="text-xs text-muted-foreground ml-2">Stock: {med.stock}</span>
+                <span className="text-xs text-gray-400 ml-2">ID: {med._id}</span>
               </div>
             ))}
           </div>
