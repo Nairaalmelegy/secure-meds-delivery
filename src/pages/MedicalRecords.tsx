@@ -176,7 +176,7 @@ export default function MedicalRecords() {
 
           {/* Medical Records Form */}
           {editMode && (
-            <div className="mt-6 bg-white/10 p-4 rounded-xl">
+            <div className="mt-6 bg-white/10 p-4 rounded-xl text-gray-900">
               <div className="grid md:grid-cols-3 gap-6">
                 {/* Chronic Diseases */}
                 <div>
