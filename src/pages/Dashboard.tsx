@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Plus, FileText, ShoppingCart, Activity, Clock, CheckCircle, Package, TrendingUp, Heart, Pill } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { prescriptionApi, orderApi } from '@/lib/api';
 
 interface ExtractedMedicine {
@@ -35,6 +35,13 @@ interface Prescription {
 }
 
 export default function Dashboard() {
+  const queryClient = useQueryClient();
+  const cancelOrderMutation = useMutation({
+    mutationFn: (id: string) => orderApi.updateStatus(id, 'cancelled'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
+  });
   const navigate = useNavigate();
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [confirmingLoading, setConfirmingLoading] = useState(false);
@@ -324,20 +331,39 @@ return (
                 </div>
               ) : recentOrders.length > 0 ? (
                 <div className="space-y-3">
-                  {recentOrders.map((order: Order) => (
-                    <div key={order.id} className="flex items-center justify-between p-4 border border-border/50 rounded-xl hover:bg-muted/30 transition-colors">
-                      <div className="flex items-center gap-3">
-                        {getStatusIcon(order.status)}
-                        <div>
-                          <p className="font-medium text-foreground">Order #{order.id?.slice(-6)}</p>
-                          <p className="text-sm text-muted-foreground">EGP {order.total || 0}</p>
+                  {recentOrders.map((order: Order) => {
+                    const isCancelled = order.status === 'cancelled';
+                    const canCancel = order.status === 'processing';
+                    return (
+                      <div
+                        key={order.id}
+                        className={`flex items-center justify-between p-4 border border-border/50 rounded-xl hover:bg-muted/30 transition-colors${isCancelled ? ' bg-red-50 text-red-400' : ''}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          {getStatusIcon(order.status)}
+                          <div>
+                            <p className="font-medium text-foreground">Order #{order.id?.slice(-6)}</p>
+                            <p className="text-sm text-muted-foreground">EGP {order.total || 0}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className={`${getStatusBadge(order.status)} border`}>
+                            {order.status}
+                          </Badge>
+                          {canCancel && (
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              disabled={cancelOrderMutation.isPending}
+                              onClick={() => cancelOrderMutation.mutate(order._id)}
+                            >
+                              Cancel
+                            </Button>
+                          )}
                         </div>
                       </div>
-                      <Badge className={`${getStatusBadge(order.status)} border`}>
-                        {order.status}
-                      </Badge>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-8">

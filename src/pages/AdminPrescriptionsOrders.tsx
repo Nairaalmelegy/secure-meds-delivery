@@ -259,6 +259,7 @@ export default function AdminPrescriptionsOrders() {
   interface FullOrder {
     _id: string;
     patient: string | { _id: string; name?: string; phone?: string };
+    pharmacy?: string | { _id: string; name?: string };
     items?: OrderItem[];
     notes?: string;
     deliveryAddress?: string;
@@ -417,8 +418,9 @@ export default function AdminPrescriptionsOrders() {
                 <tbody>
                   {orders.map((order) => {
                     const patientPhone = typeof order.patient === 'object' ? (order.patient?.phone || '-') : '-';
+                    const isCancelled = order.status === 'cancelled';
                     return (
-                      <tr key={order._id} className="border-b">
+                      <tr key={order._id} className={`border-b${isCancelled ? ' bg-red-50 text-red-400' : ''}`}>
                         <td className="p-2 border font-semibold">{order._id.slice(-6)}</td>
                         <td className="p-2 border"><PatientNameCell patient={order.patient} /></td>
                         <td className="p-2 border">{patientPhone}</td>
@@ -440,6 +442,7 @@ export default function AdminPrescriptionsOrders() {
                             value={order.status}
                             onChange={e => updateOrderStatusMutation.mutate({ id: order._id, status: e.target.value, pharmacyId: isAdmin ? mainPharmacyId : undefined })}
                             className="border rounded px-2 py-1 text-xs"
+                            disabled={isCancelled}
                           >
                             <option value="pending">Pending</option>
                             <option value="processing">Processing</option>
