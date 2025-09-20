@@ -1,3 +1,16 @@
+  // Helper to render doctor/verifiedBy fields safely
+  const renderPerson = (person: unknown) => {
+    if (!person) return '';
+    if (typeof person === 'string') return person;
+    if (typeof person === 'object' && person !== null) {
+      const p = person as { name?: string; email?: string; _id?: string };
+      if (typeof p.name === 'string') return p.name;
+      if (typeof p.email === 'string') return p.email;
+      if (typeof p._id === 'string') return p._id;
+      return JSON.stringify(person);
+    }
+    return String(person);
+  };
 
 import { useState, useRef } from 'react';
 import { Dialog as RxDialog, DialogContent as RxDialogContent, DialogHeader as RxDialogHeader, DialogTitle as RxDialogTitle, DialogClose as RxDialogClose } from '@/components/ui/dialog';
@@ -405,14 +418,7 @@ export default function MedicalRecords() {
                         <CardTitle className="text-lg">Prescription #{(prescriptionId || '').slice(-6)}</CardTitle>
                         <div className="text-xs text-muted-foreground">ID: {String(prescriptionId)}</div>
                         <p className="text-sm text-muted-foreground">
-                          {(() => {
-                            if (!prescription.doctor) return 'Self-uploaded';
-                            if (typeof prescription.doctor === 'object') {
-                              const d = prescription.doctor;
-                              return `Dr. ${d.name || d.email || d._id || JSON.stringify(d)}`;
-                            }
-                            return `Dr. ${String(prescription.doctor)}`;
-                          })()}
+                          {prescription.doctor ? `Dr. ${renderPerson(prescription.doctor)}` : 'Self-uploaded'}
                         </p>
                       </div>
                     </div>
@@ -431,15 +437,7 @@ export default function MedicalRecords() {
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <User className="h-4 w-4" />
                         <span>
-                          Verified by: Dr. {
-                            (() => {
-                              const v = prescription.verifiedBy;
-                              if (typeof v === 'object' && v) {
-                                return v.name || v.email || v._id || JSON.stringify(v);
-                              }
-                              return String(v);
-                            })()
-                          }
+                          Verified by: Dr. {renderPerson(prescription.verifiedBy)}
                         </span>
                       </div>
                     )}
@@ -487,34 +485,10 @@ export default function MedicalRecords() {
             <div className="space-y-3">
               <div><b>ID:</b> {String(viewPrescription.id)}</div>
               <div><b>Status:</b> {String(viewPrescription.status)}</div>
-              <div><b>Doctor:</b> {
-                (() => {
-                  const d = viewPrescription?.doctor;
-                  if (!d) return 'Self-uploaded';
-                  if (typeof d === 'object') {
-                    if (d === null) return 'Unknown';
-                    if (typeof d.name === 'string') return d.name;
-                    if (typeof d.email === 'string') return d.email;
-                    if (typeof d._id === 'string') return d._id;
-                    return JSON.stringify(d);
-                  }
-                  return String(d);
-                })()
-              }</div>
+              <div><b>Doctor:</b> {viewPrescription?.doctor ? renderPerson(viewPrescription.doctor) : 'Self-uploaded'}</div>
               <div><b>Uploaded:</b> {new Date(viewPrescription.createdAt).toLocaleDateString()}</div>
               {viewPrescription?.verifiedBy && (
-                <div><b>Verified by:</b> Dr. {
-                  (() => {
-                    const v = viewPrescription.verifiedBy;
-                    if (typeof v === 'object' && v !== null) {
-                      if (typeof v.name === 'string') return v.name;
-                      if (typeof v.email === 'string') return v.email;
-                      if (typeof v._id === 'string') return v._id;
-                      return JSON.stringify(v);
-                    }
-                    return String(v);
-                  })()
-                }</div>
+                <div><b>Verified by:</b> Dr. {renderPerson(viewPrescription.verifiedBy)}</div>
               )}
               {viewPrescription.description && <div><b>Description:</b> {viewPrescription.description}</div>}
               {viewPrescription.fileUrl && (
