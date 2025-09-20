@@ -8,16 +8,17 @@ import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 
 type OrderItem = {
-  name: string;
-  quantity: number;
+  medicine: { name: string } | string;
+  qty: number;
+  price?: number;
 };
 
 type Order = {
-  id: string | number;
+  _id: string;
   status: string;
   createdAt: string;
   total: number;
-  address?: string;
+  deliveryAddress?: string;
   items?: OrderItem[];
 };
 
@@ -108,10 +109,10 @@ export default function Orders() {
       {orders && orders.length > 0 ? (
         <div className="space-y-4">
           {orders.map((order: Order) => (
-            <Card key={order.id}>
+            <Card key={order._id}>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Order #{order.id}</CardTitle>
+                  <CardTitle className="text-lg">Order #{order._id.slice(-6)}</CardTitle>
                   <Badge className={getStatusColor(order.status)}>
                     <div className="flex items-center gap-1">
                       {getStatusIcon(order.status)}
@@ -129,14 +130,14 @@ export default function Orders() {
                     </p>
                     {order.items?.map((item: OrderItem, index: number) => (
                       <p key={index} className="text-sm text-muted-foreground">
-                        {item.name} × {item.quantity}
+                        {typeof item.medicine === 'object' ? item.medicine.name : item.medicine} × {item.qty}
                       </p>
                     ))}
                   </div>
                   <div>
                     <h4 className="font-medium mb-2">Delivery Address</h4>
                     <p className="text-sm text-muted-foreground">
-                      {order.address || 'No address provided'}
+                      {order.deliveryAddress || 'No address provided'}
                     </p>
                   </div>
 
@@ -144,31 +145,24 @@ export default function Orders() {
                     <h4 className="font-medium mb-2">Items</h4>
                     {order.items?.map((item: OrderItem, index: number) => (
                       <p key={index} className="text-sm text-muted-foreground">
-                        {item.name} × {item.quantity}
+                        {typeof item.medicine === 'object' ? item.medicine.name : item.medicine} × {item.qty}
                       </p>
                     ))}
                   </div>
                 </div>
 
                 {/* Confirm Order section for pending orders */}
-                {order.status === 'pending' && (
+                {/* Allow patient to cancel order if status is processing or pending */}
+                {(order.status === 'processing' || order.status === 'pending') && (
                   <div className="mt-4 pt-4 border-t">
                     <div className="flex items-center justify-between">
-                      <div className="text-sm font-semibold text-yellow-700">This order is awaiting your confirmation.</div>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="default"
-                          disabled={confirmMutation.isPending}
-                          onClick={() => confirmMutation.mutate({ id: String(order.id), action: 'accept' })}
-                        >Accept</Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          disabled={confirmMutation.isPending}
-                          onClick={() => confirmMutation.mutate({ id: String(order.id), action: 'reject' })}
-                        >Reject</Button>
-                      </div>
+                      <div className="text-sm font-semibold text-yellow-700">You can cancel this order if needed.</div>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        disabled={confirmMutation.isPending}
+                        onClick={() => confirmMutation.mutate({ id: order._id, action: 'reject' })}
+                      >Cancel Order</Button>
                     </div>
                   </div>
                 )}
