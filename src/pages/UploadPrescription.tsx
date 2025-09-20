@@ -1,3 +1,16 @@
+// Helper to safely render doctor/person fields
+function renderPerson(person: unknown) {
+  if (!person) return '';
+  if (typeof person === 'string') return person;
+  if (typeof person === 'object' && person !== null) {
+    const p = person as { name?: string; email?: string; _id?: string };
+    if (typeof p.name === 'string') return p.name;
+    if (typeof p.email === 'string') return p.email;
+    if (typeof p._id === 'string') return p._id;
+    return JSON.stringify(person);
+  }
+  return String(person);
+}
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -180,7 +193,7 @@ export default function UploadPrescription() {
                       </p>
                       {prescription.doctor && (
                         <p className="text-sm text-muted-foreground">
-                          Doctor: {prescription.doctor}
+                          Doctor: {renderPerson(prescription.doctor)}
                         </p>
                       )}
                     </div>

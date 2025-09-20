@@ -1,3 +1,16 @@
+// Helper to safely render doctor/person fields
+function renderPerson(person: unknown) {
+  if (!person) return '';
+  if (typeof person === 'string') return person;
+  if (typeof person === 'object' && person !== null) {
+    const p = person as { name?: string; email?: string; _id?: string };
+    if (typeof p.name === 'string') return p.name;
+    if (typeof p.email === 'string') return p.email;
+    if (typeof p._id === 'string') return p._id;
+    return JSON.stringify(person);
+  }
+  return String(person);
+}
 import { useState } from 'react';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -287,7 +300,7 @@ return (
                         <div>
                           <p className="font-medium text-foreground">Prescription #{prescription.id?.slice(-6)}</p>
                           <p className="text-sm text-muted-foreground">
-                            {prescription.doctor ? `Dr. ${prescription.doctor}` : 'Uploaded'}
+                            {prescription.doctor ? `Dr. ${renderPerson(prescription.doctor)}` : 'Uploaded'}
                           </p>
                         </div>
                       </div>
