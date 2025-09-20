@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import MedicalRecordsModal from '@/components/MedicalRecordsModal';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -51,6 +52,7 @@ export default function DoctorDashboard() {
   const [patientResult, setPatientResult] = useState<User | null>(null);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [viewRecordsOpen, setViewRecordsOpen] = useState(false);
 
   // Fetch all orders for this doctor (to count unique patients)
   const { data: orders, isLoading: loadingOrders } = useQuery<Order[]>({
@@ -228,16 +230,19 @@ export default function DoctorDashboard() {
           <CardContent>
             {searchError && <p className="text-destructive mb-2">{searchError}</p>}
             {patientResult ? (
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div>
-                  <p className="font-medium">{patientResult.name}</p>
-                  <p className="text-sm text-muted-foreground">{patientResult.email}</p>
-                  <p className="text-sm text-muted-foreground">ID: {patientResult.nationalId}</p>
+              <>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-medium">{patientResult.name}</p>
+                    <p className="text-sm text-muted-foreground">{patientResult.email}</p>
+                    <p className="text-sm text-muted-foreground">ID: {patientResult.nationalId}</p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => setViewRecordsOpen(true)}>
+                    View Records
+                  </Button>
                 </div>
-                <Button variant="outline" size="sm">
-                  View Records
-                </Button>
-              </div>
+                <MedicalRecordsModal open={viewRecordsOpen} onOpenChange={setViewRecordsOpen} patientId={patientResult.id} />
+              </>
             ) : (
               searchError ? null : <p className="text-muted-foreground">Enter a national ID and search</p>
             )}
