@@ -22,7 +22,7 @@ export default function OrderMedicines() {
 
   const handleAddToCart = (medicine: any) => {
     addItem({
-      id: medicine.id,
+      id: medicine._id,
       name: medicine.name,
       price: medicine.price,
     });
@@ -71,9 +71,9 @@ export default function OrderMedicines() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {medicines?.map((medicine: any) => {
-            const cartQuantity = getCartQuantity(medicine.id);
+            const cartQuantity = getCartQuantity(medicine._id);
             return (
-              <Card key={medicine.id}>
+              <Card key={medicine._id}>
                 <CardHeader>
                   <CardTitle className="text-lg">{medicine.name}</CardTitle>
                   {medicine.description && (
@@ -97,7 +97,7 @@ export default function OrderMedicines() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => updateQuantity(medicine.id, cartQuantity - 1)}
+                        onClick={() => updateQuantity(medicine._id, cartQuantity - 1)}
                       >
                         <Minus className="h-4 w-4" />
                       </Button>
@@ -105,7 +105,7 @@ export default function OrderMedicines() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => updateQuantity(medicine.id, cartQuantity + 1)}
+                        onClick={() => updateQuantity(medicine._id, cartQuantity + 1)}
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
