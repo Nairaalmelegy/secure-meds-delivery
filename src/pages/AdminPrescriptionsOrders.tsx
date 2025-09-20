@@ -99,7 +99,7 @@ interface Medicine {
 
 interface Prescription {
   _id: string;
-  patient: string | { _id: string; name: string };
+  patient: string | { _id: string; name: string; phone?: string };
   doctor?: { _id: string; name?: string };
   fileUrl?: string;
   medicines: Medicine[];
@@ -110,7 +110,7 @@ interface Prescription {
 
 interface Order {
   _id: string;
-  patient: string | { _id: string; name?: string };
+  patient: string | { _id: string; name?: string; phone?: string };
   status: string;
 }
 import { PharmacyOrderForm } from './PharmacyOrderForm';
@@ -232,7 +232,7 @@ export default function AdminPrescriptionsOrders() {
   }
   interface FullOrder {
     _id: string;
-    patient: string | { _id: string; name?: string };
+    patient: string | { _id: string; name?: string; phone?: string };
     items?: OrderItem[];
     notes?: string;
     deliveryAddress?: string;
@@ -375,50 +375,52 @@ export default function AdminPrescriptionsOrders() {
                 <thead>
                   <tr className="bg-gray-100">
                     <th className="p-2 border">Order #</th>
-                    <th className="p-2 border">Patient</th>
+                    <th className="p-2 border">Patient Name</th>
+                    <th className="p-2 border">Phone</th>
                     <th className="p-2 border">Medicines</th>
                     <th className="p-2 border">Notes</th>
                     <th className="p-2 border">Address</th>
                     <th className="p-2 border">Status</th>
-                    <th className="p-2 border">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {orders.map((order) => (
-                    <tr key={order._id} className="border-b">
-                      <td className="p-2 border font-semibold">{order._id.slice(-6)}</td>
-                      <td className="p-2 border">{typeof order.patient === 'object' ? (order.patient?.name || order.patient?._id || JSON.stringify(order.patient)) : order.patient}</td>
-                      <td className="p-2 border">
-                        {order.items && order.items.length > 0 ? (
-                          order.items.map((item) => (
-                            <div key={typeof item.medicine === 'object' ? item.medicine._id : item.medicine}>
-                              {typeof item.medicine === 'object' ? item.medicine.name : item.medicine} x {item.qty}
-                            </div>
-                          ))
-                        ) : (
-                          <span>-</span>
-                        )}
-                      </td>
-                      <td className="p-2 border">{order.notes || '-'}</td>
-                      <td className="p-2 border">{order.deliveryAddress || '-'}</td>
-                      <td className="p-2 border">
-                        <select
-                          value={order.status}
-                          onChange={e => updateOrderStatusMutation.mutate({ id: order._id, status: e.target.value })}
-                          className="border rounded px-2 py-1 text-xs"
-                        >
-                          <option value="pending">Pending</option>
-                          <option value="processing">Processing</option>
-                          <option value="dispatched">Delivering</option>
-                          <option value="delivered">Delivered</option>
-                          <option value="cancelled">Cancelled</option>
-                        </select>
-                      </td>
-                      <td className="p-2 border">
-                        <Button size="sm" variant="outline" onClick={() => alert(JSON.stringify(order, null, 2))}>View</Button>
-                      </td>
-                    </tr>
-                  ))}
+                  {orders.map((order) => {
+                    const patientName = typeof order.patient === 'object' ? (order.patient?.name || order.patient?._id || '-') : order.patient;
+                    const patientPhone = typeof order.patient === 'object' ? (order.patient?.phone || '-') : '-';
+                    return (
+                      <tr key={order._id} className="border-b">
+                        <td className="p-2 border font-semibold">{order._id.slice(-6)}</td>
+                        <td className="p-2 border">{patientName}</td>
+                        <td className="p-2 border">{patientPhone}</td>
+                        <td className="p-2 border">
+                          {order.items && order.items.length > 0 ? (
+                            order.items.map((item) => (
+                              <div key={typeof item.medicine === 'object' ? item.medicine._id : item.medicine}>
+                                {typeof item.medicine === 'object' ? item.medicine.name : item.medicine} x {item.qty}
+                              </div>
+                            ))
+                          ) : (
+                            <span>-</span>
+                          )}
+                        </td>
+                        <td className="p-2 border">{order.notes || '-'}</td>
+                        <td className="p-2 border">{order.deliveryAddress || '-'}</td>
+                        <td className="p-2 border">
+                          <select
+                            value={order.status}
+                            onChange={e => updateOrderStatusMutation.mutate({ id: order._id, status: e.target.value })}
+                            className="border rounded px-2 py-1 text-xs"
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="processing">Processing</option>
+                            <option value="dispatched">Delivering</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                          </select>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
