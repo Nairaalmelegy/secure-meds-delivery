@@ -210,6 +210,10 @@ export const prescriptionApi = {
 
   verify: (id: string, approved: boolean): Promise<any> => 
     apiClient.put(`/api/prescriptions/${id}/verify`, { approved }),
+
+  // Delete a prescription by ID
+  deletePrescription: (id: string): Promise<any> =>
+    apiClient.delete(`/api/prescriptions/${id}`),
 };
 
 // User API functions
