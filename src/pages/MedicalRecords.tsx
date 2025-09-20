@@ -145,15 +145,16 @@ export default function MedicalRecords() {
 
   const handleDelete = async (prescriptionId: string) => {
     try {
-      // API call to delete prescription would go here
+      await prescriptionApi.deletePrescription(prescriptionId);
       toast({
         title: "Prescription deleted",
         description: "Prescription has been removed from your records",
       });
-    } catch (error) {
+      queryClient.invalidateQueries({ queryKey: ['prescriptions'] });
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to delete prescription",
+        description: error?.message || "Failed to delete prescription",
         variant: "destructive",
       });
     }
@@ -367,9 +368,9 @@ export default function MedicalRecords() {
             ))}
           </div>
         ) : filteredPrescriptions.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="flex flex-col gap-6">
             {filteredPrescriptions.map((prescription) => (
-              <Card key={prescription.id} className="border-0 shadow-card bg-card/50 backdrop-blur-sm hover:shadow-lg transition-shadow">
+              <Card key={prescription.id} className="border-0 shadow-card bg-card/50 backdrop-blur-sm hover:shadow-lg transition-shadow overflow-visible">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
@@ -390,7 +391,7 @@ export default function MedicalRecords() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
+                  <div className="space-y-3 overflow-visible">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Calendar className="h-4 w-4" />
                       <span>Uploaded: {new Date(prescription.createdAt).toLocaleDateString()}</span>
@@ -452,7 +453,7 @@ export default function MedicalRecords() {
                 <div>
                   {viewPrescription.fileUrl.match(/\.pdf$/i)
                     ? <iframe src={viewPrescription.fileUrl} title="Prescription PDF" className="w-full h-64 border rounded" />
-                    : <img src={viewPrescription.fileUrl} alt="Prescription" className="max-w-full max-h-64 rounded border" />}
+                    : <img src={viewPrescription.fileUrl} alt="Prescription" className="w-full max-h-96 object-contain rounded border bg-white" />}
                   <a href={viewPrescription.fileUrl} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a>
                 </div>
               )}
