@@ -52,14 +52,42 @@ export default function MedicalRecordsModal({ open, onOpenChange, patientId }: M
             <div>
               <b>Scans:</b>
               <ul className="list-disc ml-6">
-                {(profile.scans || []).map((scan: any, i: number) => (
-                  <li key={i}>
-                    <span>{scan.type} ({scan.date ? new Date(scan.date).toLocaleDateString() : ''})</span>
-                    {scan.fileUrl && (
-                      <a href={scan.fileUrl} target="_blank" rel="noopener noreferrer" className="ml-2 text-primary underline">View</a>
-                    )}
-                  </li>
-                ))}
+                {(profile.scans || []).map((scan: any, i: number) => {
+                  const isImage = scan.fileUrl && /\.(jpe?g|png|gif)$/i.test(scan.fileUrl);
+                  const isPdf = scan.fileUrl && /\.pdf$/i.test(scan.fileUrl);
+                  return (
+                    <li key={i}>
+                      <span>{scan.type} ({scan.date ? new Date(scan.date).toLocaleDateString() : ''})</span>
+                      {isImage && (
+                        <img
+                          src={scan.fileUrl}
+                          alt={scan.type}
+                          style={{ maxWidth: 200, display: 'block', margin: '8px 0' }}
+                        />
+                      )}
+                      {isPdf && (
+                        <a
+                          href={scan.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-2 text-primary underline"
+                        >
+                          View PDF
+                        </a>
+                      )}
+                      {!isImage && !isPdf && scan.fileUrl && (
+                        <a
+                          href={scan.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-2 text-primary underline"
+                        >
+                          View File
+                        </a>
+                      )}
+                    </li>
+                  );
+                })}
                 {(!profile.scans || profile.scans.length === 0) && <li>None</li>}
               </ul>
             </div>
