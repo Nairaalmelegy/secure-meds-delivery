@@ -68,7 +68,13 @@ export default function MedicalRecords() {
   useEffect(() => {
     async function fetchSigned() {
       if (viewPrescription?.fileUrl && !prescriptionSignedUrls[viewPrescription.fileUrl]) {
-        const path = viewPrescription.fileUrl.replace(/^\/uploads\//, '').replace(/^\//, '');
+        let path = viewPrescription.fileUrl;
+        // Extract only the storage path (e.g. prescriptions/filename.jpg)
+        // Handles both direct storage path and full Supabase URL
+        const match = path.match(/(?:uploads\/)?(scans|prescriptions)\/[\w\-.]+/i);
+        if (match) {
+          path = match[0].replace(/^uploads\//, '');
+        }
         try {
           const token = localStorage.getItem('token');
           const res = await fetch(
