@@ -11,7 +11,6 @@ const links = [
   { to: "/orders", label: "Track Orders" },
   { to: "/order-medicines", label: "Order Medicines" },
   { to: "/checkout", label: "Checkout" },
-  { to: "/profile", label: "Profile" },
 ];
 
 export default function PatientSidebar({ children }: { children: React.ReactNode }) {
@@ -23,7 +22,7 @@ export default function PatientSidebar({ children }: { children: React.ReactNode
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         {/* Sidebar */}
-        <Sidebar className="bg-white border-r border-[#f0f0f0] flex flex-col justify-between w-64 px-6 py-8 z-30">
+          <Sidebar className="bg-gradient-to-b from-primary/10 via-white to-secondary/10 border-r border-[#f0f0f0] flex flex-col justify-between w-64 px-6 py-8 z-30 min-h-screen">
           <div>
             <div className="text-2xl font-bold text-primary mb-10">Patient Portal</div>
             <nav className="flex flex-col gap-2">

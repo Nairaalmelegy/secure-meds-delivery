@@ -106,7 +106,7 @@ export function Navigation({ onAuthClick }: NavigationProps) {
 
         {/* Mobile menu */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 space-y-4">
+          <div className="md:hidden py-4 space-y-4 bg-background border-t border-border">
             <a href="#how-it-works" className="block text-foreground hover:text-primary">
               How it Works
             </a>

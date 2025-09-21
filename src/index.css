@@ -130,3 +130,7 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+.bg-sidebar {
+  padding: 5%;
+  background-color: #ffff !important;
+}
