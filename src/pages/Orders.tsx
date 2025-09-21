@@ -1,6 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Package, Truck, CheckCircle, Clock, Bell } from 'lucide-react';
+import { Package, Truck, CheckCircle, Clock, Bell , FileText} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -83,25 +83,27 @@ export default function Orders() {
 
   if (isLoading) {
     return (
-      <PatientSidebar>
-        <div className="text-center py-8">Loading orders...</div>
-      </PatientSidebar>
+        <div className="text-center pb-8">Loading orders...</div>
     );
   }
 
   return (
-    <PatientSidebar>
-      <div className="px-4 py-8 md:py-10">
-        <div className="mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold text-foreground">My Orders</h1>
-            {pendingCount > 0 && (
-              <Badge className="bg-yellow-400 text-black flex items-center gap-1"><Bell className="h-4 w-4" /> {pendingCount}</Badge>
-            )}
+      <div className="px-4 pb-8 md:pb-10">
+        <div className="mb-8 p-6 bg-gradient-primary rounded-2xl text-white shadow-hero">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
+                <FileText className="h-8 w-8" />
+                My Orders
+              </h1>
+              {pendingCount > 0 && (
+                <Badge className="bg-yellow-400 text-black flex items-center gap-1"><Bell className="h-4 w-4" /> {pendingCount}</Badge>
+              )}
+            </div>
+            <Button asChild className="bg-white/20 hover:bg-white/30 text-white border-white/20">
+              <Link to="/order-medicines">Order New Medicines</Link>
+            </Button>
           </div>
-          <Button asChild>
-            <Link to="/order-medicines">Order New Medicines</Link>
-          </Button>
         </div>
 
         {orders && orders.length > 0 ? (
@@ -184,6 +186,5 @@ export default function Orders() {
           </Card>
         )}
       </div>
-    </PatientSidebar>
   );
 }

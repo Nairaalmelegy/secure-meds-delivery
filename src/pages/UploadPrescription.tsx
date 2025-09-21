@@ -110,11 +110,17 @@ export default function UploadPrescription() {
   };
 
   return (
-    <PatientSidebar>
-      <div className="px-4 py-8 md:py-10">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Upload Prescription</h1>
-          <p className="text-muted-foreground">Upload your prescription for verification and order processing</p>
+      <div className="px-4 pb-8 md:pb-10">
+        <div className="mb-8 p-6 bg-gradient-primary rounded-2xl text-white shadow-hero">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
+                <FileText className="h-8 w-8" />
+                Upload Prescription
+              </h1>
+              <p className="text-white/80 text-lg">Upload your prescription for verification and order processing</p>
+            </div>
+          </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
@@ -217,6 +223,5 @@ export default function UploadPrescription() {
           </Card>
         </div>
       </div>
-    </PatientSidebar>
   );
 }

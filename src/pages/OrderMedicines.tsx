@@ -38,20 +38,24 @@ export default function OrderMedicines() {
 
   return (
       <div className="">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Order Medicines</h1>
-          <p className="text-muted-foreground">Search and add medicines to your cart</p>
+      <div className="mb-8 p-6 bg-gradient-primary rounded-2xl text-white shadow-hero">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
+              <ShoppingCart className="h-8 w-8" />
+              Order Medicines
+            </h1>
+            <p className="text-white/80 text-lg">Search and add medicines to your cart</p>
+          </div>
+          {items.length > 0 && (
+            <Button asChild className="bg-white/20 hover:bg-white/30 text-white border-white/20">
+              <Link to="/checkout" className="flex items-center gap-2">
+                <ShoppingCart className="h-4 w-4" />
+                Cart ({items.length}) - EGP {total}
+              </Link>
+            </Button>
+          )}
         </div>
-        
-        {items.length > 0 && (
-          <Button asChild>
-            <Link to="/checkout" className="flex items-center gap-2">
-              <ShoppingCart className="h-4 w-4" />
-              Cart ({items.length}) - EGP {total}
-            </Link>
-          </Button>
-        )}
       </div>
 
       <div className="mb-6">
