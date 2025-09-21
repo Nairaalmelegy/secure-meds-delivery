@@ -26,7 +26,7 @@ export default function PatientLayout() {
     <div className="flex h-screen bg-gray-50">
       <PatientSidebar>
       <main className="flex-1 overflow-y-auto min-h-screen">
-        <div className="max-w-4xl mx-auto py-8 px-4">
+        <div className=" mx-auto py-8 px-4">
           <Outlet />
         </div>
       </main>
