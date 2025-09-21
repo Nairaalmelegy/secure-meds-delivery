@@ -12,6 +12,7 @@ function renderPerson(person: unknown) {
   return String(person);
 }
 import { useState } from 'react';
+import PrescriptionImage from '@/components/PrescriptionImage';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -134,7 +135,7 @@ return (
                 <div className="font-semibold text-lg mb-2">Prescription Order Confirmation</div>
                 <div className="mb-2 text-xs text-muted-foreground">Prescription #{pres._id.slice(-6)}</div>
                 {pres.fileUrl && (
-                  <img src={pres.fileUrl} alt="Prescription" className="max-h-40 border rounded mb-2" />
+                  <PrescriptionImage fileUrl={pres.fileUrl} maxHeight="max-h-40" />
                 )}
                 <div className="mb-2">
                   <div className="font-medium text-xs mb-1">Medicines in Order:</div>
