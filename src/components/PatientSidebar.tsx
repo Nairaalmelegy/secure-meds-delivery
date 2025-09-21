@@ -20,7 +20,7 @@ export default function PatientSidebar({ children }: { children: React.ReactNode
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex bg-[#fafbfc]">
+      <div className="min-h-screen flex bg-white">
         {/* Sidebar */}
         <Sidebar className="bg-white border-r border-[#f0f0f0] flex flex-col justify-between w-64 px-6 py-8 z-30">
           <div>
