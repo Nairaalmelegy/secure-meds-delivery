@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import LottieLoader from '@/components/LottieLoader';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../lib/api';
 
 async function fetchMedicines() {
@@ -21,10 +21,38 @@ export default function InventoryPage() {
   });
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const queryClient = useQueryClient();
   const { data: medicines, isLoading } = useQuery({
     queryKey: ['medicines'],
     queryFn: fetchMedicines,
   });
+
+  // Editable stock state
+  const [editingStockId, setEditingStockId] = useState<string | null>(null);
+  const [editingStockValue, setEditingStockValue] = useState<string>('');
+  const [savingStock, setSavingStock] = useState(false);
+
+  const handleEditStock = (id: string, currentStock: number) => {
+    setEditingStockId(id);
+    setEditingStockValue(String(currentStock));
+  };
+
+  const handleSaveStock = async (id: string) => {
+    setSavingStock(true);
+    try {
+      await apiClient.put(`/api/medicines/${id}`, { stock: parseInt(editingStockValue, 10) });
+      toast({ title: 'Stock updated!' });
+      setEditingStockId(null);
+      setEditingStockValue('');
+      queryClient.invalidateQueries({ queryKey: ['medicines'] });
+    } catch (err: unknown) {
+      let message = 'An error occurred';
+      if (err instanceof Error) message = err.message;
+      toast({ title: 'Error', description: message, variant: 'destructive' });
+    } finally {
+      setSavingStock(false);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -85,7 +113,27 @@ export default function InventoryPage() {
                       <td>{med.sku}</td>
                       <td>{med.category}</td>
                       <td>{med.price}</td>
-                      <td>{med.stock}</td>
+                      <td>
+                        {editingStockId === med._id ? (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              min="0"
+                              value={editingStockValue}
+                              onChange={e => setEditingStockValue(e.target.value)}
+                              className="w-20"
+                              disabled={savingStock}
+                            />
+                            <Button size="sm" onClick={() => handleSaveStock(med._id)} disabled={savingStock} className="px-2">Save</Button>
+                            <Button size="sm" variant="outline" onClick={() => setEditingStockId(null)} disabled={savingStock} className="px-2">Cancel</Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <span>{med.stock}</span>
+                            <Button size="sm" variant="outline" onClick={() => handleEditStock(med._id, med.stock)} className="px-2">Edit</Button>
+                          </div>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
