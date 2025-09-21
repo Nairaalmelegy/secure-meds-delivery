@@ -1,9 +1,53 @@
 import React, { useEffect, useState } from 'react';
+import LottieLoader from '@/components/LottieLoader';
 // Helper to extract the storage path from a Supabase fileUrl
 function extractStoragePath(fileUrl: string): string | null {
   // Try to match scans/filename or prescriptions/filename
   const match = fileUrl.match(/(?:uploads\/)?(scans|prescriptions)\/[\w\-.]+/i);
   return match ? match[0].replace(/^uploads\//, '') : null;
+}
+
+// Types for profile, scan, and prescription
+interface ScanRecord {
+  fileUrl: string;
+  type?: string;
+  date?: string;
+  notes?: string;
+}
+interface PrescriptionRecord {
+  fileUrl: string;
+  _id?: string;
+  createdAt?: string;
+}
+interface Profile {
+  chronicDiseases?: string[];
+  allergies?: string[];
+  pastMedications?: string[];
+  scans?: ScanRecord[];
+  prescriptions?: PrescriptionRecord[];
+}
+
+// Helper component to show loader while image loads
+function ImageWithLoader({ src, alt }: { src: string; alt: string }) {
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(false);
+  return (
+    <div style={{ minHeight: 120, minWidth: 120, maxWidth: 200, margin: '8px 0', position: 'relative' }}>
+      {loading && !error && (
+        <div className="flex justify-center items-center h-24"><LottieLoader height={60} width={60} /></div>
+      )}
+      <img
+        src={src}
+        alt={alt}
+        style={{ maxWidth: 200, display: loading ? 'none' : 'block', borderRadius: 8 }}
+        onLoad={() => setLoading(false)}
+        onError={() => { setLoading(false); setError(true); }}
+      />
+      {!loading && error && (
+        <div className="text-destructive text-xs">Image not found or failed to load.</div>
+      )}
+    </div>
+  );
 }
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +62,7 @@ interface MedicalRecordsModalProps {
 
 export default function MedicalRecordsModal({ open, onOpenChange, patientId }: MedicalRecordsModalProps) {
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Map of original fileUrl to signed URL
@@ -104,21 +148,17 @@ export default function MedicalRecordsModal({ open, onOpenChange, patientId }: M
             <div>
               <b>Scans:</b>
               <ul className="list-disc ml-6">
-                {(profile.scans || []).map((scan: any, i: number) => {
+                {(profile.scans || []).map((scan, i) => {
                   const signedUrl = signedUrls[scan.fileUrl];
-                  const isImage = signedUrl && /\.(jpe?g|png|gif)$/i.test(signedUrl);
+                  const isImage = signedUrl && /\.(jpe?g|png|gif|bmp|webp|svg)$/i.test(signedUrl);
                   const isPdf = signedUrl && /\.pdf$/i.test(signedUrl);
                   return (
                     <li key={i}>
                       <span>{scan.type} ({scan.date ? new Date(scan.date).toLocaleDateString() : ''})</span>
-                      {isImage && (
-                        <img
-                          src={signedUrl}
-                          alt={scan.type}
-                          style={{ maxWidth: 200, display: 'block', margin: '8px 0' }}
-                        />
+                      {isImage && signedUrl && (
+                        <ImageWithLoader src={signedUrl} alt={scan.type} />
                       )}
-                      {isPdf && (
+                      {isPdf && signedUrl && (
                         <a
                           href={signedUrl}
                           target="_blank"
@@ -147,21 +187,17 @@ export default function MedicalRecordsModal({ open, onOpenChange, patientId }: M
             <div>
               <b>Prescriptions:</b>
               <ul className="list-disc ml-6">
-                {(profile.prescriptions || []).map((pres: any, i: number) => {
+                {(profile.prescriptions || []).map((pres, i) => {
                   const signedUrl = signedUrls[pres.fileUrl];
-                  const isImage = signedUrl && /\.(jpe?g|png|gif)$/i.test(signedUrl);
+                  const isImage = signedUrl && /\.(jpe?g|png|gif|bmp|webp|svg)$/i.test(signedUrl);
                   const isPdf = signedUrl && /\.pdf$/i.test(signedUrl);
                   return (
                     <li key={i}>
                       <span>Prescription {(pres._id || '').slice(-6)} {pres.createdAt ? '(' + new Date(pres.createdAt).toLocaleDateString() + ')' : ''}</span>
-                      {isImage && (
-                        <img
-                          src={signedUrl}
-                          alt="Prescription"
-                          style={{ maxWidth: 200, display: 'block', margin: '8px 0' }}
-                        />
+                      {isImage && signedUrl && (
+                        <ImageWithLoader src={signedUrl} alt="Prescription" />
                       )}
-                      {isPdf && (
+                      {isPdf && signedUrl && (
                         <a
                           href={signedUrl}
                           target="_blank"
@@ -183,6 +219,28 @@ export default function MedicalRecordsModal({ open, onOpenChange, patientId }: M
                       )}
                     </li>
                   );
+// Helper component to show loader while image loads
+function ImageWithLoader({ src, alt }: { src: string; alt: string }) {
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(false);
+  return (
+    <div style={{ minHeight: 120, minWidth: 120, maxWidth: 200, margin: '8px 0', position: 'relative' }}>
+      {loading && !error && (
+        <div className="flex justify-center items-center h-24"><LottieLoader height={60} width={60} /></div>
+      )}
+      <img
+        src={src}
+        alt={alt}
+        style={{ maxWidth: 200, display: loading ? 'none' : 'block', borderRadius: 8 }}
+        onLoad={() => setLoading(false)}
+        onError={() => { setLoading(false); setError(true); }}
+      />
+      {!loading && error && (
+        <div className="text-destructive text-xs">Image not found or failed to load.</div>
+      )}
+    </div>
+  );
+}
                 })}
                 {(!profile.prescriptions || profile.prescriptions.length === 0) && <li>None</li>}
               </ul>

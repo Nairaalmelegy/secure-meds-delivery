@@ -1,6 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
+
+// Extend User type to include phone/address for this file
+type UserWithContact = {
+  name?: string;
+  email?: string;
+  role?: string;
+  phone?: string;
+  address?: string;
+};
+type Order = { total?: number };
+type Prescription = Record<string, unknown>;
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +24,9 @@ import PatientSidebar from '@/components/PatientSidebar';
 import LottieLoader from '@/components/LottieLoader';
 
 export default function Profile() {
-  const { user, setUser } = useAuth();
+  const auth = useAuth();
+  const user = auth.user as UserWithContact | undefined;
+  const setUser = (auth as any).setUser as ((u: any) => void) | undefined;
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -22,8 +35,8 @@ export default function Profile() {
     phone: user?.phone || '',
     address: user?.address || '',
   });
-  const [orders, setOrders] = useState<any[]>([]);
-  const [prescriptions, setPrescriptions] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [loading, setLoading] = useState(true);
   // Change password modal state
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -84,7 +97,6 @@ export default function Profile() {
       }
     }
     fetchData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setUser, toast]);
 
   const handleSave = async () => {

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import LottieLoader from '@/components/LottieLoader';
 import MedicalRecordsModal from '@/components/MedicalRecordsModal';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -175,7 +176,7 @@ export default function DoctorDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-muted-foreground">
-              {loadingOrders ? '...' : isNaN(totalPatients) ? 'N/A' : totalPatients}
+              {loadingOrders ? <LottieLoader height={32} width={32} /> : isNaN(totalPatients) ? 'N/A' : totalPatients}
             </div>
           </CardContent>
         </Card>
@@ -187,7 +188,7 @@ export default function DoctorDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {loadingPrescriptions ? '...' : pendingPrescriptions}
+              {loadingPrescriptions ? <LottieLoader height={32} width={32} /> : pendingPrescriptions}
             </div>
           </CardContent>
         </Card>
@@ -199,7 +200,7 @@ export default function DoctorDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {loadingCommissions ? '...' : `EGP ${commissionAmount.toLocaleString()}`}
+              {loadingCommissions ? <LottieLoader height={32} width={32} /> : `EGP ${commissionAmount.toLocaleString()}`}
             </div>
           </CardContent>
         </Card>
@@ -211,7 +212,7 @@ export default function DoctorDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {loadingPrescriptions ? '...' : totalPoints}
+              {loadingPrescriptions ? <LottieLoader height={32} width={32} /> : totalPoints}
             </div>
           </CardContent>
         </Card>
@@ -238,7 +239,9 @@ export default function DoctorDashboard() {
           </CardHeader>
           <CardContent>
             {searchError && <p className="text-destructive mb-2">{searchError}</p>}
-            {patientResult ? (
+            {searching ? (
+              <div className="flex justify-center items-center py-4"><LottieLoader height={48} width={48} /></div>
+            ) : patientResult ? (
               <>
                 <div className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
