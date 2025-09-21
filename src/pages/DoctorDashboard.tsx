@@ -163,9 +163,21 @@ export default function DoctorDashboard() {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Doctor Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back, Dr. {user?.name}</p>
+      {/* Header styled like patient overview */}
+      <div className="mb-8 p-6 bg-gradient-primary rounded-2xl text-white shadow-hero">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
+              <Users className="h-8 w-8" />
+              Doctor Dashboard
+            </h1>
+            <p className="text-white/80 text-lg">Welcome back, Dr. {user?.name}</p>
+          </div>
+          <div className="hidden md:flex items-center space-x-4">
+            <FileText className="h-8 w-8 text-white/80" />
+            <DollarSign className="h-8 w-8 text-white/80" />
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
