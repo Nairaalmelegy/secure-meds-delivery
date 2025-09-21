@@ -7,8 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Users, FileText, DollarSign, CheckCircle, XCircle } from 'lucide-react';
+import { Search, Users, FileText, DollarSign, CheckCircle, XCircle, LogOut } from 'lucide-react';
 import { prescriptionApi, doctorApi, orderApi, apiClient } from '@/lib/api';
+
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface User {
   id: string;
@@ -34,6 +37,7 @@ interface Order {
   patient: string | User;
   prescription: string | Prescription;
   doctor?: string | User;
+  status?: string;
 }
 
 interface Commission {
@@ -43,17 +47,26 @@ interface Commission {
   createdAt: string;
   requestedAt: string;
 }
-import { useAuth } from '@/contexts/AuthContext';
 
 export default function DoctorDashboard() {
   const { user } = useAuth();
-  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
   const { toast } = useToast();
-
+  const [searchQuery, setSearchQuery] = useState('');
   const [patientResult, setPatientResult] = useState<User | null>(null);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [viewRecordsOpen, setViewRecordsOpen] = useState(false);
+
+  // Logout handler
+  const handleLogout = async () => {
+    try {
+      await apiClient.post('/api/auth/logout');
+      navigate('/login');
+    } catch (e) {
+      toast({ title: 'Error', description: 'Failed to logout', variant: 'destructive' });
+    }
+  };
 
   // Fetch all orders for this doctor (to count unique patients)
   const { data: orders, isLoading: loadingOrders } = useQuery<Order[]>({
@@ -187,9 +200,13 @@ export default function DoctorDashboard() {
             </h1>
             <p className="text-white/80 text-lg">Welcome back, Dr. {user?.name}</p>
           </div>
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="flex items-center space-x-4">
             <FileText className="h-8 w-8 text-white/80" />
             <DollarSign className="h-8 w-8 text-white/80" />
+            <Button onClick={handleLogout} variant="outline" className="text-white border-white/30 hover:bg-white/10 flex items-center gap-2">
+              <LogOut className="h-5 w-5" />
+              Logout
+            </Button>
           </div>
         </div>
       </div>
@@ -295,7 +312,7 @@ export default function DoctorDashboard() {
             {prescriptions && prescriptions.length > 0 ? (
               <div className="space-y-3">
                 {prescriptions
-                  .filter((p: Prescription) => p.status === 'pending')
+                  .filter((p: Prescription) => p.status === 'patient_confirmed')
                   .map((prescription: Prescription) => (
                     <div key={prescription._id || prescription.id} className="p-4 border rounded-lg">
                       <div className="flex items-center justify-between mb-3">
@@ -308,32 +325,13 @@ export default function DoctorDashboard() {
                             Uploaded: {new Date(prescription.createdAt).toLocaleDateString()}
                           </p>
                         </div>
-                        <Badge>Pending</Badge>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => handleVerifyPrescription(prescription._id || prescription.id, true)}
-                          className="flex items-center gap-1"
-                        >
-                          <CheckCircle className="h-4 w-4" />
-                          Approve
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleVerifyPrescription(prescription._id || prescription.id, false)}
-                          className="flex items-center gap-1"
-                        >
-                          <XCircle className="h-4 w-4" />
-                          Reject
-                        </Button>
+                        <Badge>Confirmed</Badge>
                       </div>
                     </div>
                   ))}
               </div>
             ) : (
-              <p className="text-muted-foreground">No pending prescriptions</p>
+              <p className="text-muted-foreground">No confirmed prescriptions</p>
             )}
           </CardContent>
         </Card>
