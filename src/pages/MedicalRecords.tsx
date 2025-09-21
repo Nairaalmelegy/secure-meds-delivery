@@ -32,6 +32,58 @@ import { FileText, Upload, Download, Search, Calendar, User, Eye, Trash2, Filter
 import { prescriptionApi, userApi } from '@/lib/api';
 import type { ScanRecord, MedicalRecords } from '@/lib/api';
 import React from 'react';
+import type { FC } from 'react';
+// Component to show scan image with loader and error handling
+const ScanImageWithLoader: FC<{ url: string; fileUrl: string | undefined }> = ({ url, fileUrl }) => {
+  const [imgLoading, setImgLoading] = React.useState(true);
+  const [imgError, setImgError] = React.useState(false);
+  React.useEffect(() => {
+    setImgLoading(true);
+    setImgError(false);
+  }, [url, fileUrl]);
+  if (url.match(/\.pdf($|\?)/i)) {
+    return <div><iframe src={url} title="Scan PDF" className="w-full h-64 border rounded bg-white" /><a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a></div>;
+  }
+  if (url.match(/\.(jpg|jpeg|png|gif|bmp|webp|svg)($|\?)/i)) {
+    return (
+      <div>
+        {imgLoading && !imgError && (
+          <div className="flex justify-center items-center h-64"><LottieLoader height={100} width={100} /></div>
+        )}
+        <img
+          src={url}
+          alt="Scan"
+          className={`max-w-full max-h-64 rounded border bg-white ${imgLoading ? 'hidden' : ''}`}
+          onLoad={() => setImgLoading(false)}
+          onError={() => { setImgLoading(false); setImgError(true); }}
+        />
+        {!imgLoading && imgError && (
+          <div className="text-destructive">No image found for this scan (fileUrl: {String(fileUrl)})</div>
+        )}
+        <a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a>
+      </div>
+    );
+  }
+  // fallback: try to show as image
+  return (
+    <div>
+      {imgLoading && !imgError && (
+        <div className="flex justify-center items-center h-64"><LottieLoader height={100} width={100} /></div>
+      )}
+      <img
+        src={url}
+        alt="Scan"
+        className={`max-w-full max-h-64 rounded border bg-white ${imgLoading ? 'hidden' : ''}`}
+        onLoad={() => setImgLoading(false)}
+        onError={() => { setImgLoading(false); setImgError(true); }}
+      />
+      {!imgLoading && imgError && (
+        <div className="text-destructive">No image found for this scan (fileUrl: {String(fileUrl)})</div>
+      )}
+      <a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a>
+    </div>
+  );
+};
 import LottieLoader from '@/components/LottieLoader';
 
 export default function MedicalRecords() {
@@ -405,21 +457,12 @@ export default function MedicalRecords() {
               <div><b>Date:</b> {viewScan.date ? new Date(viewScan.date).toLocaleDateString() : ''}</div>
               <div><b>Notes:</b> {viewScan.notes}</div>
               {(() => {
-                // Debug output
-                console.log('viewScan.fileUrl:', viewScan.fileUrl);
-                console.log('signedUrls[viewScan.fileUrl]:', signedUrls[viewScan.fileUrl]);
                 if (viewScan.fileUrl && signedUrls[viewScan.fileUrl]) {
-                  const url = signedUrls[viewScan.fileUrl];
-                  if (url.match(/\.pdf($|\?)/i)) {
-                    return <div><iframe src={url} title="Scan PDF" className="w-full h-64 border rounded bg-white" /><a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a></div>;
-                  }
-                  if (url.match(/\.(jpg|jpeg|png|gif|bmp|webp|svg)($|\?)/i)) {
-                    return <div><img src={url} alt="Scan" className="max-w-full max-h-64 rounded border bg-white" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} /><a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a></div>;
-                  }
-                  // fallback: try to show as image
-                  return <div><img src={url} alt="Scan" className="max-w-full max-h-64 rounded border bg-white" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} /><a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a></div>;
+                  return <ScanImageWithLoader url={signedUrls[viewScan.fileUrl]} fileUrl={viewScan.fileUrl} />;
                 }
-                // Fallback: show a message if no image is available
+                if (viewScan.fileUrl && !signedUrls[viewScan.fileUrl]) {
+                  return <div className="flex justify-center items-center h-64"><LottieLoader height={100} width={100} /></div>;
+                }
                 return <div className="text-destructive">No image found for this scan (fileUrl: {String(viewScan.fileUrl)})</div>;
               })()}
             </div>
