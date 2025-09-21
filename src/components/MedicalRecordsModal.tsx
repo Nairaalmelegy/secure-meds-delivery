@@ -60,10 +60,12 @@ interface MedicalRecordsModalProps {
   patientId: string;
 }
 
+
 export default function MedicalRecordsModal({ open, onOpenChange, patientId }: MedicalRecordsModalProps) {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [prescriptions, setPrescriptions] = useState<PrescriptionRecord[]>([]);
 
   // Map of original fileUrl to signed URL
   const [signedUrls, setSignedUrls] = useState<{ [key: string]: string }>({});
@@ -72,13 +74,29 @@ export default function MedicalRecordsModal({ open, onOpenChange, patientId }: M
     if (!open) return;
     setLoading(true);
     setError(null);
-    apiClient.get(`/api/users/${patientId}`)
-      .then(setProfile)
+    // Fetch user profile and prescriptions in parallel
+    Promise.all([
+      apiClient.get(`/api/users/${patientId}`),
+      apiClient.get(`/api/prescriptions?patient=${patientId}`)
+    ])
+      .then(([profileData, prescriptionsDataRaw]) => {
+        setProfile(profileData);
+        // Fix: handle unknown type for prescriptionsDataRaw
+        let prescriptionsList: PrescriptionRecord[] = [];
+        if (Array.isArray(prescriptionsDataRaw)) {
+          prescriptionsList = prescriptionsDataRaw as PrescriptionRecord[];
+        } else if (
+          prescriptionsDataRaw && typeof prescriptionsDataRaw === 'object' && 'prescriptions' in prescriptionsDataRaw && Array.isArray((prescriptionsDataRaw as any).prescriptions)
+        ) {
+          prescriptionsList = (prescriptionsDataRaw as { prescriptions: PrescriptionRecord[] }).prescriptions;
+        }
+        setPrescriptions(prescriptionsList);
+      })
       .catch(() => setError('Failed to load medical records'))
       .finally(() => setLoading(false));
   }, [open, patientId]);
 
-  // Fetch signed URLs for all scans and prescriptions when profile changes
+  // Fetch signed URLs for all scans and prescriptions when profile or prescriptions change
   useEffect(() => {
     if (!profile) return;
     (async () => {
@@ -94,15 +112,15 @@ export default function MedicalRecordsModal({ open, onOpenChange, patientId }: M
                 const data = await res.json();
                 if (data.url) urls[scan.fileUrl] = data.url;
               } catch {
-                // Ignore errors for individual files
+                // Ignore errors for individual scans
               }
             }
           }
         }
       }
-      // Prescriptions
-      if (profile.prescriptions) {
-        for (const pres of profile.prescriptions) {
+      // Prescriptions (from separate fetch)
+      if (prescriptions) {
+        for (const pres of prescriptions) {
           if (pres.fileUrl) {
             const path = extractStoragePath(pres.fileUrl);
             if (path) {
@@ -111,15 +129,16 @@ export default function MedicalRecordsModal({ open, onOpenChange, patientId }: M
                 const data = await res.json();
                 if (data.url) urls[pres.fileUrl] = data.url;
               } catch {
-                // Ignore errors for individual files
+                // Ignore errors for individual prescriptions
               }
             }
+
           }
         }
       }
       setSignedUrls(urls);
     })();
-  }, [profile]);
+  }, [profile, prescriptions]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -187,7 +206,7 @@ export default function MedicalRecordsModal({ open, onOpenChange, patientId }: M
             <div>
               <b>Prescriptions:</b>
               <ul className="list-disc ml-6">
-                {(profile.prescriptions || []).map((pres, i) => {
+                {(prescriptions || []).map((pres, i) => {
                   const signedUrl = signedUrls[pres.fileUrl];
                   const isImage = signedUrl && /\.(jpe?g|png|gif|bmp|webp|svg)$/i.test(signedUrl);
                   const isPdf = signedUrl && /\.pdf$/i.test(signedUrl);
@@ -219,30 +238,8 @@ export default function MedicalRecordsModal({ open, onOpenChange, patientId }: M
                       )}
                     </li>
                   );
-// Helper component to show loader while image loads
-function ImageWithLoader({ src, alt }: { src: string; alt: string }) {
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState(false);
-  return (
-    <div style={{ minHeight: 120, minWidth: 120, maxWidth: 200, margin: '8px 0', position: 'relative' }}>
-      {loading && !error && (
-        <div className="flex justify-center items-center h-24"><LottieLoader height={60} width={60} /></div>
-      )}
-      <img
-        src={src}
-        alt={alt}
-        style={{ maxWidth: 200, display: loading ? 'none' : 'block', borderRadius: 8 }}
-        onLoad={() => setLoading(false)}
-        onError={() => { setLoading(false); setError(true); }}
-      />
-      {!loading && error && (
-        <div className="text-destructive text-xs">Image not found or failed to load.</div>
-      )}
-    </div>
-  );
-}
                 })}
-                {(!profile.prescriptions || profile.prescriptions.length === 0) && <li>None</li>}
+                {(!prescriptions || prescriptions.length === 0) && <li>None</li>}
               </ul>
             </div>
           </div>

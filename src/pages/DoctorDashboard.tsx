@@ -203,7 +203,7 @@ export default function DoctorDashboard() {
           <div className="flex items-center space-x-4">
             <FileText className="h-8 w-8 text-white/80" />
             <DollarSign className="h-8 w-8 text-white/80" />
-            <Button onClick={handleLogout} variant="outline" className="text-white border-white/30 hover:bg-white/10 flex items-center gap-2">
+            <Button onClick={handleLogout} variant="outline" className="text-gray-500 border-white/30 hover:bg-white/40 flex items-center gap-2">
               <LogOut className="h-5 w-5" />
               Logout
             </Button>
