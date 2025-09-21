@@ -267,7 +267,7 @@ export default function MedicalRecords() {
 
   return (
       <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
-        <div className=""> 
+        <div className="container mx-auto p-6">
 
         {/* Header + Medical Records Edit */}
         <div className="mb-8 p-6 bg-gradient-primary rounded-2xl text-white shadow-hero">

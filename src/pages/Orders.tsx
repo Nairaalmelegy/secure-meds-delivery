@@ -80,7 +80,7 @@ export default function Orders() {
 
   if (isLoading) {
     return (
-      <div className="">
+      <div className="container mx-auto p-6">
         <div className="text-center py-8">Loading orders...</div>
       </div>
     );
