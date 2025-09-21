@@ -333,15 +333,6 @@ export default function Profile() {
         </DialogContent>
       </Dialog>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Two-Factor Auth</span>
-                    <Badge className="bg-warning/10 text-warning border-warning/20">
-                      Disabled
-                    </Badge>
-                  </div>
-                  <Button variant="outline" className="w-full">
-                    Enable 2FA
-                  </Button>
                 </CardContent>
               </Card>
 
