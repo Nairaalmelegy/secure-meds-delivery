@@ -13,6 +13,8 @@ function renderPerson(person: unknown) {
 }
 import { useState } from 'react';
 import PrescriptionImage from '@/components/PrescriptionImage';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { Sidebar, SidebarTrigger } from '@/components/ui/sidebar';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -112,10 +114,30 @@ const getStatusBadge = (status: string) => {
   return variants[status] || 'bg-muted/10 text-muted-foreground border-muted/20';
 };
 
-return (
-  <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
-    <div className="container mx-auto p-6">
-      {/* Notification for new order request */}
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+        {/* Sidebar for desktop, sheet for mobile */}
+        <Sidebar className="bg-white border-r border-border shadow-md z-30" collapsible="offcanvas">
+          <div className="p-6 space-y-4">
+            <div className="text-2xl font-bold text-primary mb-6">MediLink</div>
+            <nav className="flex flex-col gap-2">
+              <Link to="/dashboard" className="text-foreground hover:text-primary font-medium">Dashboard</Link>
+              <Link to="/orders" className="text-foreground hover:text-primary">Orders</Link>
+              <Link to="/upload-prescription" className="text-foreground hover:text-primary">Upload Prescription</Link>
+              <Link to="/account" className="text-foreground hover:text-primary">Account</Link>
+            </nav>
+          </div>
+        </Sidebar>
+        {/* Main content area */}
+        <div className="flex-1 flex flex-col">
+          {/* Mobile sidebar trigger */}
+          <div className="md:hidden flex items-center p-2 bg-white/80 border-b border-border sticky top-0 z-20">
+            <SidebarTrigger />
+            <span className="ml-3 text-lg font-bold text-primary">MediLink</span>
+          </div>
+          <div className="container mx-auto p-6">
+  {/* Notification for new order request */}
       {awaitingConfirm.length > 0 && (
         <div className="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded shadow flex items-center justify-between">
           <div>
@@ -195,7 +217,7 @@ return (
           <button className="ml-2 text-green-800 font-bold" onClick={() => setNotification(null)}>&times;</button>
         </div>
       )}
-        {/* Welcome Header */}
+  {/* Welcome Header */}
         <div className="mb-8 p-6 bg-gradient-primary rounded-2xl text-white shadow-hero">
           <div className="flex items-center justify-between">
             <div>
@@ -209,7 +231,7 @@ return (
           </div>
         </div>
 
-        {/* Stats Grid */}
+  {/* Stats Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <Card className="border-0 shadow-card bg-card/50 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -279,7 +301,7 @@ return (
           </Card>
         </div>
 
-        {/* Recent Activity */}
+  {/* Recent Activity */}
         <div className="grid gap-6 lg:grid-cols-2">
           <Card className="border-0 shadow-card bg-card/50 backdrop-blur-sm">
             <CardHeader>
@@ -388,7 +410,9 @@ return (
             </CardContent>
           </Card>
         </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }
