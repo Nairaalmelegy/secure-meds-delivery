@@ -266,7 +266,7 @@ export default function MedicalRecords() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 px-4 py-8 md:py-10">
+    <div className="bg-gradient-to-br from-primary/5 via-background to-secondary/5">
 
         {/* Header + Medical Records Edit */}
         <div className="mb-8 p-6 bg-gradient-primary rounded-2xl text-white shadow-hero">
