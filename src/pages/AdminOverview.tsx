@@ -2,13 +2,14 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import LottieLoader from '@/components/LottieLoader';
 import { apiClient } from '../lib/api';
 function RecentOrders() {
   const { data: ordersData, isLoading: ordersLoading } = useQuery<Order[]>({
     queryKey: ['recent-orders'],
     queryFn: async () => (await apiClient.get('/api/orders?limit=5&sort=-createdAt')) as Order[],
   });
-  if (ordersLoading) return <div>Loading...</div>;
+  if (ordersLoading) return <div className="flex justify-center items-center py-4"><LottieLoader height={32} width={32} /></div>;
   if (!ordersData || ordersData.length === 0) return <div className="text-muted-foreground">No recent orders.</div>;
   return (
     <ul className="divide-y">
@@ -30,7 +31,7 @@ function RecentPrescriptions() {
     queryKey: ['recent-prescriptions'],
     queryFn: async () => (await apiClient.get('/api/prescriptions?limit=5&sort=-createdAt')) as Prescription[],
   });
-  if (prescriptionsLoading) return <div>Loading...</div>;
+  if (prescriptionsLoading) return <div className="flex justify-center items-center py-4"><LottieLoader height={32} width={32} /></div>;
   if (!prescriptionsData || prescriptionsData.length === 0) return <div className="text-muted-foreground">No recent prescriptions.</div>;
   return (
     <ul className="divide-y">
@@ -55,7 +56,7 @@ function RecentDoctors() {
       return (res as DoctorsResponse).users;
     },
   });
-  if (doctorsLoading) return <div>Loading...</div>;
+  if (doctorsLoading) return <div className="flex justify-center items-center py-4"><LottieLoader height={32} width={32} /></div>;
   if (!doctorsData || doctorsData.length === 0) return <div className="text-muted-foreground">No recent doctors.</div>;
   return (
     <ul className="divide-y">
@@ -131,19 +132,19 @@ export default function AdminOverview() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-primary/10 p-4 rounded-lg">
               <div className="text-lg font-bold">Total Stocks</div>
-              <div className="text-2xl">{isLoading ? '--' : data?.totalStocks}</div>
+              <div className="text-2xl">{isLoading ? <LottieLoader height={32} width={32} /> : data?.totalStocks}</div>
             </div>
             <div className="bg-secondary/10 p-4 rounded-lg">
               <div className="text-lg font-bold">Pending Doctors</div>
-              <div className="text-2xl">{isLoading ? '--' : data?.pendingDoctors}</div>
+              <div className="text-2xl">{isLoading ? <LottieLoader height={32} width={32} /> : data?.pendingDoctors}</div>
             </div>
             <div className="bg-warning/10 p-4 rounded-lg">
               <div className="text-lg font-bold">Pending Orders</div>
-              <div className="text-2xl">{isLoading ? '--' : data?.pendingOrders}</div>
+              <div className="text-2xl">{isLoading ? <LottieLoader height={32} width={32} /> : data?.pendingOrders}</div>
             </div>
             <div className="bg-info/10 p-4 rounded-lg">
               <div className="text-lg font-bold">Prescriptions to Review</div>
-              <div className="text-2xl">{isLoading ? '--' : data?.prescriptionsToReview}</div>
+              <div className="text-2xl">{isLoading ? <LottieLoader height={32} width={32} /> : data?.prescriptionsToReview}</div>
             </div>
           </div>
         </CardContent>

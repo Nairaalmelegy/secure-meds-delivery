@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import LottieLoader from '@/components/LottieLoader';
 import { Input } from '@/components/ui/input';
 
 import { useToast } from '@/hooks/use-toast';
@@ -47,7 +48,10 @@ export default function AdminSettings() {
               <label className="block mb-1 font-medium">New Password</label>
               <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Leave blank to keep current password" minLength={6} />
             </div>
-            <Button type="submit" disabled={loading}>{loading ? 'Saving...' : 'Save Changes'}</Button>
+            <Button type="submit" disabled={loading} className="flex items-center gap-2">
+              {loading && <LottieLoader height={20} width={20} />}
+              {loading ? 'Saving...' : 'Save Changes'}
+            </Button>
           </form>
         </CardContent>
       </Card>

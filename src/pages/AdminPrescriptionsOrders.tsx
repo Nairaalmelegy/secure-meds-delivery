@@ -27,6 +27,7 @@ function PatientNameCell({ patient }: { patient: PatientType }) {
 }
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import LottieLoader from '@/components/LottieLoader';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Dialog } from '@/components/ui/dialog';
 // Simple Dialog component (if not already present in your UI library)
@@ -84,7 +85,7 @@ function MedicineSelector({ value, onChange }: { value: ExtractedMedicine[]; onC
           onChange={e => setSearch(e.target.value)}
         />
       </div>
-      {isLoading && <div className="text-xs text-muted-foreground">Loading...</div>}
+  {isLoading && <div className="flex justify-center items-center py-2"><LottieLoader height={24} width={24} /></div>}
       {options && options.length > 0 && (
         <ul className="border rounded bg-white max-h-32 overflow-auto mb-2">
           {options.map((med: { _id: string; name: string; price: number }) => (
@@ -315,7 +316,7 @@ export default function AdminPrescriptionsOrders() {
         </CardHeader>
         <CardContent>
           {loadingPres ? (
-            <div>Loading...</div>
+            <div className="flex justify-center items-center py-4"><LottieLoader height={32} width={32} /></div>
           ) : prescriptions && prescriptions.length > 0 ? (
             <div className="space-y-4">
               {prescriptions
@@ -408,7 +409,7 @@ export default function AdminPrescriptionsOrders() {
         </CardHeader>
         <CardContent>
           {loadingOrders ? (
-            <div>Loading...</div>
+            <div className="flex justify-center items-center py-4"><LottieLoader height={32} width={32} /></div>
           ) : Array.isArray(orders) && orders.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full text-xs border">
