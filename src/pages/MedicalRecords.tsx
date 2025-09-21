@@ -34,6 +34,33 @@ import type { ScanRecord, MedicalRecords } from '@/lib/api';
 import React from 'react';
 
 export default function MedicalRecords() {
+  // Map of original fileUrl to signed URL for prescriptions
+  const [prescriptionSignedUrls, setPrescriptionSignedUrls] = useState<{ [key: string]: string }>({});
+
+  // Fetch signed URL for the prescription only when the modal is opened (viewPrescription changes)
+  useEffect(() => {
+    async function fetchSigned() {
+      if (viewPrescription?.fileUrl && !prescriptionSignedUrls[viewPrescription.fileUrl]) {
+        const path = viewPrescription.fileUrl.replace(/^\/uploads\//, '').replace(/^\//, '');
+        try {
+          const token = localStorage.getItem('token');
+          const res = await fetch(
+            `/api/users/scan/signed-url?path=${encodeURIComponent(path)}`,
+            {
+              headers: token ? { Authorization: `Bearer ${token}` } : {},
+            }
+          );
+          const data = await res.json();
+          if (data.url) {
+            setPrescriptionSignedUrls(prev => ({ ...prev, [viewPrescription.fileUrl]: data.url }));
+          }
+        } catch (err) {
+          // Optionally log error
+        }
+      }
+    }
+    fetchSigned();
+  }, [viewPrescription?.fileUrl, prescriptionSignedUrls]);
 
   // ...existing state declarations...
 
@@ -544,14 +571,21 @@ export default function MedicalRecords() {
                 <div><b>Verified by:</b> Dr. {renderPerson(viewPrescription.verifiedBy)}</div>
               )}
               {viewPrescription.description && <div><b>Description:</b> {viewPrescription.description}</div>}
-              {viewPrescription.fileUrl && signedUrls[viewPrescription.fileUrl] && (
-                <div>
-                  {signedUrls[viewPrescription.fileUrl].match(/\.pdf$/i)
-                    ? <iframe src={signedUrls[viewPrescription.fileUrl]} title="Prescription PDF" className="w-full h-64 border rounded" />
-                    : <img src={signedUrls[viewPrescription.fileUrl]} alt="Prescription" className="w-full max-h-96 object-contain rounded border bg-white" />}
-                  <a href={signedUrls[viewPrescription.fileUrl]} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a>
-                </div>
-              )}
+              {(() => {
+                if (viewPrescription.fileUrl && prescriptionSignedUrls[viewPrescription.fileUrl]) {
+                  const url = prescriptionSignedUrls[viewPrescription.fileUrl];
+                  if (url.match(/\.pdf($|\?)/i)) {
+                    return <div><iframe src={url} title="Prescription PDF" className="w-full h-64 border rounded" /><a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a></div>;
+                  }
+                  if (url.match(/\.(jpg|jpeg|png|gif|bmp|webp|svg)($|\?)/i)) {
+                    return <div><img src={url} alt="Prescription" className="w-full max-h-96 object-contain rounded border bg-white" /><a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a></div>;
+                  }
+                  // fallback: try to show as image
+                  return <div><img src={url} alt="Prescription" className="w-full max-h-96 object-contain rounded border bg-white" /><a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a></div>;
+                }
+                // Fallback: show a message if no file is available
+                return <div className="text-destructive">No file found for this prescription (fileUrl: {String(viewPrescription.fileUrl)})</div>;
+              })()}
             </div>
           )}
         </RxDialogContent>
