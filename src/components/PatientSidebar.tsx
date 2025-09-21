@@ -24,7 +24,10 @@ export default function PatientSidebar({ children }: { children: React.ReactNode
         {/* Sidebar */}
           <Sidebar className="bg-gradient-to-b from-primary/10 via-white to-secondary/10 border-r border-[#f0f0f0] flex flex-col justify-between w-64 px-6 py-8 z-30 min-h-screen">
           <div>
-            <div className="text-2xl font-bold text-primary mb-10">Patient Portal</div>
+      <div className="flex items-center text-xl font-bold text-primary mb-10 gap-2">
+        <img src="/logo.png" alt="Logo" className="h-8 w-8" />
+        <span>Patient Portal</span>
+      </div>
             <nav className="flex flex-col gap-2">
               {links.map(link => (
                 <Link
