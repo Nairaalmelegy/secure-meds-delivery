@@ -266,7 +266,8 @@ export default function MedicalRecords() {
   };
 
   return (
-    <div className="container mx-auto px-4 pb-8 w-full">
+    <div className="bg-gradient-to-br from-primary/5 via-background to-secondary/5 min-h-screen">
+  <div className="px-0 w-full pb-8">
 
         {/* Header + Medical Records Edit */}
         <div className="mb-8 p-6 bg-gradient-primary rounded-2xl text-white shadow-hero">
@@ -329,8 +330,8 @@ export default function MedicalRecords() {
           )}
         </div>
         {/* Scan Upload & List */}
-        <Card className="border-0 shadow-card bg-card/50 backdrop-blur-sm mb-6">
-          <CardHeader>
+        <section className="mb-8 rounded-2xl bg-white/70 shadow-lg p-0 md:p-6">
+          <div className="bg-transparent p-0 md:p-0">
             <div className="flex items-center justify-between">
               <CardTitle>Medical Scans & Documents</CardTitle>
               <div>
@@ -375,18 +376,19 @@ export default function MedicalRecords() {
                 />
               </div>
             )}
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="bg-transparent p-0 md:p-0">
             <div className="grid md:grid-cols-3 gap-4">
               {(medicalRecords.scans || []).length === 0 && <div className="text-muted-foreground">No scans uploaded yet.</div>}
               {(medicalRecords.scans || []).map((scan, i) => (
-                <div key={i} className="bg-muted rounded-lg p-3 flex flex-col gap-2">
+                <div key={i} className="border bg-card shadow-card rounded-lg p-3 flex flex-col gap-2">
                   <div className="font-semibold">{scan.type || 'Scan'}</div>
                   <div className="text-sm text-muted-foreground">{scan.date ? new Date(scan.date).toLocaleDateString() : ''}</div>
                   <div className="text-xs text-muted-foreground">{scan.notes}</div>
                   <button type="button" className="text-primary underline flex items-center gap-1" onClick={() => setViewScan(scan)}><Eye className="h-4 w-4" />View</button>
                 </div>
               ))}
+            </div>
       {/* Scan Details Modal */}
       <Dialog open={!!viewScan} onOpenChange={open => !open && setViewScan(null)}>
         <DialogContent className="max-w-lg">
@@ -424,12 +426,46 @@ export default function MedicalRecords() {
         </DialogContent>
       </Dialog>
             </div>
-          </CardContent>
-        </Card>
-
+          
+  </section>
+       {/* Summary Stats */}
+        {prescriptions && prescriptions.length > 0 && (
+          <section className="mt-8 mb-6 rounded-2xl bg-white/70 shadow-lg p-0 md:p-6">
+            <div className="grid gap-4 md:grid-cols-3">
+              <Card className="border-0 shadow-card bg-gradient-primary text-white">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">{prescriptions.length}</div>
+                    <div className="text-white/80 text-sm">Total Prescriptions</div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-0 shadow-card bg-gradient-secondary text-white">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">
+                      {(prescriptions as Prescription[]).filter((p) => p.status === 'approved').length}
+                    </div>
+                    <div className="text-white/80 text-sm">Approved</div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-0 shadow-card bg-card/50 backdrop-blur-sm">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-foreground">
+                      {(prescriptions as Prescription[]).filter((p) => p.status === 'pending').length}
+                    </div>
+                    <div className="text-muted-foreground text-sm">Pending Review</div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+        )}
         {/* Filters and Search */}
-        <Card className="border-0 shadow-card bg-card/50 backdrop-blur-sm mb-6">
-          <CardContent className="pt-6">
+        <section className="mb-8 rounded-2xl bg-white/70 shadow-lg p-0 md:p-6">
+          <div className="pt-6 bg-transparent p-0 md:p-0">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 w-full">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -471,186 +507,158 @@ export default function MedicalRecords() {
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          
+  </section>
 
         {/* Records Grid */}
-        {isLoading ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="h-48 bg-muted animate-pulse rounded-lg" />
-            ))}
-          </div>
-        ) : filteredPrescriptions.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredPrescriptions.map((prescription) => {
-                // Ensure we always have a valid id for actions
-                const prescriptionId = prescription._id || prescription.id;
-                return (
-              <Card key={prescriptionId} className="border-0 shadow-card bg-card/50 backdrop-blur-sm hover:shadow-lg transition-shadow overflow-visible">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                        <FileText className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">Prescription #{(prescriptionId || '').slice(-6)}</CardTitle>
-                        <div className="text-xs text-muted-foreground">ID: {String(prescriptionId)}</div>
-                        <p className="text-sm text-muted-foreground">
-                          {prescription.doctor ? `Dr. ${renderPerson(prescription.doctor)}` : 'Self-uploaded'}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge className={`${getStatusBadge(prescription.status)} border`}>
-                      {prescription.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 overflow-visible">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Calendar className="h-4 w-4" />
-                      <span>Uploaded: {new Date(prescription.createdAt).toLocaleDateString()}</span>
-                    </div>
-                    {prescription.verifiedBy && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <User className="h-4 w-4" />
-                        <span>
-                          Verified by: Dr. {renderPerson(prescription.verifiedBy)}
-                        </span>
-                      </div>
-                    )}
-                    {prescription.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {prescription.description}
-                      </p>
-                    )}
-                    <div className="flex gap-2 pt-3">
-                      <Button variant="outline" size="sm" className="flex-1" onClick={() => setViewPrescription(prescription)}>
-                        <Eye className="h-4 w-4 mr-2" />
-                        View
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => handleDownload(prescriptionId)}
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => handleDelete(prescriptionId)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-            })}
-      {/* Prescription Details Modal */}
-      <RxDialog open={!!viewPrescription} onOpenChange={open => !open && setViewPrescription(null)}>
-        <RxDialogContent className="max-w-lg">
-          <RxDialogHeader>
-            <RxDialogTitle>Prescription Details</RxDialogTitle>
-            <RxDialogClose asChild>
-              <button className="absolute top-2 right-2">×</button>
-            </RxDialogClose>
-          </RxDialogHeader>
-          {viewPrescription && (
-            <div className="space-y-3">
-              <div><b>ID:</b> {String(viewPrescription.id)}</div>
-              <div><b>Status:</b> {String(viewPrescription.status)}</div>
-              <div><b>Doctor:</b> {viewPrescription?.doctor ? renderPerson(viewPrescription.doctor) : 'Self-uploaded'}</div>
-              <div><b>Uploaded:</b> {new Date(viewPrescription.createdAt).toLocaleDateString()}</div>
-              {viewPrescription?.verifiedBy && (
-                <div><b>Verified by:</b> Dr. {renderPerson(viewPrescription.verifiedBy)}</div>
-              )}
-              {viewPrescription.description && <div><b>Description:</b> {viewPrescription.description}</div>}
-              {(() => {
-                if (viewPrescription.fileUrl) {
-                  const signedUrl = prescriptionSignedUrls[viewPrescription.fileUrl];
-                  if (!signedUrl) {
-                    // Show loading or waiting for signed URL
-                    return <div className="text-muted-foreground">Loading file...</div>;
-                  }
-                  const url = signedUrl;
-                  if (url.match(/\.pdf($|\?)/i)) {
-                    return <div><iframe src={url} title="Prescription PDF" className="w-full h-64 border rounded" /><a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a></div>;
-                  }
-                  if (url.match(/\.(jpg|jpeg|png|gif|bmp|webp|svg)($|\?)/i)) {
-                    return <div><img src={url} alt="Prescription" className="w-full max-h-96 object-contain rounded border bg-white" /><a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a></div>;
-                  }
-                  // fallback: try to show as image
-                  return <div><img src={url} alt="Prescription" className="w-full max-h-96 object-contain rounded border bg-white" /><a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a></div>;
-                }
-                // Fallback: show a message if no file is available
-                return <div className="text-destructive">No file found for this prescription.</div>;
-              })()}
+        <section className="mb-8 rounded-2xl bg-white/70 shadow-lg p-0 md:p-6">
+          {isLoading ? (
+            <div className="flex flex-col gap-4">
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <div key={i} className="h-48 bg-muted animate-pulse rounded-lg" />
+              ))}
             </div>
-          )}
-        </RxDialogContent>
-      </RxDialog>
-          </div>
-        ) : (
-          <Card className="border-0 shadow-card bg-card/50 backdrop-blur-sm">
-            <CardContent className="py-12">
-              <div className="text-center">
-                <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-medium mb-2">No prescriptions found</h3>
-                <p className="text-muted-foreground mb-6">
-                  {searchQuery || filterStatus !== 'all' 
-                    ? 'Try adjusting your search filters' 
-                    : "You haven't uploaded any prescriptions yet"}
-                </p>
-                <Button asChild className="bg-primary hover:bg-primary/90">
-                  <a href="/upload-prescription">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Upload Your First Prescription
-                  </a>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Summary Stats */}
-        {prescriptions && prescriptions.length > 0 && (
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            <Card className="border-0 shadow-card bg-gradient-primary text-white">
-              <CardContent className="p-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold">{prescriptions.length}</div>
-                  <div className="text-white/80 text-sm">Total Prescriptions</div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-0 shadow-card bg-gradient-secondary text-white">
-              <CardContent className="p-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold">
-                    {(prescriptions as Prescription[]).filter((p) => p.status === 'approved').length}
+          ) : filteredPrescriptions.length > 0 ? (
+            <div className="flex flex-col gap-6">
+              {filteredPrescriptions.map((prescription) => {
+                  // Ensure we always have a valid id for actions
+                  const prescriptionId = prescription._id || prescription.id;
+                  return (
+                <Card key={prescriptionId} className="border bg-card shadow-card hover:shadow-lg transition-shadow overflow-visible w-full">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <FileText className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg">Prescription #{(prescriptionId || '').slice(-6)}</CardTitle>
+                          <div className="text-xs text-muted-foreground">ID: {String(prescriptionId)}</div>
+                          <p className="text-sm text-muted-foreground">
+                            {prescription.doctor ? `Dr. ${renderPerson(prescription.doctor)}` : 'Self-uploaded'}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge className={`${getStatusBadge(prescription.status)} border`}>
+                        {prescription.status}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3 overflow-visible">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Calendar className="h-4 w-4" />
+                        <span>Uploaded: {new Date(prescription.createdAt).toLocaleDateString()}</span>
+                      </div>
+                      {prescription.verifiedBy && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <User className="h-4 w-4" />
+                          <span>
+                            Verified by: Dr. {renderPerson(prescription.verifiedBy)}
+                          </span>
+                        </div>
+                      )}
+                      {prescription.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {prescription.description}
+                        </p>
+                      )}
+                      <div className="flex gap-2 pt-3">
+                        <Button variant="outline" size="sm" className="flex-1" onClick={() => setViewPrescription(prescription)}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          View
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleDownload(prescriptionId)}
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleDelete(prescriptionId)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+              })}
+            {/* Prescription Details Modal */}
+            <RxDialog open={!!viewPrescription} onOpenChange={open => !open && setViewPrescription(null)}>
+              <RxDialogContent className="max-w-lg">
+                <RxDialogHeader>
+                  <RxDialogTitle>Prescription Details</RxDialogTitle>
+                  <RxDialogClose asChild>
+                    <button className="absolute top-2 right-2">×</button>
+                  </RxDialogClose>
+                </RxDialogHeader>
+                {viewPrescription && (
+                  <div className="space-y-3">
+                    <div><b>ID:</b> {String(viewPrescription.id)}</div>
+                    <div><b>Status:</b> {String(viewPrescription.status)}</div>
+                    <div><b>Doctor:</b> {viewPrescription?.doctor ? renderPerson(viewPrescription.doctor) : 'Self-uploaded'}</div>
+                    <div><b>Uploaded:</b> {new Date(viewPrescription.createdAt).toLocaleDateString()}</div>
+                    {viewPrescription?.verifiedBy && (
+                      <div><b>Verified by:</b> Dr. {renderPerson(viewPrescription.verifiedBy)}</div>
+                    )}
+                    {viewPrescription.description && <div><b>Description:</b> {viewPrescription.description}</div>}
+                    {(() => {
+                      if (viewPrescription.fileUrl) {
+                        const signedUrl = prescriptionSignedUrls[viewPrescription.fileUrl];
+                        if (!signedUrl) {
+                          // Show loading or waiting for signed URL
+                          return <div className="text-muted-foreground">Loading file...</div>;
+                        }
+                        const url = signedUrl;
+                        if (url.match(/\.pdf($|\?)/i)) {
+                          return <div><iframe src={url} title="Prescription PDF" className="w-full h-64 border rounded" /><a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a></div>;
+                        }
+                        if (url.match(/\.(jpg|jpeg|png|gif|bmp|webp|svg)($|\?)/i)) {
+                          return <div><img src={url} alt="Prescription" className="w-full max-h-96 object-contain rounded border bg-white" /><a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a></div>;
+                        }
+                        // fallback: try to show as image
+                        return <div><img src={url} alt="Prescription" className="w-full max-h-96 object-contain rounded border bg-white" /><a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a></div>;
+                      }
+                      // Fallback: show a message if no file is available
+                      return <div className="text-destructive">No file found for this prescription.</div>;
+                    })()}
                   </div>
-                  <div className="text-white/80 text-sm">Approved</div>
-                </div>
-              </CardContent>
-            </Card>
+                )}
+              </RxDialogContent>
+            </RxDialog>
+            </div>
+          ) : (
             <Card className="border-0 shadow-card bg-card/50 backdrop-blur-sm">
-              <CardContent className="p-4">
+              <CardContent className="py-12">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-foreground">
-                    {(prescriptions as Prescription[]).filter((p) => p.status === 'pending').length}
-                  </div>
-                  <div className="text-muted-foreground text-sm">Pending Review</div>
+                  <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+                  <h3 className="text-lg font-medium mb-2">No prescriptions found</h3>
+                  <p className="text-muted-foreground mb-6">
+                    {searchQuery || filterStatus !== 'all' 
+                      ? 'Try adjusting your search filters' 
+                      : "You haven't uploaded any prescriptions yet"}
+                  </p>
+                  <Button asChild className="bg-primary hover:bg-primary/90">
+                    <a href="/upload-prescription">
+                      <Upload className="h-4 w-4 mr-2" />
+                      Upload Your First Prescription
+                    </a>
+                  </Button>
                 </div>
               </CardContent>
             </Card>
-          </div>
-        )}
+          )}
+        </section>
+
+        
+    </div>
     </div>
   );
 }
