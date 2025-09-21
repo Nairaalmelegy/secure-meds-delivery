@@ -53,13 +53,17 @@ npm run dev
 - **Form Handling**: React Hook Form with Zod validation
 - **Icons**: Lucide React
 
+
 ## 🔐 Authentication & Security
 
-### Token Management
-- JWT tokens stored in `localStorage` (consider httpOnly cookies for production)
-- Automatic token refresh on API calls
-- Redirect to login on 401 responses
-- Role-based access control (RBAC)
+- **JWT tokens** now stored in **HttpOnly, Secure cookies** (no localStorage)
+- **Strict Content Security Policy (CSP)** enforced by backend
+- **CSRF protection**: All state-changing requests require a CSRF token (see `/api/csrf-token`)
+- **XSS protection**: All user-generated HTML is sanitized with **DOMPurify** before rendering
+- **Password strength indicator and requirements** on registration form
+- **Automatic token refresh** on API calls
+- **Redirect to login** on 401 responses
+- **Role-based access control (RBAC)**
 
 ### Default Admin Credentials
 - **Email**: `Pharmatec@fayoum.com`
