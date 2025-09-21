@@ -158,7 +158,13 @@ export default function MedicalRecords() {
       if (viewScan?.fileUrl && !signedUrls[viewScan.fileUrl]) {
         const path = viewScan.fileUrl.replace(/^\/uploads\//, '').replace(/^\//, '');
         try {
-          const res = await fetch(`/api/users/scan/signed-url?path=${encodeURIComponent(path)}`);
+          const token = localStorage.getItem('token');
+          const res = await fetch(
+            `/api/users/scan/signed-url?path=${encodeURIComponent(path)}`,
+            {
+              headers: token ? { Authorization: `Bearer ${token}` } : {},
+            }
+          );
           const data = await res.json();
           if (data.url) {
             setSignedUrls(prev => ({ ...prev, [viewScan.fileUrl]: data.url }));
