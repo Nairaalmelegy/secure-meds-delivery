@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { User, Phone, Mail, Shield, Edit, Save, X, MapPin, CreditCard } from 'lucide-react';
 import { orderApi, prescriptionApi, userApi } from '@/lib/api';
 import PatientSidebar from '@/components/PatientSidebar';
+import LottieLoader from '@/components/LottieLoader';
 
 export default function Profile() {
   const { user, setUser } = useAuth();

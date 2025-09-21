@@ -32,6 +32,7 @@ import { FileText, Upload, Download, Search, Calendar, User, Eye, Trash2, Filter
 import { prescriptionApi, userApi } from '@/lib/api';
 import type { ScanRecord, MedicalRecords } from '@/lib/api';
 import React from 'react';
+import LottieLoader from '@/components/LottieLoader';
 
 export default function MedicalRecords() {
 
@@ -514,10 +515,8 @@ export default function MedicalRecords() {
         {/* Records Grid */}
         <section className="mb-8 rounded-2xl bg-white/70 shadow-lg p-0 md:p-6">
           {isLoading ? (
-            <div className="flex flex-col gap-4">
-              {[1, 2, 3, 4, 5, 6].map(i => (
-                <div key={i} className="h-48 bg-muted animate-pulse rounded-lg" />
-              ))}
+            <div className="flex flex-col items-center justify-center py-12">
+              <LottieLoader height={160} width={160} />
             </div>
           ) : filteredPrescriptions.length > 0 ? (
             <div className="flex flex-col gap-6">

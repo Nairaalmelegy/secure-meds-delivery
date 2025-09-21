@@ -1,5 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import LottieLoader from '@/components/LottieLoader';
 import { Package, Truck, CheckCircle, Clock, Bell , FileText} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -83,7 +84,9 @@ export default function Orders() {
 
   if (isLoading) {
     return (
-        <div className="text-center pb-8">Loading orders...</div>
+      <div className="flex flex-col items-center justify-center py-16">
+        <LottieLoader height={120} width={120} />
+      </div>
     );
   }
 

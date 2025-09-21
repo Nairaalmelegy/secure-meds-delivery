@@ -12,6 +12,7 @@ function renderPerson(person: unknown) {
   return String(person);
 }
 import React, { useState } from 'react';
+import LottieLoader from '@/components/LottieLoader';
 import PatientSidebar from '@/components/PatientSidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -176,7 +177,7 @@ export default function UploadPrescription() {
                 disabled={selectedFiles.length === 0 || uploading}
                 className="w-full"
               >
-                {uploading ? 'Uploading...' : 'Upload Prescription(s)'}
+                {uploading ? <LottieLoader height={32} width={32} /> : 'Upload Prescription(s)'}
               </Button>
             </CardContent>
           </Card>

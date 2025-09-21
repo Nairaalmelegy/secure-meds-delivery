@@ -12,6 +12,7 @@ function renderPerson(person: unknown) {
   return String(person);
 }
 import { useState } from 'react';
+import LottieLoader from '@/components/LottieLoader';
 import PrescriptionImage from '@/components/PrescriptionImage';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -290,10 +291,8 @@ const getStatusBadge = (status: string) => {
             </CardHeader>
             <CardContent>
               {loadingPrescriptions ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="h-16 bg-muted animate-pulse rounded-lg" />
-                  ))}
+                <div className="flex flex-col items-center justify-center py-8">
+                  <LottieLoader height={80} width={80} />
                 </div>
               ) : recentPrescriptions.length > 0 ? (
                 <div className="space-y-3">
@@ -335,10 +334,8 @@ const getStatusBadge = (status: string) => {
             </CardHeader>
             <CardContent>
               {loadingOrders ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="h-16 bg-muted animate-pulse rounded-lg" />
-                  ))}
+                <div className="flex flex-col items-center justify-center py-8">
+                  <LottieLoader height={80} width={80} />
                 </div>
               ) : recentOrders.length > 0 ? (
                 <div className="space-y-3">

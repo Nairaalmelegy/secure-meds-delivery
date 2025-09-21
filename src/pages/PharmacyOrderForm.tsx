@@ -26,6 +26,7 @@ export interface Pharmacy {
   name: string;
 }
 import { Button } from '@/components/ui/button';
+import LottieLoader from '@/components/LottieLoader';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 
@@ -179,7 +180,9 @@ export function PharmacyOrderForm({ prescription }: PharmacyOrderFormProps) {
       <div>
         <label className="block text-xs font-medium mb-1">Select Pharmacy<span className="text-red-500">*</span></label>
         {loadingPharmacies ? (
-          <div>Loading pharmacies...</div>
+          <div className="flex flex-col items-center justify-center py-8">
+            <LottieLoader height={64} width={64} />
+          </div>
         ) : pharmacies && pharmacies.length > 0 ? (
           <select
             className="border rounded px-2 py-1 text-xs w-full"

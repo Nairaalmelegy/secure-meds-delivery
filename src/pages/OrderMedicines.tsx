@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import LottieLoader from '@/components/LottieLoader';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -71,7 +72,9 @@ export default function OrderMedicines() {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-8">Loading medicines...</div>
+        <div className="flex flex-col items-center justify-center py-16">
+          <LottieLoader height={120} width={120} />
+        </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {medicines?.map((medicine: any) => {
