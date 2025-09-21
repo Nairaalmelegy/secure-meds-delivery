@@ -12,7 +12,6 @@ function renderPerson(person: unknown) {
   return String(person);
 }
 import React, { useState } from 'react';
-import PatientSidebar from '@/components/PatientSidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -111,7 +110,6 @@ export default function UploadPrescription() {
   };
 
   return (
-    //<PatientSidebar>
       <div className="">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Upload Prescription</h1>
@@ -224,6 +222,5 @@ export default function UploadPrescription() {
         </Card>
       </div>
       </div>
-   // </PatientSidebar>
   );
 }

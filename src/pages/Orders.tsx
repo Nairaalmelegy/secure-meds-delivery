@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { orderApi, apiClient } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
-import PatientSidebar from '@/components/PatientSidebar';
 
 type OrderItem = {
   medicine: { name: string } | string;
@@ -81,14 +80,13 @@ export default function Orders() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="">
         <div className="text-center py-8">Loading orders...</div>
       </div>
     );
   }
 
   return (
-    //<PatientSidebar>
       <div className="">
       <div className="mb-8 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -182,6 +180,5 @@ export default function Orders() {
         </Card>
       )}
       </div>
-    //</PatientSidebar>
   );
 }

@@ -13,7 +13,6 @@ function renderPerson(person: unknown) {
 }
 import { useState } from 'react';
 import PrescriptionImage from '@/components/PrescriptionImage';
-import PatientSidebar from '@/components/PatientSidebar';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -114,7 +113,6 @@ const getStatusBadge = (status: string) => {
 };
 
   return (
-    //<PatientSidebar>
       <div className="bg-gradient-to-br from-primary/5 via-background to-secondary/5">
         <div className="">
   {/* Notification for new order request */}
@@ -392,6 +390,5 @@ const getStatusBadge = (status: string) => {
         </div>
         </div>
       </div>
-    //</PatientSidebar>
   );
 }

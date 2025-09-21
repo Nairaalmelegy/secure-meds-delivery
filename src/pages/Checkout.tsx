@@ -10,7 +10,6 @@ import { useToast } from '@/hooks/use-toast';
 import { orderApi } from '@/lib/api';
 import { CreditCard, MapPin, Package } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import PatientSidebar from '@/components/PatientSidebar';
 
 export function Checkout() {
   const { items, total, clearCart, addItem } = useCart();
@@ -106,7 +105,6 @@ export function Checkout() {
 
   if (items.length === 0) {
     return (
-      // <PatientSidebar>
         <div className="">
           <Card>
             <CardContent className="py-8">
@@ -121,12 +119,10 @@ export function Checkout() {
             </CardContent>
           </Card>
         </div>
-      // </PatientSidebar>
     );
   }
 
   return (
-    // <PatientSidebar>
       <div className="">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Checkout</h1>
@@ -250,6 +246,5 @@ export function Checkout() {
         </Card>
       </div>
       </div>
-    //  </PatientSidebar> 
   );
 }
