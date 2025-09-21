@@ -567,8 +567,13 @@ export default function MedicalRecords() {
               )}
               {viewPrescription.description && <div><b>Description:</b> {viewPrescription.description}</div>}
               {(() => {
-                if (viewPrescription.fileUrl && prescriptionSignedUrls[viewPrescription.fileUrl]) {
-                  const url = prescriptionSignedUrls[viewPrescription.fileUrl];
+                if (viewPrescription.fileUrl) {
+                  const signedUrl = prescriptionSignedUrls[viewPrescription.fileUrl];
+                  if (!signedUrl) {
+                    // Show loading or waiting for signed URL
+                    return <div className="text-muted-foreground">Loading file...</div>;
+                  }
+                  const url = signedUrl;
                   if (url.match(/\.pdf($|\?)/i)) {
                     return <div><iframe src={url} title="Prescription PDF" className="w-full h-64 border rounded" /><a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a></div>;
                   }
@@ -579,7 +584,7 @@ export default function MedicalRecords() {
                   return <div><img src={url} alt="Prescription" className="w-full max-h-96 object-contain rounded border bg-white" /><a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2 text-primary underline">Open in new tab</a></div>;
                 }
                 // Fallback: show a message if no file is available
-                return <div className="text-destructive">No file found for this prescription (fileUrl: {String(viewPrescription.fileUrl)})</div>;
+                return <div className="text-destructive">No file found for this prescription.</div>;
               })()}
             </div>
           )}
