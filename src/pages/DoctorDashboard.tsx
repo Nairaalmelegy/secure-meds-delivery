@@ -147,12 +147,26 @@ export default function DoctorDashboard() {
   };
 
   // Calculate statistics
-  const totalPatients = orders
-    ? new Set(orders.map((o) => typeof o.patient === 'object' ? (o.patient as User).id : o.patient)).size
+  // Only count patients who made a CONFIRMED order with a prescription holding this doctor ID
+  const totalPatients = orders && user?.id
+    ? new Set(
+        orders
+          .filter((o) => {
+            // Order must be confirmed and prescription must belong to this doctor
+            const isConfirmed = o.status === 'confirmed';
+            if (isConfirmed && o.prescription && typeof o.prescription === 'object') {
+              return (o.prescription as Prescription).doctor === user.id;
+            }
+            return false;
+          })
+          .map((o) => typeof o.patient === 'object' ? (o.patient as User).id : o.patient)
+      ).size
     : 0;
 
-  const pendingPrescriptions = prescriptions
-    ? prescriptions.filter((p) => p.status === 'pending').length
+  // Total prescriptions for this doctor that were confirmed by the patient
+  // Assuming status 'patient_confirmed' means confirmed by patient
+  const verifiedPrescriptions = prescriptions
+    ? prescriptions.filter((p) => p.status === 'patient_confirmed').length
     : 0;
 
   const totalPoints = prescriptions ? prescriptions.length : 0;
@@ -195,12 +209,12 @@ export default function DoctorDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Prescriptions</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Verified Prescriptions</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {loadingPrescriptions ? <LottieLoader height={32} width={32} /> : pendingPrescriptions}
+              {loadingPrescriptions ? <LottieLoader height={32} width={32} /> : verifiedPrescriptions}
             </div>
           </CardContent>
         </Card>
