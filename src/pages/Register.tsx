@@ -1,4 +1,24 @@
+// Password requirements utility
+const passwordRequirements = [
+  { label: 'At least 8 characters', test: (pw: string) => pw.length >= 8 },
+  { label: 'One uppercase letter', test: (pw: string) => /[A-Z]/.test(pw) },
+  { label: 'One lowercase letter', test: (pw: string) => /[a-z]/.test(pw) },
+  { label: 'One number', test: (pw: string) => /[0-9]/.test(pw) },
+  { label: 'One special character', test: (pw: string) => /[^A-Za-z0-9]/.test(pw) },
+];
 import { useState } from 'react';
+// Password strength utility
+function getPasswordStrength(password: string) {
+  let score = 0;
+  if (password.length >= 8) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[a-z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+  if (score <= 2) return { label: 'Weak', color: 'text-red-500' };
+  if (score === 3 || score === 4) return { label: 'Medium', color: 'text-yellow-500' };
+  return { label: 'Strong', color: 'text-green-600' };
+}
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -252,6 +272,28 @@ export default function Register() {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </Button>
                 </div>
+                {/* Password strength indicator */}
+                {formData.password && (
+                  <div className="mt-1 text-sm font-medium flex items-center gap-2">
+                    <span className={`h-2 w-2 rounded-full inline-block ${getPasswordStrength(formData.password).color} bg-current`}></span>
+                    <span className={getPasswordStrength(formData.password).color}>
+                      {getPasswordStrength(formData.password).label} password
+                    </span>
+                  </div>
+                )}
+
+                {/* Password requirements */}
+                <ul className="mt-1 text-xs space-y-1">
+                  {passwordRequirements.map((req, idx) => {
+                    const met = req.test(formData.password);
+                    return (
+                      <li key={idx} className="flex items-center gap-2">
+                        <span className={`h-2 w-2 rounded-full ${met ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+                        <span className={met ? 'text-green-600' : 'text-gray-500'}>{req.label}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
 
               <div className="space-y-2">
