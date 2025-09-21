@@ -34,8 +34,35 @@ import type { ScanRecord, MedicalRecords } from '@/lib/api';
 import React from 'react';
 
 export default function MedicalRecords() {
+
   // Map of original fileUrl to signed URL for prescriptions
   const [prescriptionSignedUrls, setPrescriptionSignedUrls] = useState<{ [key: string]: string }>({});
+
+  // Type and state declarations (move up)
+  type Prescription = {
+    id?: string;
+    _id?: string;
+    doctor?: string | { _id?: string; name?: string; email?: string } | null;
+    status: string;
+    createdAt: string;
+    verifiedBy?: string | { _id?: string; name?: string; email?: string } | null;
+    description?: string;
+    fileUrl?: string;
+  };
+  const [viewScan, setViewScan] = useState<ScanRecord | null>(null);
+  const [viewPrescription, setViewPrescription] = useState<Prescription | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [editMode, setEditMode] = useState(false);
+  const [medicalRecords, setMedicalRecords] = useState<MedicalRecords>({});
+  const [scanFile, setScanFile] = useState<File | null>(null);
+  const [scanMeta, setScanMeta] = useState({ type: '', date: '', notes: '' });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Map of original fileUrl to signed URL
+  const [signedUrls, setSignedUrls] = useState<{ [key: string]: string }>({});
 
   // Fetch signed URL for the prescription only when the modal is opened (viewPrescription changes)
   useEffect(() => {
@@ -61,38 +88,6 @@ export default function MedicalRecords() {
     }
     fetchSigned();
   }, [viewPrescription?.fileUrl, prescriptionSignedUrls]);
-
-  // ...existing state declarations...
-
-  // (Removed duplicate declarations here)
-
-  // Map of original fileUrl to signed URL
-  const [signedUrls, setSignedUrls] = useState<{ [key: string]: string }>({});
-
-  // ...other hooks and state...
-
-  // (Move fetching signedUrls below all state and query declarations)
-  type Prescription = {
-    id?: string;
-    _id?: string;
-    doctor?: string | { _id?: string; name?: string; email?: string } | null;
-    status: string;
-    createdAt: string;
-    verifiedBy?: string | { _id?: string; name?: string; email?: string } | null;
-    description?: string;
-    fileUrl?: string;
-  };
-  const [viewScan, setViewScan] = useState<ScanRecord | null>(null);
-  const [viewPrescription, setViewPrescription] = useState<Prescription | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [editMode, setEditMode] = useState(false);
-  const [medicalRecords, setMedicalRecords] = useState<MedicalRecords>({});
-  const [scanFile, setScanFile] = useState<File | null>(null);
-  const [scanMeta, setScanMeta] = useState({ type: '', date: '', notes: '' });
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   // Fetch prescriptions
   const { data: prescriptions, isLoading } = useQuery({
