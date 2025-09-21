@@ -73,11 +73,11 @@ export default function OrderMedicines() {
           {medicines?.map((medicine: any) => {
             const cartQuantity = getCartQuantity(medicine._id);
             return (
-              <Card key={medicine._id}>
-                <CardHeader>
+              <Card key={medicine._id} className="h-80 flex flex-col">
+                <CardHeader className="flex-1">
                   <CardTitle className="text-lg">{medicine.name}</CardTitle>
                   {medicine.description && (
-                    <p className="text-sm text-muted-foreground">{medicine.description}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-6 overflow-hidden">{medicine.description}</p>
                   )}
                 </CardHeader>
                 <CardContent>
