@@ -211,7 +211,7 @@ const getStatusBadge = (status: string) => {
 
   {/* Stats Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-          <Card className="border-0 shadow-card bg-card/50 backdrop-blur-sm">
+          <Card className="border shadow-md bg-card/50 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Prescriptions</CardTitle>
               <div className="p-2 bg-primary/10 rounded-lg">
@@ -227,7 +227,7 @@ const getStatusBadge = (status: string) => {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-card bg-card/50 backdrop-blur-sm">
+          <Card className="border shadow-md bg-card/50 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Orders</CardTitle>
               <div className="p-2 bg-secondary/10 rounded-lg">
@@ -243,7 +243,7 @@ const getStatusBadge = (status: string) => {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-card bg-card/50 backdrop-blur-sm">
+          <Card className="border shadow-md bg-card/50 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Spent</CardTitle>
               <div className="p-2 bg-warning/10 rounded-lg">
@@ -256,7 +256,7 @@ const getStatusBadge = (status: string) => {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-card bg-gradient-secondary text-white">
+          <Card className="border shadow-md bg-gradient-secondary text-white">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-white/80">Quick Actions</CardTitle>
             </CardHeader>
@@ -281,7 +281,7 @@ const getStatusBadge = (status: string) => {
 
   {/* Recent Activity */}
         <div className="grid gap-6 lg:grid-cols-2">
-          <Card className="border-0 shadow-card bg-card/50 backdrop-blur-sm">
+          <Card className="border shadow-md bg-card/50 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5 text-primary" />
@@ -326,7 +326,7 @@ const getStatusBadge = (status: string) => {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-card bg-card/50 backdrop-blur-sm">
+          <Card className="border shadow-md bg-card/50 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ShoppingCart className="h-5 w-5 text-secondary" />
