@@ -143,46 +143,46 @@ import { PharmacyOrderForm } from './PharmacyOrderForm';
 
 // Helper component to fetch and display prescription image using apiClient
 function PrescriptionImage({ fileUrl }: { fileUrl: string }) {
-  const [imgUrl, setImgUrl] = useState<string | null>(null);
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   useEffect(() => {
-    let revoked = false;
-    async function fetchImage() {
+    let cancelled = false;
+    async function fetchSignedUrl() {
+      if (!fileUrl) return;
+      // Extract storage path from fileUrl (handles both full URL and storage path)
+      let path = fileUrl;
+      const match = path.match(/(?:uploads\/)?(scans|prescriptions)\/[\w\-.]+/i);
+      if (match) {
+        path = match[0].replace(/^uploads\//, '');
+      }
       try {
-        const baseUrl = apiClient.getBaseUrl();
-        const response = await fetch(baseUrl + fileUrl, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        if (!response.ok) throw new Error('Failed to fetch image');
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        if (!revoked) setImgUrl(url);
+        const token = localStorage.getItem('token');
+        const res = await fetch(`/api/users/scan/signed-url?path=${encodeURIComponent(path)}`,
+          { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+        );
+        const data = await res.json();
+        if (!cancelled && data.url) setSignedUrl(data.url);
+        else if (!cancelled) setSignedUrl(null);
       } catch {
-        if (!revoked) setImgUrl(null);
+        if (!cancelled) setSignedUrl(null);
       }
     }
-    fetchImage();
-    return () => {
-      revoked = true;
-      if (imgUrl) URL.revokeObjectURL(imgUrl);
-    };
-    // eslint-disable-next-line
+    fetchSignedUrl();
+    return () => { cancelled = true; };
   }, [fileUrl]);
-  if (!imgUrl) return <div className="text-xs text-muted-foreground">Image unavailable</div>;
+  if (!signedUrl) return <div className="text-xs text-muted-foreground">Image unavailable</div>;
 
   return (
     <div className="mt-2">
       <img
-        src={imgUrl}
+        src={signedUrl}
         alt="Prescription"
         className="max-h-48 border rounded cursor-zoom-in"
         onClick={() => setShowModal(true)}
         title="Click to enlarge"
       />
       <a
-        href={imgUrl}
+        href={signedUrl}
         download={fileUrl.split('/').pop() || 'prescription.png'}
         className="block text-xs text-blue-600 mt-1 hover:underline"
         target="_blank"
@@ -196,7 +196,7 @@ function PrescriptionImage({ fileUrl }: { fileUrl: string }) {
           onClick={() => setShowModal(false)}
         >
           <img
-            src={imgUrl}
+            src={signedUrl}
             alt="Prescription Fullscreen"
             className="max-h-[90vh] max-w-[90vw] border-4 border-white rounded shadow-lg"
             onClick={e => e.stopPropagation()}
@@ -330,7 +330,15 @@ export default function AdminPrescriptionsOrders() {
                       <div className="font-semibold">Prescription #{pres._id.slice(-6)}</div>
                       <div className="text-xs text-muted-foreground">Patient: {typeof pres.patient === 'object' ? (pres.patient?.name || pres.patient?._id || JSON.stringify(pres.patient)) : pres.patient}</div>
                     </div>
-                    <Button size="sm" variant="outline">Send order for confirmation</Button>
+                    {/* Button is now disabled unless extractedMedicines is filled, or removed if only modal should be used */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={!(pres.extractedMedicines && pres.extractedMedicines.length > 0)}
+                      title={!(pres.extractedMedicines && pres.extractedMedicines.length > 0) ? 'Fill Extracted Medicines to enable' : ''}
+                    >
+                      Send order for confirmation
+                    </Button>
                   </div>
                   {pres.fileUrl && <PrescriptionImage fileUrl={pres.fileUrl} />}
                 </div>
