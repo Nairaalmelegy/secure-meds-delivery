@@ -266,6 +266,7 @@ export default function MedicalRecords() {
   };
 
   return (
+    <div className="container mx-auto px-4 py-8 w-full">
     <div className="bg-gradient-to-br from-primary/5 via-background to-secondary/5">
 
         {/* Header + Medical Records Edit */}
@@ -430,7 +431,7 @@ export default function MedicalRecords() {
         {/* Filters and Search */}
         <Card className="border-0 shadow-card bg-card/50 backdrop-blur-sm mb-6">
           <CardContent className="pt-6">
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 w-full">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
@@ -482,7 +483,7 @@ export default function MedicalRecords() {
             ))}
           </div>
         ) : filteredPrescriptions.length > 0 ? (
-          <div className="flex flex-col gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredPrescriptions.map((prescription) => {
                 // Ensure we always have a valid id for actions
                 const prescriptionId = prescription._id || prescription.id;
@@ -651,6 +652,7 @@ export default function MedicalRecords() {
             </Card>
           </div>
         )}
+      </div>
       </div>
   );
 }
