@@ -108,7 +108,10 @@ export default function MedicalRecordsModal({ open, onOpenChange, patientId }: M
             const path = extractStoragePath(scan.fileUrl);
             if (path) {
               try {
-                const res = await fetch(`/api/users/scan/signed-url?path=${encodeURIComponent(path)}`);
+                const token = localStorage.getItem('token');
+                const res = await fetch(`/api/users/scan/signed-url?path=${encodeURIComponent(path)}`,
+                  { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+                );
                 const data = await res.json();
                 if (data.url) urls[scan.fileUrl] = data.url;
               } catch {
@@ -125,14 +128,16 @@ export default function MedicalRecordsModal({ open, onOpenChange, patientId }: M
             const path = extractStoragePath(pres.fileUrl);
             if (path) {
               try {
-                const res = await fetch(`/api/users/scan/signed-url?path=${encodeURIComponent(path)}`);
+                const token = localStorage.getItem('token');
+                const res = await fetch(`/api/users/scan/signed-url?path=${encodeURIComponent(path)}`,
+                  { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+                );
                 const data = await res.json();
                 if (data.url) urls[pres.fileUrl] = data.url;
               } catch {
                 // Ignore errors for individual prescriptions
               }
             }
-
           }
         }
       }
