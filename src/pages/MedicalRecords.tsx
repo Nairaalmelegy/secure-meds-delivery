@@ -267,7 +267,7 @@ export default function MedicalRecords() {
   };
 
   return (
-    <PatientSidebar>
+    //<PatientSidebar>
       <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
         <div className="container mx-auto p-6">
 
@@ -656,6 +656,6 @@ export default function MedicalRecords() {
         )}
         </div>
       </div>
-    </PatientSidebar>
+    //</PatientSidebar>
   );
 }

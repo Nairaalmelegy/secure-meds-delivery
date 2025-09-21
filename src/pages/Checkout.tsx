@@ -106,7 +106,7 @@ export function Checkout() {
 
   if (items.length === 0) {
     return (
-      <PatientSidebar>
+      // <PatientSidebar>
         <div className="">
           <Card>
             <CardContent className="py-8">
@@ -121,12 +121,12 @@ export function Checkout() {
             </CardContent>
           </Card>
         </div>
-      </PatientSidebar>
+      // </PatientSidebar>
     );
   }
 
   return (
-    <PatientSidebar>
+    // <PatientSidebar>
       <div className="">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Checkout</h1>
@@ -250,6 +250,6 @@ export function Checkout() {
         </Card>
       </div>
       </div>
-    </PatientSidebar>
+    //  </PatientSidebar> 
   );
 }

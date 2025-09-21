@@ -114,7 +114,7 @@ const getStatusBadge = (status: string) => {
 };
 
   return (
-    <PatientSidebar>
+    //<PatientSidebar>
       <div className="bg-gradient-to-br from-primary/5 via-background to-secondary/5">
         <div className="">
   {/* Notification for new order request */}
@@ -392,6 +392,6 @@ const getStatusBadge = (status: string) => {
         </div>
         </div>
       </div>
-    </PatientSidebar>
+    //</PatientSidebar>
   );
 }

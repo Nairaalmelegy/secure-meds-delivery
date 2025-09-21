@@ -111,7 +111,7 @@ export default function UploadPrescription() {
   };
 
   return (
-    <PatientSidebar>
+    //<PatientSidebar>
       <div className="">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Upload Prescription</h1>
@@ -224,6 +224,6 @@ export default function UploadPrescription() {
         </Card>
       </div>
       </div>
-    </PatientSidebar>
+   // </PatientSidebar>
   );
 }

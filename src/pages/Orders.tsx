@@ -88,7 +88,7 @@ export default function Orders() {
   }
 
   return (
-    <PatientSidebar>
+    //<PatientSidebar>
       <div className="">
       <div className="mb-8 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -182,6 +182,6 @@ export default function Orders() {
         </Card>
       )}
       </div>
-    </PatientSidebar>
+    //</PatientSidebar>
   );
 }

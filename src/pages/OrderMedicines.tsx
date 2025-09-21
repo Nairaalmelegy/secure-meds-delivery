@@ -38,7 +38,7 @@ export default function OrderMedicines() {
   };
 
   return (
-    <PatientSidebar>
+    //<PatientSidebar>
       <div className="">
       <div className="mb-8 flex items-center justify-between">
         <div>
@@ -129,6 +129,6 @@ export default function OrderMedicines() {
         </div>
       )}
       </div>
-    </PatientSidebar>
+    //</PatientSidebar>
   );
 }
