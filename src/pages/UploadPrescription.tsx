@@ -12,6 +12,7 @@ function renderPerson(person: unknown) {
   return String(person);
 }
 import React, { useState } from 'react';
+import PatientSidebar from '@/components/PatientSidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -110,7 +111,8 @@ export default function UploadPrescription() {
   };
 
   return (
-    <div className="container mx-auto p-6">
+    <PatientSidebar>
+      <div className="">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Upload Prescription</h1>
         <p className="text-muted-foreground">Upload your prescription for verification and order processing</p>
@@ -221,6 +223,7 @@ export default function UploadPrescription() {
           </CardContent>
         </Card>
       </div>
-    </div>
+      </div>
+    </PatientSidebar>
   );
 }

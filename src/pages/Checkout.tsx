@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { orderApi } from '@/lib/api';
 import { CreditCard, MapPin, Package } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import PatientSidebar from '@/components/PatientSidebar';
 
 export function Checkout() {
   const { items, total, clearCart, addItem } = useCart();
@@ -105,25 +106,28 @@ export function Checkout() {
 
   if (items.length === 0) {
     return (
-      <div className="container mx-auto p-6">
-        <Card>
-          <CardContent className="py-8">
-            <div className="text-center">
-              <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Your cart is empty</h3>
-              <p className="text-muted-foreground mb-4">Add some medicines to proceed with checkout</p>
-              <Button onClick={() => navigate('/order-medicines')}>
-                Start Shopping
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <PatientSidebar>
+        <div className="">
+          <Card>
+            <CardContent className="py-8">
+              <div className="text-center">
+                <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">Your cart is empty</h3>
+                <p className="text-muted-foreground mb-4">Add some medicines to proceed with checkout</p>
+                <Button onClick={() => navigate('/order-medicines')}>
+                  Start Shopping
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </PatientSidebar>
     );
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <PatientSidebar>
+      <div className="">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Checkout</h1>
         <p className="text-muted-foreground">Review your order and complete the purchase</p>
@@ -245,6 +249,7 @@ export function Checkout() {
           </CardContent>
         </Card>
       </div>
-    </div>
+      </div>
+    </PatientSidebar>
   );
 }

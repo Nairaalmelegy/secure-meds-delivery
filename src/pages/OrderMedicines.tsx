@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Search, Plus, ShoppingCart, Minus } from 'lucide-react';
 import { medicineApi } from '@/lib/api';
 import { Link } from 'react-router-dom';
+import PatientSidebar from '@/components/PatientSidebar';
 
 export default function OrderMedicines() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,7 +38,8 @@ export default function OrderMedicines() {
   };
 
   return (
-    <div className="container mx-auto p-6">
+    <PatientSidebar>
+      <div className="">
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Order Medicines</h1>
@@ -126,6 +128,7 @@ export default function OrderMedicines() {
           })}
         </div>
       )}
-    </div>
+      </div>
+    </PatientSidebar>
   );
 }
