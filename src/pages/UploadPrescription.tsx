@@ -12,6 +12,7 @@ function renderPerson(person: unknown) {
   return String(person);
 }
 import React, { useState } from 'react';
+import PatientSidebar from '@/components/PatientSidebar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,6 +48,7 @@ export default function UploadPrescription() {
       })
       .finally(() => setDoctorLoading(false));
   }, [doctorSearch]);
+
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
@@ -77,7 +79,6 @@ export default function UploadPrescription() {
       });
       return;
     }
-
     setUploading(true);
     let successCount = 0;
     let failCount = 0;
@@ -94,8 +95,7 @@ export default function UploadPrescription() {
         title: `Uploaded ${successCount} prescription${successCount > 1 ? 's' : ''}`,
         description: failCount > 0 ? `${failCount} failed to upload.` : 'All uploaded successfully.',
       });
-      setSelectedFiles([]); // allow user to select and upload more prescriptions immediately
-      // do not block further uploads, keep UI ready for more
+      setSelectedFiles([]);
       setDoctorId('');
       refetch();
     }
@@ -110,117 +110,113 @@ export default function UploadPrescription() {
   };
 
   return (
-      <div className="">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Upload Prescription</h1>
-        <p className="text-muted-foreground">Upload your prescription for verification and order processing</p>
-      </div>
+    <PatientSidebar>
+      <div className="px-4 py-8 md:py-10">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground">Upload Prescription</h1>
+          <p className="text-muted-foreground">Upload your prescription for verification and order processing</p>
+        </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5" />
-              Upload New Prescription
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <Label htmlFor="prescription-file">Prescription File (PDF/Image)</Label>
-              <Input
-                id="prescription-file"
-                type="file"
-                accept=".pdf,.jpg,.jpeg,.png"
-                multiple
-                onChange={handleFileChange}
-                className="mt-2"
-              />
-              {selectedFiles.length > 0 && (
-                <ul className="text-sm text-muted-foreground mt-2">
-                  {selectedFiles.map(file => (
-                    <li key={file.name}>{file.name}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="doctor-autocomplete">Doctor (Optional)</Label>
-              <Autocomplete
-                value={doctorSearch}
-                onChange={setDoctorSearch}
-                onSelect={option => {
-                  setDoctorId(option.value);
-                  setDoctorSearch(option.label);
-                }}
-                options={doctorOptions}
-                loading={doctorLoading}
-                placeholder="Search doctor by name or email"
-                label={undefined}
-                disabled={uploading}
-              />
-              {doctorId && (
-                <div className="text-xs text-muted-foreground mt-1">Selected doctor ID: {doctorId}</div>
-              )}
-            </div>
-
-            <Button 
-              onClick={handleUpload} 
-              disabled={selectedFiles.length === 0 || uploading}
-              className="w-full"
-            >
-              {uploading ? 'Uploading...' : 'Upload Prescription(s)'}
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              My Prescriptions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {prescriptions && prescriptions.length > 0 ? (
-              <div className="space-y-3">
-                {prescriptions.map((prescription: any) => (
-                  <div key={prescription.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <p className="font-medium">Prescription #{prescription.id}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Uploaded: {new Date(prescription.createdAt).toLocaleDateString()}
-                      </p>
-                      {prescription.doctor && (
-                        <p className="text-sm text-muted-foreground">
-                          Doctor: {renderPerson(prescription.doctor)}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {prescription.status === 'approved' ? (
-                        <div className="flex items-center gap-1 text-green-600">
-                          <Check className="h-4 w-4" />
-                          <span className="text-sm">Approved</span>
-                        </div>
-                      ) : prescription.status === 'rejected' ? (
-                        <div className="flex items-center gap-1 text-red-600">
-                          <X className="h-4 w-4" />
-                          <span className="text-sm">Rejected</span>
-                        </div>
-                      ) : (
-                        <span className="text-sm text-yellow-600">Pending</span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Upload className="h-5 w-5" />
+                Upload New Prescription
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <Label htmlFor="prescription-file">Prescription File (PDF/Image)</Label>
+                <Input
+                  id="prescription-file"
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  multiple
+                  onChange={handleFileChange}
+                  className="mt-2"
+                />
+                {selectedFiles.length > 0 && (
+                  <ul className="text-sm text-muted-foreground mt-2">
+                    {selectedFiles.map(file => (
+                      <li key={file.name}>{file.name}</li>
+                    ))}
+                  </ul>
+                )}
               </div>
-            ) : (
-              <p className="text-muted-foreground">No prescriptions uploaded yet</p>
-            )}
-          </CardContent>
-        </Card>
+
+              <div>
+                <Label htmlFor="doctor-autocomplete">Doctor (Optional)</Label>
+                <Autocomplete
+                  value={doctorSearch}
+                  onChange={setDoctorSearch}
+                  onSelect={option => {
+                    setDoctorId(option.value);
+                    setDoctorSearch(option.label);
+                  }}
+                  options={doctorOptions}
+                  loading={doctorLoading}
+                  placeholder="Search doctor by name or email"
+                  label={undefined}
+                  disabled={uploading}
+                />
+                {doctorId && (
+                  <div className="text-xs text-muted-foreground mt-1">Selected doctor ID: {doctorId}</div>
+                )}
+              </div>
+
+              <Button
+                onClick={handleUpload}
+                disabled={selectedFiles.length === 0 || uploading}
+                className="w-full"
+              >
+                {uploading ? 'Uploading...' : 'Upload Prescription(s)'}
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                My Prescriptions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {prescriptions && prescriptions.length > 0 ? (
+                <div className="space-y-4">
+                  {prescriptions.map((prescription: any) => (
+                    <div key={prescription._id || prescription.id} className="flex items-center justify-between p-3 border border-border/50 rounded-xl">
+                      <div>
+                        <div className="font-medium text-foreground">Prescription #{prescription._id?.slice(-6) || prescription.id?.slice(-6)}</div>
+                        <div className="text-xs text-muted-foreground">Doctor: {prescription.doctor ? renderPerson(prescription.doctor) : 'Self-uploaded'}</div>
+                        <div className="text-xs text-muted-foreground">Uploaded: {prescription.createdAt ? new Date(prescription.createdAt).toLocaleDateString() : ''}</div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {prescription.status === 'approved' ? (
+                          <div className="flex items-center gap-1 text-green-600">
+                            <Check className="h-4 w-4" />
+                            <span className="text-sm">Approved</span>
+                          </div>
+                        ) : prescription.status === 'rejected' ? (
+                          <div className="flex items-center gap-1 text-red-600">
+                            <X className="h-4 w-4" />
+                            <span className="text-sm">Rejected</span>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-yellow-600">Pending</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground">No prescriptions uploaded yet</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-      </div>
+    </PatientSidebar>
   );
 }
