@@ -34,28 +34,48 @@ export default function MedicalRecordsModal({ open, onOpenChange, patientId }: M
       .finally(() => setLoading(false));
   }, [open, patientId]);
 
-  // Fetch signed URLs for all scans when profile.scans changes
+  // Fetch signed URLs for all scans and prescriptions when profile changes
   useEffect(() => {
-    if (!profile?.scans) return;
+    if (!profile) return;
     (async () => {
       const urls: { [key: string]: string } = {};
-      for (const scan of profile.scans) {
-        if (scan.fileUrl) {
-          const path = extractStoragePath(scan.fileUrl);
-          if (path) {
-            try {
-              const res = await fetch(`/api/users/scan/signed-url?path=${encodeURIComponent(path)}`);
-              const data = await res.json();
-              if (data.url) urls[scan.fileUrl] = data.url;
-            } catch {
-              // Ignore errors fetching signed URL
+      // Scans
+      if (profile.scans) {
+        for (const scan of profile.scans) {
+          if (scan.fileUrl) {
+            const path = extractStoragePath(scan.fileUrl);
+            if (path) {
+              try {
+                const res = await fetch(`/api/users/scan/signed-url?path=${encodeURIComponent(path)}`);
+                const data = await res.json();
+                if (data.url) urls[scan.fileUrl] = data.url;
+              } catch {
+                // Ignore errors for individual files
+              }
+            }
+          }
+        }
+      }
+      // Prescriptions
+      if (profile.prescriptions) {
+        for (const pres of profile.prescriptions) {
+          if (pres.fileUrl) {
+            const path = extractStoragePath(pres.fileUrl);
+            if (path) {
+              try {
+                const res = await fetch(`/api/users/scan/signed-url?path=${encodeURIComponent(path)}`);
+                const data = await res.json();
+                if (data.url) urls[pres.fileUrl] = data.url;
+              } catch {
+                // Ignore errors for individual files
+              }
             }
           }
         }
       }
       setSignedUrls(urls);
     })();
-  }, [profile?.scans]);
+  }, [profile]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -122,6 +142,49 @@ export default function MedicalRecordsModal({ open, onOpenChange, patientId }: M
                   );
                 })}
                 {(!profile.scans || profile.scans.length === 0) && <li>None</li>}
+              </ul>
+            </div>
+            <div>
+              <b>Prescriptions:</b>
+              <ul className="list-disc ml-6">
+                {(profile.prescriptions || []).map((pres: any, i: number) => {
+                  const signedUrl = signedUrls[pres.fileUrl];
+                  const isImage = signedUrl && /\.(jpe?g|png|gif)$/i.test(signedUrl);
+                  const isPdf = signedUrl && /\.pdf$/i.test(signedUrl);
+                  return (
+                    <li key={i}>
+                      <span>Prescription {(pres._id || '').slice(-6)} {pres.createdAt ? '(' + new Date(pres.createdAt).toLocaleDateString() + ')' : ''}</span>
+                      {isImage && (
+                        <img
+                          src={signedUrl}
+                          alt="Prescription"
+                          style={{ maxWidth: 200, display: 'block', margin: '8px 0' }}
+                        />
+                      )}
+                      {isPdf && (
+                        <a
+                          href={signedUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-2 text-primary underline"
+                        >
+                          View PDF
+                        </a>
+                      )}
+                      {!isImage && !isPdf && signedUrl && (
+                        <a
+                          href={signedUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-2 text-primary underline"
+                        >
+                          View File
+                        </a>
+                      )}
+                    </li>
+                  );
+                })}
+                {(!profile.prescriptions || profile.prescriptions.length === 0) && <li>None</li>}
               </ul>
             </div>
           </div>
