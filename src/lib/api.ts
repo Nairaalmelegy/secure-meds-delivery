@@ -23,6 +23,8 @@ const API_BASE_URL = 'https://medilinkback-production.up.railway.app';
 // API client with error handling
 class ApiClient {
   private baseURL: string;
+  private csrfToken: string | null = null;
+
   public getBaseUrl() {
     return this.baseURL;
   }
@@ -31,15 +33,32 @@ class ApiClient {
     this.baseURL = baseURL;
   }
 
+  // Fetch CSRF token from backend and cache it
+  private async fetchCsrfToken(): Promise<string> {
+    if (this.csrfToken) return this.csrfToken;
+    const res = await fetch(`${this.baseURL}/api/csrf-token`, {
+      credentials: 'include',
+    });
+    const data = await res.json();
+    this.csrfToken = data.csrfToken;
+    return this.csrfToken;
+  }
+
+  // Clear cached CSRF token (e.g. on logout or 403)
+  public clearCsrfToken() {
+    this.csrfToken = null;
+  }
+
   private async request<T>(
-    endpoint: string, 
+    endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
-    
+
+    // Always include credentials for cookies
     const config: RequestInit = {
       mode: 'cors',
-      credentials: 'omit',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -48,7 +67,7 @@ class ApiClient {
       ...options,
     };
 
-    // Add auth token if available
+    // Add auth token if available (for legacy endpoints)
     const token = localStorage.getItem('token');
     if (token) {
       config.headers = {
@@ -57,9 +76,32 @@ class ApiClient {
       };
     }
 
+    // For state-changing requests, add CSRF token
+    const method = (config.method || 'GET').toUpperCase();
+    if ([ 'POST', 'PUT', 'PATCH', 'DELETE' ].includes(method)) {
+      if (!this.csrfToken) {
+        await this.fetchCsrfToken();
+      }
+      (config.headers as any)['X-CSRF-Token'] = this.csrfToken;
+    }
+
     try {
       const response = await fetch(url, config);
-      
+
+      // If CSRF error, clear token and retry once
+      if (response.status === 403) {
+        const errorData = await response.json().catch(() => ({}));
+        if (errorData.message && errorData.message.toLowerCase().includes('csrf')) {
+          this.clearCsrfToken();
+          // Retry with new token
+          if (!config._retried) {
+            (config as any)._retried = true;
+            return this.request<T>(endpoint, options);
+          }
+        }
+        throw new Error(errorData.message || `HTTP 403 Forbidden`);
+      }
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
