@@ -149,11 +149,7 @@ export default function Login() {
 
           <div className="border-t pt-4">
             <p className="text-xs text-muted-foreground text-center">
-              Default admin credentials for testing:
-              <br />
-              <span className="font-mono">Pharmatec@fayoum.com</span>
-              <br />
-              <span className="font-mono">Pharmatec@5173</span>
+              Welcome to MediLink where health meets convenience.
             </p>
           </div>
         </CardContent>

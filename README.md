@@ -61,11 +61,6 @@ npm run dev
 - Redirect to login on 401 responses
 - Role-based access control (RBAC)
 
-### Default Admin Credentials
-- **Email**: `Pharmatec@fayoum.com`
-- **Password**: `Pharmatec@5173`
-- ⚠️ **Security Notice**: Admin must change password on first login
-
 ### Protected Routes
 - `/admin` - Pharmacy admin only
 - `/dashboard` - Patient only  
@@ -82,7 +77,7 @@ npm run dev
 - Manage profile and account settings
 
 ### Doctor
-- View and verify patient prescriptions
+- View patient prescriptions
 - Search patients by National ID
 - Access patient medical records
 - Earn commissions/points from patient orders
