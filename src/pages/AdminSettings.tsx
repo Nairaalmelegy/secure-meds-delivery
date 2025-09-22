@@ -10,10 +10,12 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiClient } from '../lib/api';
 
+
 export default function AdminSettings() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [name, setName] = useState(user?.name || '');
+  const [phone, setPhone] = useState(user?.phone || '');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -22,7 +24,12 @@ export default function AdminSettings() {
     e.preventDefault();
     setLoading(true);
     try {
-      await apiClient.put('/api/users/me', { name, ...(password ? { password } : {}) });
+      await apiClient.put('/api/users/me', {
+        name,
+        phone,
+        clinic: 'dummy-clinic',
+        ...(password ? { password } : {})
+      });
       toast({ title: 'Profile updated!' });
       setPassword('');
     } catch (err: unknown) {
@@ -45,6 +52,10 @@ export default function AdminSettings() {
             <div>
               <label className="block mb-1 font-medium">Display Name</label>
               <Input value={name} onChange={e => setName(e.target.value)} required />
+            </div>
+            <div>
+              <label className="block mb-1 font-medium">Phone</label>
+              <Input value={phone} onChange={e => setPhone(e.target.value)} required />
             </div>
             <div>
               <label className="block mb-1 font-medium">New Password</label>
