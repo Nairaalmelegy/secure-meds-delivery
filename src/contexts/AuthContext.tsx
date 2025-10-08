@@ -1,23 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { AuthResponse, authApi } from '@/lib/api';
+import { authApi } from '@/lib/api';
 import { refreshCsrfToken, clearCsrfToken } from '@/lib/csrf';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  phone?: string;
-}
-
-interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  register: (data: any) => Promise<void>;
-  logout: () => void;
-  loading: boolean;
-}
+import { STORAGE_KEYS } from '@/constants';
+import type { User, AuthResponse, AuthContextType } from '@/types';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -28,8 +13,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Check for existing token on mount
-    const savedToken = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
+    const savedToken = localStorage.getItem(STORAGE_KEYS.TOKEN);
+    const savedUser = localStorage.getItem(STORAGE_KEYS.USER);
     
     if (savedToken && savedUser) {
       try {
@@ -37,8 +22,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(JSON.parse(savedUser));
       } catch (error) {
         console.error('Error parsing saved user data:', error);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        localStorage.removeItem(STORAGE_KEYS.TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.USER);
       }
     }
     
@@ -52,8 +37,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(response.token);
       setUser(response.user);
       
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      localStorage.setItem(STORAGE_KEYS.TOKEN, response.token);
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.user));
       
       // Refresh CSRF token after login
       refreshCsrfToken();
@@ -70,8 +55,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(response.token);
       setUser(response.user);
       
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      localStorage.setItem(STORAGE_KEYS.TOKEN, response.token);
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.user));
       
       // Refresh CSRF token after registration
       refreshCsrfToken();
@@ -84,8 +69,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem(STORAGE_KEYS.TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.USER);
     
     // Clear CSRF token on logout
     clearCsrfToken();

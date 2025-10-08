@@ -1,17 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
-
-// Extend User type to include phone/address for this file
-type UserWithContact = {
-  name?: string;
-  email?: string;
-  role?: string;
-  phone?: string;
-  address?: string;
-};
-type Order = { total?: number };
-type Prescription = Record<string, unknown>;
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,13 +9,12 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { User, Phone, Mail, Shield, Edit, Save, X, MapPin, CreditCard } from 'lucide-react';
 import { orderApi, prescriptionApi, userApi } from '@/lib/api';
+import type { Order, Prescription } from '@/types';
 import PatientSidebar from '@/components/PatientSidebar';
 import LottieLoader from '@/components/LottieLoader';
 
 export default function Profile() {
-  const auth = useAuth();
-  const user = auth.user as UserWithContact | undefined;
-  const setUser = (auth as any).setUser as ((u: any) => void) | undefined;
+  const { user } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -88,8 +76,6 @@ export default function Profile() {
           phone: profile.phone || '',
           address: profile.address || '',
         });
-        // Optionally update user context if needed
-        if (setUser) setUser(profile);
       } catch (e) {
         toast({ title: 'Error', description: 'Failed to load data', variant: 'destructive' });
       } finally {
@@ -97,7 +83,7 @@ export default function Profile() {
       }
     }
     fetchData();
-  }, [setUser, toast]);
+  }, [toast]);
 
   const handleSave = async () => {
     try {
@@ -122,7 +108,7 @@ export default function Profile() {
         title: 'Profile updated',
         description: 'Your profile has been updated successfully',
       });
-      if (setUser) setUser(updated); // update context if available
+      // Profile updated successfully
       setIsEditing(false);
     } catch (error) {
       toast({

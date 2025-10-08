@@ -1,9 +1,10 @@
+import { STORAGE_KEYS } from '@/constants';
+
 /**
  * CSRF Protection utilities
  * Implements double-submit cookie pattern for CSRF protection
  */
 
-const CSRF_TOKEN_KEY = 'csrf_token';
 const CSRF_HEADER_NAME = 'X-CSRF-Token';
 
 /**
@@ -19,11 +20,11 @@ function generateToken(): string {
  * Get or create CSRF token
  */
 export function getCsrfToken(): string {
-  let token = sessionStorage.getItem(CSRF_TOKEN_KEY);
+  let token = sessionStorage.getItem(STORAGE_KEYS.CSRF_TOKEN);
   
   if (!token) {
     token = generateToken();
-    sessionStorage.setItem(CSRF_TOKEN_KEY, token);
+    sessionStorage.setItem(STORAGE_KEYS.CSRF_TOKEN, token);
   }
   
   return token;
@@ -43,7 +44,7 @@ export function addCsrfHeader(headers: HeadersInit = {}): HeadersInit {
  * Refresh CSRF token (call after login/logout)
  */
 export function refreshCsrfToken(): void {
-  sessionStorage.removeItem(CSRF_TOKEN_KEY);
+  sessionStorage.removeItem(STORAGE_KEYS.CSRF_TOKEN);
   getCsrfToken(); // Generate new token
 }
 
@@ -51,5 +52,5 @@ export function refreshCsrfToken(): void {
  * Clear CSRF token (call on logout)
  */
 export function clearCsrfToken(): void {
-  sessionStorage.removeItem(CSRF_TOKEN_KEY);
+  sessionStorage.removeItem(STORAGE_KEYS.CSRF_TOKEN);
 }
