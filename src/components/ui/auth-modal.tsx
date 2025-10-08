@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { User, Stethoscope, Building2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { loginSchema, registerSchema } from "@/lib/validation";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -37,27 +38,45 @@ const AuthModal = ({ isOpen, onClose, type, role }: AuthModalProps) => {
     
     try {
       if (activeTab === 'login') {
-        await login(
-          formData.get('email') as string,
-          formData.get('password') as string
-        );
+        // Validate login data
+        const loginData = {
+          email: formData.get('email') as string,
+          password: formData.get('password') as string,
+        };
+        
+        const validatedLogin = loginSchema.parse(loginData);
+        
+        await login(validatedLogin.email, validatedLogin.password);
         toast({
           title: "Login successful",
           description: "Welcome back to MediLink!",
         });
       } else {
+        // Validate registration data
         const registerData = {
-          // firstName: formData.get('firstName') as string,
-          // lastName: formData.get('lastName') as string,
-          name: `${formData.get('firstName')} ${formData.get('lastName')}`.trim(),
+          firstName: formData.get('firstName') as string,
+          lastName: formData.get('lastName') as string,
           email: formData.get('registerEmail') as string,
           phone: formData.get('phone') as string,
           password: formData.get('registerPassword') as string,
+          confirmPassword: formData.get('confirmPassword') as string,
           role: userRole,
           ...(userRole === 'patient' && { nationalId: formData.get('nationalId') as string }),
+          ...(userRole === 'doctor' && { license: formData.get('license') as string }),
         };
         
-        await register(registerData);
+        const validatedRegister = registerSchema.parse(registerData);
+        
+        await register({
+          name: `${validatedRegister.firstName} ${validatedRegister.lastName}`.trim(),
+          email: validatedRegister.email,
+          phone: validatedRegister.phone,
+          password: validatedRegister.password,
+          role: validatedRegister.role,
+          ...(userRole === 'patient' && { nationalId: validatedRegister.nationalId }),
+          ...(userRole === 'doctor' && { medicalLicense: validatedRegister.license }),
+        });
+        
         toast({
           title: "Account created successfully",
           description: "Welcome to MediLink!",
@@ -65,11 +84,21 @@ const AuthModal = ({ isOpen, onClose, type, role }: AuthModalProps) => {
       }
       onClose();
     } catch (error: any) {
-      toast({
-        title: "Authentication failed",
-        description: error.message || "Please try again.",
-        variant: "destructive",
-      });
+      // Handle validation errors
+      if (error.errors) {
+        const errorMessages = error.errors.map((err: any) => err.message).join(', ');
+        toast({
+          title: "Validation failed",
+          description: errorMessages,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Authentication failed",
+          description: error.message || "Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }

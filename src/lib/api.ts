@@ -1,3 +1,5 @@
+import { addCsrfHeader } from './csrf';
+
 // Types for medical records
 export interface ScanRecord {
   fileUrl: string;
@@ -37,25 +39,32 @@ class ApiClient {
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
     
-    const config: RequestInit = {
-      mode: 'cors',
-      credentials: 'omit',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        ...options.headers,
-      },
-      ...options,
+    let headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      ...options.headers,
     };
 
     // Add auth token if available
     const token = localStorage.getItem('token');
     if (token) {
-      config.headers = {
-        ...config.headers,
+      headers = {
+        ...headers,
         'Authorization': `Bearer ${token}`,
       };
     }
+
+    // Add CSRF protection for state-changing requests
+    if (options.method && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(options.method)) {
+      headers = addCsrfHeader(headers);
+    }
+    
+    const config: RequestInit = {
+      mode: 'cors',
+      credentials: 'omit',
+      headers,
+      ...options,
+    };
 
     try {
       const response = await fetch(url, config);

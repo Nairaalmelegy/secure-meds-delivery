@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AuthResponse, authApi } from '@/lib/api';
+import { refreshCsrfToken, clearCsrfToken } from '@/lib/csrf';
 
 interface User {
   id: string;
@@ -53,6 +54,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
+      
+      // Refresh CSRF token after login
+      refreshCsrfToken();
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -68,6 +72,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
+      
+      // Refresh CSRF token after registration
+      refreshCsrfToken();
     } catch (error) {
       console.error('register error:', error);
       throw error;
@@ -79,6 +86,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    
+    // Clear CSRF token on logout
+    clearCsrfToken();
     
     // Call backend logout if needed
     authApi.logout().catch(console.error);
