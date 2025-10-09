@@ -3,7 +3,9 @@
  */
 
 // ============= API Configuration =============
-export const API_BASE_URL = 'https://medilinkback-production.up.railway.app';
+// Use empty string to make requests relative, allowing Vercel proxy to work
+// The vercel.json file proxies /api/* to the Railway backend
+export const API_BASE_URL = '';
 
 export const API_ENDPOINTS = {
   AUTH: {
