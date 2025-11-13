@@ -18,7 +18,9 @@ export interface ScanUploadResponse {
   scan: ScanRecord;
   user: any;
 }
-const API_BASE_URL = 'https://medilinkback-production.up.railway.app';
+// Read API base from Vite env (set VITE_API_BASE_URL) - default to empty string so
+// requests use the same origin (and can be proxied in dev).
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) || '';
 
 // API client with error handling
 class ApiClient {

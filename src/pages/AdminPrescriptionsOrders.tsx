@@ -362,18 +362,22 @@ export default function AdminPrescriptionsOrders() {
               <div className="mb-4">
                 <div className="font-medium text-xs mb-1">Doctor Notes for Medicines:</div>
                 <div className="space-y-2">
-                  {selectedPrescription.medicines.map((med) => (
-                    <div key={med.name} className="flex items-center gap-2">
-                      <span className="text-xs w-32 font-semibold">{med.name}</span>
-                      <input
-                        type="text"
-                        className="border rounded px-2 py-1 text-xs flex-1"
-                        placeholder="Enter note for this medicine"
-                        value={prescriptionNotes[selectedPrescription._id]?.[med.name] || ''}
-                        onChange={e => handleNoteChange(selectedPrescription._id, med.name, e.target.value)}
-                      />
-                    </div>
-                  ))}
+                  {selectedPrescription.medicines.map((med, medIdx) => {
+                    const medAny = med as unknown as { medicine?: string; name?: string };
+                    const medName = med && med.name ? med.name : (medAny && medAny.medicine ? medAny.medicine : `medicine-${medIdx}`);
+                    return (
+                      <div key={medName} className="flex items-center gap-2">
+                        <span className="text-xs w-32 font-semibold">{medName}</span>
+                        <input
+                          type="text"
+                          className="border rounded px-2 py-1 text-xs flex-1"
+                          placeholder="Enter note for this medicine"
+                          value={(prescriptionNotes[selectedPrescription._id] && prescriptionNotes[selectedPrescription._id][medName]) || ''}
+                          onChange={e => handleNoteChange(selectedPrescription._id, medName, e.target.value)}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -435,11 +439,16 @@ export default function AdminPrescriptionsOrders() {
                         <td className="p-2 border">{patientPhone}</td>
                         <td className="p-2 border">
                           {order.items && order.items.length > 0 ? (
-                            order.items.map((item) => (
-                              <div key={typeof item.medicine === 'object' ? item.medicine._id : item.medicine}>
-                                {typeof item.medicine === 'object' ? item.medicine.name : item.medicine} x {item.qty}
-                              </div>
-                            ))
+                            order.items.map((item, idx) => {
+                              const medObj = item.medicine as unknown as { _id?: string; name?: string };
+                              const medKey = medObj && medObj._id ? medObj._id : (typeof item.medicine === 'string' ? item.medicine : `item-${idx}`);
+                              const medLabel = medObj && medObj.name ? medObj.name : (typeof item.medicine === 'string' ? item.medicine : 'unknown');
+                              return (
+                                <div key={medKey}>
+                                  {medLabel} x {item.qty}
+                                </div>
+                              );
+                            })
                           ) : (
                             <span>-</span>
                           )}
