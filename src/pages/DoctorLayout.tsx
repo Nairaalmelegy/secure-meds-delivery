@@ -1,18 +1,16 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { LayoutDashboard, FileText, Upload, Package, ShoppingCart, CreditCard, LogOut } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { LayoutDashboard, Users, FileText, DollarSign, LogOut } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-const patientNav = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/medical-records', label: 'Medical Records', icon: FileText },
-  { to: '/upload-prescription', label: 'Upload Prescription', icon: Upload },
-  { to: '/orders', label: 'Track Orders', icon: Package },
-  { to: '/order-medicines', label: 'Order Medicines', icon: ShoppingCart },
-  { to: '/checkout', label: 'Checkout', icon: CreditCard },
+const doctorNav = [
+  { to: "/doctor-dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/patient-search", label: "Patient Search", icon: Users },
+  { to: "/doctor-dashboard/prescriptions", label: "Prescriptions", icon: FileText },
+  { to: "/doctor-dashboard/commissions", label: "Commissions", icon: DollarSign },
 ];
 
-export default function PatientSidebar({ children }: { children: React.ReactNode }) {
+export default function DoctorLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -22,12 +20,12 @@ export default function PatientSidebar({ children }: { children: React.ReactNode
       <aside className="w-64 bg-primary text-primary-foreground flex flex-col border-r">
         <div className="p-6 border-b border-primary-foreground/10">
           <h2 className="text-2xl font-bold">MediCare</h2>
-          <p className="text-xs text-primary-foreground/60 mt-1">Patient Portal</p>
+          <p className="text-xs text-primary-foreground/60 mt-1">Doctor Portal</p>
         </div>
         
         <div className="flex-1 p-4">
           <nav className="space-y-1">
-            {patientNav.map((item) => {
+            {doctorNav.map((item) => {
               const isActive = location.pathname === item.to;
               return (
                 <Link
@@ -60,7 +58,11 @@ export default function PatientSidebar({ children }: { children: React.ReactNode
         </div>
       </aside>
       
-      {children}
+      <main className="flex-1 overflow-y-auto min-h-screen bg-muted/30">
+        <div className="mx-auto py-8 px-6">
+          <Outlet />
+        </div>
+      </main>
     </div>
   );
 }
