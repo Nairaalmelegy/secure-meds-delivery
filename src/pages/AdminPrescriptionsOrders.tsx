@@ -44,6 +44,7 @@ function Modal({ open, onClose, children }: { open: boolean, onClose: () => void
 }
 import { apiClient, medicineApi, orderApi } from '../lib/api';
 import { useQuery as useReactQuery } from '@tanstack/react-query';
+import PrescriptionOcrViewer from '../components/PrescriptionOcrViewer';
 // Medicine selector for admin modal
 interface ExtractedMedicine {
   medicine: string;
@@ -352,6 +353,12 @@ export default function AdminPrescriptionsOrders() {
               <div className="font-semibold text-lg mb-2">Prescription #{selectedPrescription._id.slice(-6)}</div>
               <div className="text-xs text-muted-foreground mb-2">Patient: {typeof selectedPrescription.patient === 'object' ? (selectedPrescription.patient?.name || selectedPrescription.patient?._id || JSON.stringify(selectedPrescription.patient)) : selectedPrescription.patient}</div>
               {selectedPrescription.fileUrl && <PrescriptionImage fileUrl={selectedPrescription.fileUrl} />}
+              {/* Live OCR viewer + edit/save */}
+              <PrescriptionOcrViewer
+                prescriptionId={selectedPrescription._id}
+                initialText={selectedPrescription.ocrText}
+                onSave={(text) => setSelectedPrescription({ ...selectedPrescription, ocrText: text })}
+              />
             </div>
             <div className="mb-4">
               <div className="font-medium text-xs mb-1">Extracted Medicines (search, set qty):</div>
