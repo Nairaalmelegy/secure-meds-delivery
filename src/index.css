@@ -8,62 +8,62 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Healthcare Design System */
-    --background: 0 0% 100%;
-    --foreground: 215 25% 27%;
+    /* Modern Blue Dashboard Design System */
+    --background: 220 15% 97%;
+    --foreground: 220 15% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 27%;
+    --card-foreground: 220 15% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 27%;
+    --popover-foreground: 220 15% 15%;
 
-    /* Medical Blue - Primary brand color */
-    --primary: 210 100% 50%;
+    /* Vibrant Blue Primary */
+    --primary: 220 90% 56%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 210 100% 85%;
-    --primary-dark: 210 100% 35%;
+    --primary-light: 220 90% 75%;
+    --primary-dark: 220 90% 40%;
 
-    /* Medical Green - Trust and health */
-    --secondary: 157 65% 48%;
+    /* Soft Purple Secondary */
+    --secondary: 260 80% 65%;
     --secondary-foreground: 0 0% 100%;
-    --secondary-light: 157 65% 85%;
+    --secondary-light: 260 80% 85%;
 
-    /* Clean grays for professional look */
-    --muted: 210 20% 97%;
-    --muted-foreground: 215 16% 47%;
+    /* Clean neutrals */
+    --muted: 220 15% 95%;
+    --muted-foreground: 220 15% 45%;
 
-    --accent: 210 40% 96%;
-    --accent-foreground: 215 25% 27%;
+    --accent: 220 90% 56%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 210 100% 50%;
+    --border: 220 15% 88%;
+    --input: 220 15% 88%;
+    --ring: 220 90% 56%;
 
-    /* Healthcare specific tokens */
-    --success: 157 65% 48%;
+    /* Status colors */
+    --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
-    --warning: 43 96% 56%;
+    --warning: 45 93% 47%;
     --warning-foreground: 0 0% 100%;
-    --info: 210 100% 50%;
+    --info: 220 90% 56%;
     --info-foreground: 0 0% 100%;
 
     /* Gradients for modern look */
-    --gradient-primary: linear-gradient(135deg, hsl(210 100% 50%), hsl(210 100% 35%));
-    --gradient-secondary: linear-gradient(135deg, hsl(157 65% 48%), hsl(157 65% 35%));
-    --gradient-hero: linear-gradient(135deg, hsl(210 100% 50%), hsl(157 65% 48%));
+    --gradient-primary: linear-gradient(135deg, hsl(220 90% 56%), hsl(220 80% 65%));
+    --gradient-secondary: linear-gradient(135deg, hsl(260 80% 65%), hsl(280 70% 70%));
+    --gradient-hero: linear-gradient(135deg, hsl(220 90% 56%), hsl(260 80% 65%));
 
     /* Shadows for depth */
-    --shadow-card: 0 4px 6px -1px hsl(210 100% 50% / 0.1), 0 2px 4px -1px hsl(210 100% 50% / 0.06);
-    --shadow-hero: 0 20px 25px -5px hsl(210 100% 50% / 0.15), 0 10px 10px -5px hsl(210 100% 50% / 0.04);
+    --shadow-card: 0 4px 6px -1px hsl(220 90% 56% / 0.08), 0 2px 4px -1px hsl(220 90% 56% / 0.05);
+    --shadow-hero: 0 20px 25px -5px hsl(220 90% 56% / 0.12), 0 10px 10px -5px hsl(220 90% 56% / 0.04);
 
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     /* --sidebar-background: 0 0% 98%; */
 

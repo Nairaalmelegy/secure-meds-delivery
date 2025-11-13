@@ -29,8 +29,9 @@ import AdminOverview from "./pages/AdminOverview";
 import AdminInventory from "./pages/AdminInventory";
 import AdminAppliedDoctors from "./pages/AdminAppliedDoctors";
 import AdminPrescriptionsOrders from "./pages/AdminPrescriptionsOrders";
-import AdminSettings from "./pages/AdminSettings";
+import DoctorLayout from "./pages/DoctorLayout";
 import PatientLayout from "./pages/PatientLayout";
+import PatientSearch from "./pages/PatientSearch";
 
 const queryClient = new QueryClient();
 
@@ -62,10 +63,19 @@ const App = () => (
                 <Route path="/checkout" element={<Checkout />} />
               </Route>
               
-              {/* Doctor Routes */}
+              {/* Doctor Routes with Sidebar Layout */}
               <Route path="/doctor-dashboard" element={
                 <ProtectedRoute allowedRoles={['doctor']}>
-                  <DoctorDashboard />
+                  <DoctorLayout />
+                </ProtectedRoute>
+              }>
+                <Route index element={<DoctorDashboard />} />
+                <Route path="prescriptions" element={<DoctorDashboard />} />
+                <Route path="commissions" element={<DoctorDashboard />} />
+              </Route>
+              <Route path="/patient-search" element={
+                <ProtectedRoute allowedRoles={['doctor']}>
+                  <PatientSearch />
                 </ProtectedRoute>
               } />
               
@@ -81,7 +91,6 @@ const App = () => (
                 <Route path="applied-doctors" element={<AdminAppliedDoctors />} />
                 <Route path="prescriptions-orders" element={<AdminPrescriptionsOrders />} />
                 <Route path="commissions" element={<AdminCommissions />} />
-                <Route path="settings" element={<AdminSettings />} />
               </Route>
               
               {/* Shared Routes */}

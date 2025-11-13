@@ -1,29 +1,19 @@
-// Helper to safely render doctor/person fields
-function renderPerson(person: unknown) {
-  if (!person) return '';
-  if (typeof person === 'string') return person;
-  if (typeof person === 'object' && person !== null) {
-    const p = person as { name?: string; email?: string; _id?: string };
-    if (typeof p.name === 'string') return p.name;
-    if (typeof p.email === 'string') return p.email;
-    if (typeof p._id === 'string') return p._id;
-    return JSON.stringify(person);
-  }
-  return String(person);
-}
 import { useState } from 'react';
 import LottieLoader from '@/components/LottieLoader';
 import PrescriptionImage from '@/components/PrescriptionImage';
-
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { StatCard } from '@/components/dashboard/StatCard';
+import { ModernTable } from '@/components/dashboard/ModernTable';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Plus, FileText, ShoppingCart, Activity, Clock, CheckCircle, Package, TrendingUp, Heart, Pill } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { FileText, ShoppingCart, Package, Plus, AlertCircle, XCircle, CheckCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { prescriptionApi, orderApi, apiClient } from '@/lib/api';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 
 interface ExtractedMedicine {
   medicine: string;
@@ -31,7 +21,6 @@ interface ExtractedMedicine {
   qty: number;
   price: number;
 }
-
 
 interface Order {
   _id: string;
@@ -51,24 +40,21 @@ interface Prescription {
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
-  // Patient cancel order mutation for overview
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [confirmingLoading, setConfirmingLoading] = useState(false);
+
   const cancelOrderMutation = useMutation({
     mutationFn: async (id: string) => {
       return apiClient.put(`/api/orders/${id}/cancel`, { id });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      toast({ title: 'Success', description: 'Order cancelled successfully' });
     },
   });
-  const navigate = useNavigate();
-  const [confirmingId, setConfirmingId] = useState<string | null>(null);
-  const [confirmingLoading, setConfirmingLoading] = useState(false);
-  const [notification, setNotification] = useState<string | null>(null);
 
-  const { user } = useAuth();
-
-
-  // Poll every 3 seconds for real-time updates
   const { data: prescriptions, isLoading: loadingPrescriptions } = useQuery({
     queryKey: ['prescriptions'],
     queryFn: prescriptionApi.getMyPrescriptions,
@@ -81,311 +67,225 @@ export default function Dashboard() {
     refetchInterval: 3000,
   });
 
-// Find prescriptions awaiting patient confirmation
-const awaitingConfirm: Prescription[] = prescriptions?.filter((p: Prescription) => p.status === 'awaiting_patient_confirmation') || [];
+  const awaitingConfirm: Prescription[] = prescriptions?.filter((p: Prescription) => p.status === 'awaiting_patient_confirmation') || [];
+  const recentPrescriptions = prescriptions?.slice(0, 5) || [];
+  const recentOrders = orders?.slice(0, 5) || [];
+  const totalSpent = orders?.reduce((sum: number, order: Order) => sum + (order.total || 0), 0) || 0;
 
-const recentPrescriptions = prescriptions?.slice(0, 3) || [];
-const recentOrders = orders?.slice(0, 3) || [];
-
-
-const totalSpent = orders?.reduce((sum: number, order: Order) => sum + (order.total || 0), 0) || 0;
-const approvedPrescriptions = prescriptions?.filter((p: Prescription) => p.status === 'approved').length || 0;
-const pendingOrders = orders?.filter((o: Order) => o.status === 'pending').length || 0;
-const deliveredOrders = orders?.filter((o: Order) => o.status === 'delivered').length || 0;
-
-const getStatusIcon = (status: string) => {
-  switch (status) {
-    case 'pending': return <Clock className="h-4 w-4 text-warning" />;
-    case 'approved': return <CheckCircle className="h-4 w-4 text-success" />;
-    case 'delivered': return <Package className="h-4 w-4 text-success" />;
-    default: return <Clock className="h-4 w-4 text-muted-foreground" />;
-  }
-};
-
-const getStatusBadge = (status: string) => {
-  const variants: Record<string, string> = {
-    'pending': 'bg-warning/10 text-warning border-warning/20',
-    'approved': 'bg-success/10 text-success border-success/20',
-    'delivered': 'bg-success/10 text-success border-success/20',
-    'shipped': 'bg-info/10 text-info border-info/20',
-    'processing': 'bg-primary/10 text-primary border-primary/20',
+  const getStatusBadge = (status: string) => {
+    const statusConfig: Record<string, { variant: any; label: string }> = {
+      pending: { variant: 'secondary', label: 'Pending' },
+      approved: { variant: 'default', label: 'Approved' },
+      awaiting_patient_confirmation: { variant: 'default', label: 'Awaiting Confirmation' },
+      delivered: { variant: 'default', label: 'Delivered' },
+      cancelled: { variant: 'destructive', label: 'Cancelled' },
+    };
+    const config = statusConfig[status] || { variant: 'secondary', label: status };
+    return <Badge variant={config.variant}>{config.label}</Badge>;
   };
-  return variants[status] || 'bg-muted/10 text-muted-foreground border-muted/20';
-};
+
+  const confirmPrescription = async (prescriptionId: string, confirm: boolean) => {
+    setConfirmingLoading(true);
+    try {
+      await apiClient.post(`/api/prescriptions/${prescriptionId}/confirm`, { confirm });
+      queryClient.invalidateQueries({ queryKey: ['prescriptions'] });
+      setConfirmingId(null);
+      toast({ 
+        title: confirm ? 'Confirmed' : 'Rejected', 
+        description: confirm ? 'Prescription order confirmed' : 'Prescription order rejected' 
+      });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err?.message || 'Failed to update', variant: 'destructive' });
+    } finally {
+      setConfirmingLoading(false);
+    }
+  };
+
+  if (loadingPrescriptions || loadingOrders) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LottieLoader />
+      </div>
+    );
+  }
 
   return (
-      <div className="bg-gradient-to-br from-primary/5 via-background to-secondary/5">
-        <div className="">
-  {/* Notification for new order request */}
-      {awaitingConfirm.length > 0 && (
-        <div className="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded shadow flex items-center justify-between">
-          <div>
-            <span className="font-semibold text-yellow-700">You have a new order request for your prescription!</span>
-            <span className="block text-yellow-800 text-xs mt-1">Please review and confirm or reject the order below.</span>
-          </div>
-          <Button size="sm" variant="outline" onClick={() => setConfirmingId(awaitingConfirm[0]._id)}>View</Button>
-        </div>
-      )}
-      {/* Modal for confirming/rejecting prescription order */}
-      {confirmingId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60" onClick={() => setConfirmingId(null)}>
-          <div className="bg-white rounded shadow-lg max-w-lg w-full p-6 relative" onClick={e => e.stopPropagation()}>
-            <button className="absolute top-2 right-2 text-2xl text-gray-500 hover:text-black" onClick={() => setConfirmingId(null)}>&times;</button>
-            {awaitingConfirm.filter((p) => p._id === confirmingId).map((pres) => (
-              <div key={pres._id}>
-                <div className="font-semibold text-lg mb-2">Prescription Order Confirmation</div>
-                <div className="mb-2 text-xs text-muted-foreground">Prescription #{pres._id.slice(-6)}</div>
-                {pres.fileUrl && (
-                  <PrescriptionImage fileUrl={pres.fileUrl} maxHeight="max-h-40" />
-                )}
-                <div className="mb-2">
-                  <div className="font-medium text-xs mb-1">Medicines in Order:</div>
-                  {Array.isArray(pres.extractedMedicines) && pres.extractedMedicines.length > 0 ? (
-                    <ul className="text-xs mb-2">
-                      {pres.extractedMedicines.map((med) => (
-                        <li key={med.medicine} className="flex gap-2 items-center">
-                          <span className="font-semibold">{med.name}</span>
-                          <span>x {med.qty}</span>
-                          <span>EGP {med.price} each</span>
-                          <span className="font-bold">= EGP {med.qty * med.price}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : <span className="text-xs text-muted-foreground">No medicines listed.</span>}
-                  <div className="font-semibold mt-2">Total: EGP {pres.extractedMedicines?.reduce((sum, m) => sum + (m.qty * m.price), 0) || 0}</div>
-                </div>
-                <div className="flex justify-end gap-2 mt-4">
-                  <Button variant="outline" onClick={() => setConfirmingId(null)}>Cancel</Button>
-                  <Button
-                    variant="destructive"
-                    disabled={confirmingLoading}
-                    onClick={async () => {
-                      setConfirmingLoading(true);
-                      await prescriptionApi.confirmPrescription(pres._id, false);
-                      setNotification('Order rejected.');
-                      setConfirmingId(null);
-                      setConfirmingLoading(false);
-                      window.location.reload();
-                    }}
-                  >Reject</Button>
-                  <Button
-                    disabled={confirmingLoading}
-                    onClick={async () => {
-                      setConfirmingLoading(true);
-                      await prescriptionApi.confirmPrescription(pres._id, true);
-                      setNotification('Order confirmed!');
-                      setConfirmingId(null);
-                      setConfirmingLoading(false);
-                      navigate('/checkout', {
-                        state: {
-                          extractedMedicines: pres.extractedMedicines || [],
-                          prescriptionId: pres._id
-                        }
-                      });
-                    }}
-                  >Confirm</Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-      {notification && (
-        <div className="fixed bottom-4 right-4 bg-green-100 border border-green-400 text-green-800 px-4 py-2 rounded shadow z-50">
-          {notification}
-          <button className="ml-2 text-green-800 font-bold" onClick={() => setNotification(null)}>&times;</button>
-        </div>
-      )}
-  {/* Welcome Header */}
-        <div className="mb-8 p-6 bg-gradient-primary rounded-2xl text-white shadow-hero">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">Welcome back, {user?.name}! 👋</h1>
-              <p className="text-white/80 text-lg">Your health journey continues here</p>
-            </div>
-            <div className="hidden md:flex items-center space-x-4">
-              <Heart className="h-8 w-8 text-white/80" />
-              <Pill className="h-8 w-8 text-white/80" />
-            </div>
-          </div>
-        </div>
-
-  {/* Stats Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-          <Card className="border shadow-md bg-card/50 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Prescriptions</CardTitle>
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <FileText className="h-4 w-4 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{prescriptions?.length || 0}</div>
-              <p className="text-xs text-success mt-1">
-                <TrendingUp className="h-3 w-3 inline mr-1" />
-                {approvedPrescriptions} approved
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="border shadow-md bg-card/50 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Orders</CardTitle>
-              <div className="p-2 bg-secondary/10 rounded-lg">
-                <ShoppingCart className="h-4 w-4 text-secondary" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{orders?.length || 0}</div>
-              <p className="text-xs text-success mt-1">
-                <Package className="h-3 w-3 inline mr-1" />
-                {deliveredOrders} delivered
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="border shadow-md bg-card/50 backdrop-blur-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Spent</CardTitle>
-              <div className="p-2 bg-warning/10 rounded-lg">
-                <Activity className="h-4 w-4 text-warning" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">EGP {totalSpent.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground mt-1">Lifetime spending</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border shadow-md bg-gradient-secondary text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <Button asChild size="sm" className="w-full bg-white/20 hover:bg-white/30 text-white border-white/20">
-                  <Link to="/order-medicines">
-                    <Pill className="h-4 w-4 mr-2" />
-                    Order Medicine
-                  </Link>
-                </Button>
-                <Button asChild variant="ghost" size="sm" className="w-full border-white/20 text-white hover:bg-white/10">
-                  <Link to="/orders">
-                    <Package className="h-4 w-4 mr-2" />
-                    Track Order
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-  {/* Recent Activity */}
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Card className="border shadow-md bg-card/50 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-primary" />
-                Recent Prescriptions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loadingPrescriptions ? (
-                <div className="flex flex-col items-center justify-center py-8">
-                  <LottieLoader height={80} width={80} />
-                </div>
-              ) : recentPrescriptions.length > 0 ? (
-                <div className="space-y-3">
-                  {recentPrescriptions.map((prescription: Prescription) => (
-                    <div key={prescription.id} className="flex items-center justify-between p-4 border border-border/50 rounded-xl hover:bg-muted/30 transition-colors">
-                      <div className="flex items-center gap-3">
-                        {getStatusIcon(prescription.status)}
-                        <div>
-                          <p className="font-medium text-foreground">Prescription #{prescription.id?.slice(-6)}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {prescription.doctor ? `Dr. ${renderPerson(prescription.doctor)}` : 'Uploaded'}
-                          </p>
-                        </div>
-                      </div>
-                      <Badge className={`${getStatusBadge(prescription.status)} border`}>
-                        {prescription.status}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                  <p className="text-muted-foreground">No prescriptions yet</p>
-                  <Button asChild variant="outline" className="mt-4">
-                    <Link to="/upload-prescription">Upload Your First Prescription</Link>
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="border shadow-md bg-card/50 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShoppingCart className="h-5 w-5 text-secondary" />
-                Recent Orders
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loadingOrders ? (
-                <div className="flex flex-col items-center justify-center py-8">
-                  <LottieLoader height={80} width={80} />
-                </div>
-              ) : recentOrders.length > 0 ? (
-                <div className="space-y-3">
-                  {recentOrders.map((order: Order) => {
-                    const isCancelled = order.status === 'cancelled';
-                    const canCancel = order.status === 'processing' || order.status === 'pending';
-                    return (
-                      <div
-                        key={order.id}
-                        className={`flex items-center justify-between p-4 border border-border/50 rounded-xl hover:bg-muted/30 transition-colors${isCancelled ? ' bg-red-50 text-red-400' : ''}`}
-                      >
-                        <div className="flex items-center gap-3">
-                          {getStatusIcon(order.status)}
-                          <div>
-                            <p className="font-medium text-foreground">Order #{order.id?.slice(-6)}</p>
-                            <p className="text-sm text-muted-foreground">EGP {order.total || 0}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge className={`${getStatusBadge(order.status)} border`}>
-                            {order.status}
-                          </Badge>
-                          {canCancel && (
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              disabled={cancelOrderMutation.isPending}
-                              onClick={() => cancelOrderMutation.mutate(order._id)}
-                            >
-                              Cancel
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                  <p className="text-muted-foreground">No orders yet</p>
-                  <Button asChild variant="outline" className="mt-4">
-                    <Link to="/order-medicines">Start Shopping</Link>
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-        </div>
+    <DashboardLayout title="Dashboard" subtitle="Welcome back! Here's your health overview">
+      {/* Stats Grid */}
+      <div className="grid gap-6 md:grid-cols-3 mb-8">
+        <StatCard
+          title="Total Prescriptions"
+          value={prescriptions?.length || 0}
+          icon={FileText}
+          trend={{ value: `${prescriptions?.filter((p: Prescription) => p.status === 'approved').length} approved`, isPositive: true }}
+        />
+        <StatCard
+          title="Total Orders"
+          value={orders?.length || 0}
+          icon={ShoppingCart}
+          trend={{ value: `${orders?.filter((o: Order) => o.status === 'delivered').length} delivered`, isPositive: true }}
+        />
+        <StatCard
+          title="Total Spent"
+          value={`EGP ${totalSpent.toFixed(2)}`}
+          icon={Package}
+        />
       </div>
+
+      {/* Awaiting Confirmation Section */}
+      {awaitingConfirm.length > 0 && (
+        <Card className="mb-8 border-warning/50 bg-warning/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-warning">
+              <AlertCircle className="w-5 h-5" />
+              Prescriptions Awaiting Your Confirmation
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {awaitingConfirm.map((prescription) => (
+                <Card key={prescription._id} className="bg-card">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="font-medium">Prescription #{prescription._id.slice(-6)}</p>
+                        {getStatusBadge(prescription.status)}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={() => setConfirmingId(prescription._id)}>
+                          View Details
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Quick Actions */}
+      <div className="grid gap-4 md:grid-cols-2 mb-8">
+        <Button asChild size="lg" className="h-24">
+          <Link to="/order-medicines">
+            <Plus className="w-5 h-5 mr-2" />
+            Order New Medicines
+          </Link>
+        </Button>
+        <Button asChild size="lg" variant="outline" className="h-24">
+          <Link to="/upload-prescription">
+            <FileText className="w-5 h-5 mr-2" />
+            Upload Prescription
+          </Link>
+        </Button>
+      </div>
+
+      {/* Recent Activity Grid */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Recent Prescriptions */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-primary" />
+              Recent Prescriptions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {recentPrescriptions.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>No prescriptions yet</p>
+                <Button asChild variant="link" className="mt-2">
+                  <Link to="/upload-prescription">Upload your first prescription</Link>
+                </Button>
+              </div>
+            ) : (
+              <ModernTable
+                data={recentPrescriptions}
+                columns={[
+                  { header: 'ID', accessor: (row) => `#${row._id.slice(-6)}` },
+                  { header: 'Status', accessor: 'status', cell: (value) => getStatusBadge(value) },
+                  { 
+                    header: 'Action', 
+                    accessor: (row) => row,
+                    cell: (value) => (
+                      <Button size="sm" variant="ghost" asChild>
+                        <Link to="/upload-prescription">View</Link>
+                      </Button>
+                    )
+                  },
+                ]}
+              />
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent Orders */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5 text-primary" />
+              Recent Orders
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {recentOrders.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <ShoppingCart className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>No orders yet</p>
+                <Button asChild variant="link" className="mt-2">
+                  <Link to="/order-medicines">Place your first order</Link>
+                </Button>
+              </div>
+            ) : (
+              <ModernTable
+                data={recentOrders}
+                columns={[
+                  { header: 'ID', accessor: (row) => `#${row._id.slice(-6)}` },
+                  { header: 'Total', accessor: (row) => `EGP ${(row.total || 0).toFixed(2)}` },
+                  { header: 'Status', accessor: 'status', cell: (value) => getStatusBadge(value) },
+                  { 
+                    header: 'Action', 
+                    accessor: (row) => row,
+                    cell: (value) => (
+                      <Button size="sm" variant="ghost" asChild>
+                        <Link to="/orders">Track</Link>
+                      </Button>
+                    )
+                  },
+                ]}
+              />
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={!!confirmingId} onOpenChange={() => setConfirmingId(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Confirm Prescription Order</DialogTitle>
+          </DialogHeader>
+          {confirmingId && awaitingConfirm.find(p => p._id === confirmingId) && (
+            <div className="space-y-4">
+              {awaitingConfirm.find(p => p._id === confirmingId)?.fileUrl && (
+                <PrescriptionImage fileUrl={awaitingConfirm.find(p => p._id === confirmingId)!.fileUrl!} />
+              )}
+              <div className="flex gap-4 justify-end">
+                <Button variant="outline" onClick={() => confirmPrescription(confirmingId, false)} disabled={confirmingLoading}>
+                  <XCircle className="w-4 h-4 mr-2" />
+                  Reject
+                </Button>
+                <Button onClick={() => confirmPrescription(confirmingId, true)} disabled={confirmingLoading}>
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Confirm
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </DashboardLayout>
   );
 }
