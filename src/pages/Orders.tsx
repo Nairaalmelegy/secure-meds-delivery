@@ -6,33 +6,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { orderApi, apiClient } from '@/lib/api';
+import type { Order, OrderItem } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 import PatientSidebar from '@/components/PatientSidebar';
 
-type OrderItem = {
-  medicine: { name: string } | string;
-  qty: number;
-  price?: number;
-};
-
-type Order = {
-  _id: string;
-  status: string;
-  createdAt: string;
-  total: number;
-  deliveryAddress?: string;
-  items?: OrderItem[];
-};
-
 export default function Orders() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { data: orders, isLoading } = useQuery<Order[]>({
+  const { data: orders, isLoading } = useQuery({
     queryKey: ['orders'],
     queryFn: orderApi.getMyOrders,
   });
-  const pendingCount = orders?.filter(o => o.status === 'pending').length || 0;
+  const pendingCount = orders?.filter((o: Order) => o.status === 'pending').length || 0;
   // Patient cancel order mutation
   const cancelOrderMutation = useMutation({
     mutationFn: async (id: string) => {

@@ -28,7 +28,6 @@ export default function AccountSettings() {
     email: user?.email || '',
     phone: user?.phone || '',
     role: user?.role || '',
-    clinic: user?.clinic || '',
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -61,22 +60,11 @@ export default function AccountSettings() {
       });
       return;
     }
-    if (profileData.role === 'doctor' && !profileData.clinic) {
-      toast({
-        title: "Error",
-        description: "Clinic is required for doctors",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setLoading(true);
     try {
       await userApi.updateProfile({
         name: profileData.name,
         phone: profileData.phone,
-        role: profileData.role,
-        clinic: profileData.role === 'doctor' ? profileData.clinic : undefined,
       });
       toast({
         title: "Profile updated",
@@ -294,23 +282,6 @@ export default function AccountSettings() {
                   </div>
                 </div>
 
-                {profileData.role === 'doctor' && (
-                  <div>
-                    <Label htmlFor="clinic">Clinic</Label>
-                    {isEditingProfile ? (
-                      <Input
-                        id="clinic"
-                        value={profileData.clinic}
-                        onChange={e => setProfileData({ ...profileData, clinic: e.target.value })}
-                        placeholder="Enter your clinic name"
-                        className="mt-1"
-                        disabled={loading}
-                      />
-                    ) : (
-                      <p className="mt-1 text-foreground font-medium">{profileData.clinic || 'Not provided'}</p>
-                    )}
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>
