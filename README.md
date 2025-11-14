@@ -327,3 +327,75 @@ For issues and questions:
 
 **Last Updated**: January 2025
 **Version**: 1.0.0
+
+## 🤖 DeepSeek (chat) & Huawei OCR — integrations & message flow
+
+This project uses backend-hosted integrations for AI chat (DeepSeek) and optional Huawei OCR. The frontend only communicates with the backend API — the backend mediates calls to DeepSeek and Huawei. The sections below explain where these integrations live and how messages and files flow end-to-end.
+
+### DeepSeek (chat) — how chat messages flow
+
+1. The frontend chat client calls `src/services/chatApi.ts` → `POST /api/chat` with the message payload.
+2. The backend route `POST /api/chat` (see `MediLink_Back/src/routes/chatRoutes.js`) forwards to the controller `chatController.sendMessage`.
+3. The controller calls `deepseekService.deepseekChat(...)` (see `MediLink_Back/src/services/deepseekService.js`).
+4. `deepseekService` sends the user message and a carefully crafted `systemPrompt` to the DeepSeek API using the secret API key (kept on the backend). The DeepSeek model returns an assistant reply.
+5. The backend returns the reply to the frontend as `{ reply }` which the UI renders.
+
+Important notes:
+- The frontend never contains DeepSeek credentials — all sensitive keys are stored server-side.
+- The DeepSeek `systemPrompt` enforces safe medical assistant behavior (non-diagnostic guidance, limited OTC suggestions, follow-up checkbox-style questions). You can find the prompt in `MediLink_Back/src/services/deepseekService.js`.
+
+### Huawei OCR — where it fits
+
+- Huawei OCR SDK is an optional provider for server-side OCR and is included in the backend `package.json` as `@huaweicloud/huaweicloud-sdk-ocr`.
+- The frontend uploads prescriptions to `POST /api/prescriptions/upload` (FormData). The backend stores the file (Supabase or other storage) and enqueues an OCR job to the `ocr` queue (BullMQ/Redis).
+- The OCR worker (`MediLink_Back/src/workers/ocrWorker.js`) will run OCR using either Tesseract or Huawei SDK depending on configuration and environment variables. The worker writes OCR text back to the Prescription document.
+
+### Sequence diagrams (text)
+
+Prescription upload & OCR (short):
+- Frontend: POST `/api/prescriptions/upload` (FormData)
+- Backend: save file -> enqueue `ocr` job -> return prescription id
+- Worker: process job -> run OCR (Tesseract or Huawei) -> update `Prescription.ocrText`
+- Frontend: GET `/api/prescriptions/:id` OR listen for `ocr:completed` (if socket.io is enabled) to get the OCR text
+
+Chat (DeepSeek) flow (short):
+- Frontend: POST `/api/chat` { message }
+- Backend controller -> `deepseekService` -> DeepSeek API
+- Backend: return `{ reply }` to frontend
+
+Signed-image flow:
+- Frontend requests `GET /api/users/scan/signed-url?path=<path>`
+- Backend generates short-lived Supabase signed URL and returns it
+- Frontend uses the signed URL as `<img src="..." />` to render private images
+
+## 🔎 Where to look in code (quick links)
+
+- Frontend API client: `src/lib/api/base.ts`
+- Chat client (frontend): `src/services/chatApi.ts`
+- Prescription upload UI: `src/pages/UploadPrescription.tsx`
+- Doctor pages and patient search: `src/pages/DoctorPrescriptions.tsx`, `src/pages/PatientSearch.tsx`
+- Commissions page: `src/pages/DoctorCommissions.tsx`
+- Backend DeepSeek service: `MediLink_Back/src/services/deepseekService.js`
+- Backend chat controller: `MediLink_Back/src/controllers/chatController.js`
+- Backend OCR worker: `MediLink_Back/src/workers/ocrWorker.js`
+- Backend queues and worker manager: `MediLink_Back/src/queues/*`, `MediLink_Back/src/workers/workerManager.js`
+
+## ✅ How to test chat locally
+
+1. Ensure backend is running and has DeepSeek env vars (or a mock endpoint):
+
+```powershell
+cd MediLink_Back
+npm install
+$env:DEEPSEEK_API_URL='https://api.deepseek.example'
+$env:DEEPSEEK_API_KEY='sk-...'
+npm run dev
+```
+
+2. Start the frontend and open the chat UI, then send a message. The frontend will `POST /api/chat` and you should see the assistant reply.
+
+If you don't want to call DeepSeek during development, you can temporarily replace `deepseekService.deepseekChat` with a local mock that returns a canned response.
+
+---
+
+If you want, I can also generate a small mermaid diagram block and append it to this README to visualize the flows — say the word and I'll add it.

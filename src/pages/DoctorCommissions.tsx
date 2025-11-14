@@ -28,7 +28,7 @@ export default function DoctorCommissions() {
   const [requestAmount, setRequestAmount] = useState<string>('');
   const [requestDetails, setRequestDetails] = useState('');
 
-  const { data: paged = { commissions: [], total: 0, page: 1, totalPages: 1 }, isLoading } = useQuery<{
+  const { data, isLoading } = useQuery<{
     commissions: Commission[];
     total: number;
     page: number;
@@ -42,14 +42,14 @@ export default function DoctorCommissions() {
         page: number;
         totalPages: number;
       }>(`/api/commissions/mine?page=${page}&limit=${perPage}`);
-      return res.data;
+      return res;
     },
-    keepPreviousData: true,
   });
 
-  const commissions = paged.commissions || [];
-  const total = paged.total || 0;
-  const totalPages = paged.totalPages || 1;
+  const paged = (data as { commissions: Commission[]; total: number; page: number; totalPages: number } | undefined) ?? { commissions: [], total: 0, page: 1, totalPages: 1 };
+  const commissions = paged.commissions ?? [];
+  const total = paged.total ?? 0;
+  const totalPages = paged.totalPages ?? 1;
   const { toast } = useToast();
 
   return (
