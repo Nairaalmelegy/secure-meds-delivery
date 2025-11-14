@@ -32,14 +32,19 @@ async function fetchStats() {
     apiClient.get('/api/prescriptions'),
   ]);
 
+  const medicinesArray = Array.isArray(medicines) ? medicines : [];
+  const doctorsArray = Array.isArray(doctors) ? (doctors as Doctor[]) : [];
+  const ordersArray = Array.isArray(orders) ? (orders as Order[]) : [];
+  const prescriptionsArray = Array.isArray(prescriptions) ? (prescriptions as Prescription[]) : [];
+
   return {
-    totalStocks: medicines.length || 0,
-    pendingDoctors: doctors.filter((d: Doctor) => !d.isVerified).length || 0,
-    pendingOrders: orders.filter((o: Order) => o.status === 'pending').length || 0,
-    prescriptionsToReview: prescriptions.filter((p: Prescription) => p.status === 'pending').length || 0,
-    recentOrders: orders.slice(0, 5),
-    recentPrescriptions: prescriptions.slice(0, 5),
-    recentDoctors: doctors.slice(0, 5),
+    totalStocks: medicinesArray.length || 0,
+    pendingDoctors: doctorsArray.filter(d => !d.isVerified).length || 0,
+    pendingOrders: ordersArray.filter(o => o.status === 'pending').length || 0,
+    prescriptionsToReview: prescriptionsArray.filter(p => p.status === 'pending').length || 0,
+    recentOrders: ordersArray.slice(0, 5),
+    recentPrescriptions: prescriptionsArray.slice(0, 5),
+    recentDoctors: doctorsArray.slice(0, 5),
   };
 }
 
