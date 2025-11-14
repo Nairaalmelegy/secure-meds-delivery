@@ -21,7 +21,7 @@ export default function PatientSidebar({ children }: { children: React.ReactNode
     <div className="flex">
       <aside className="w-64 h-screen fixed left-0 top-0 bg-primary text-primary-foreground flex flex-col border-r overflow-y-auto">
         <div className="p-6 border-b border-primary-foreground/10">
-          <h2 className="text-2xl font-bold">MediCare</h2>
+          <h2 className="text-2xl font-bold">MediLink</h2>
           <p className="text-xs text-primary-foreground/60 mt-1">Patient Portal</p>
         </div>
         

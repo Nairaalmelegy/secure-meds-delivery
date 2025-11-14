@@ -18,8 +18,8 @@ export function Navigation({ onAuthClick }: NavigationProps) {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <div className="bg-gradient-primary p-2 rounded-lg">
-              <Pill className="h-6 w-6 text-primary-foreground" />
+            <div className="bg-gradient-primary p-1 rounded-lg">
+              <img src="/logo.png" className="w-10 h-10"/>
             </div>
             <span className="text-2xl font-bold text-primary">MediLink</span>
           </div>

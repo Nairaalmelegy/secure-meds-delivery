@@ -21,7 +21,7 @@ const AdminLayout = () => {
     <div className="flex min-h-screen">
       <aside className="w-64 bg-primary text-primary-foreground flex flex-col border-r fixed left-0 top-0 h-screen overflow-y-auto">
         <div className="p-6 border-b border-primary-foreground/10">
-          <h2 className="text-2xl font-bold">MediCare</h2>
+          <h2 className="text-2xl font-bold">MediLink</h2>
           <p className="text-xs text-primary-foreground/60 mt-1">Admin Panel</p>
         </div>
         
