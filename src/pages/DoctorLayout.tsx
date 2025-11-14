@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 const doctorNav = [
   { to: "/doctor-dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/patient-search", label: "Patient Search", icon: Users },
+  { to: "/doctor-dashboard/patient-search", label: "Patient Search", icon: Users },
   { to: "/doctor-dashboard/prescriptions", label: "Prescriptions", icon: FileText },
   { to: "/doctor-dashboard/commissions", label: "Commissions", icon: DollarSign },
 ];

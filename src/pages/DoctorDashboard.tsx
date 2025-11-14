@@ -292,10 +292,11 @@ export default function DoctorDashboard() {
                     <p className="text-sm text-muted-foreground">{patientResult.email}</p>
                     <p className="text-sm text-muted-foreground">ID: {patientResult.nationalId}</p>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => setViewRecordsOpen(true)}>
+                  <Button variant="outline" size="sm" onClick={() => navigate(`/doctor-dashboard/patient-search?id=${patientResult.id}`)}>
                     View Records
                   </Button>
                 </div>
+                {/* MedicalRecordsModal retained for in-place view; navigation will show full report in Patient Search */}
                 <MedicalRecordsModal open={viewRecordsOpen} onOpenChange={setViewRecordsOpen} patientId={patientResult.id} />
               </>
             ) : (

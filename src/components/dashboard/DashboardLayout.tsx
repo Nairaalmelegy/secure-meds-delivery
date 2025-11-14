@@ -18,13 +18,13 @@ export function DashboardLayout({ children, title, subtitle, actions }: Dashboar
   return (
     <div className="min-h-screen bg-muted/30">
       {/* Top Header */}
-      <header className="bg-card border-b sticky top-0 z-10 shadow-sm">
+      <header className="bg-gradient-primary border-b sticky top-0 z-10 rounded-lg shadow-sm pt-5 pb-5">
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex-1">
             {title && (
               <div>
-                <h1 className="text-2xl font-bold text-foreground">{title}</h1>
-                {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
+                <h1 className="text-4xl font-bold text-white">{title}</h1>
+                {subtitle && <p className="text-sm text-white mt-1">{subtitle}</p>}
               </div>
             )}
           </div>

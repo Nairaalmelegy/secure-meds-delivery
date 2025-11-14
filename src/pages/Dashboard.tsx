@@ -16,10 +16,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useToast } from '@/hooks/use-toast';
 
 interface ExtractedMedicine {
-  medicine: string;
-  name: string;
-  qty: number;
-  price: number;
+  medicine?: string | { name?: string };
+  name?: string;
+  qty?: number;
+  quantity?: number;
+  price?: number;
+  notes?: string;
 }
 
 interface Order {
@@ -36,6 +38,7 @@ interface Prescription {
   fileUrl?: string;
   status: string;
   extractedMedicines?: ExtractedMedicine[];
+  medicines?: ExtractedMedicine[];
 }
 
 export default function Dashboard() {
@@ -87,15 +90,17 @@ export default function Dashboard() {
   const confirmPrescription = async (prescriptionId: string, confirm: boolean) => {
     setConfirmingLoading(true);
     try {
-      await apiClient.post(`/api/prescriptions/${prescriptionId}/confirm`, { confirm });
+      // Use the prescriptionApi helper which calls the correct backend route (PUT /:id/patient-confirm)
+      await prescriptionApi.confirmPrescription(prescriptionId, confirm);
       queryClient.invalidateQueries({ queryKey: ['prescriptions'] });
       setConfirmingId(null);
       toast({ 
         title: confirm ? 'Confirmed' : 'Rejected', 
         description: confirm ? 'Prescription order confirmed' : 'Prescription order rejected' 
       });
-    } catch (err: any) {
-      toast({ title: 'Error', description: err?.message || 'Failed to update', variant: 'destructive' });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err || 'Failed to update');
+      toast({ title: 'Error', description: message, variant: 'destructive' });
     } finally {
       setConfirmingLoading(false);
     }
@@ -267,23 +272,53 @@ export default function Dashboard() {
           <DialogHeader>
             <DialogTitle>Confirm Prescription Order</DialogTitle>
           </DialogHeader>
-          {confirmingId && awaitingConfirm.find(p => p._id === confirmingId) && (
-            <div className="space-y-4">
-              {awaitingConfirm.find(p => p._id === confirmingId)?.fileUrl && (
-                <PrescriptionImage fileUrl={awaitingConfirm.find(p => p._id === confirmingId)!.fileUrl!} />
-              )}
-              <div className="flex gap-4 justify-end">
-                <Button variant="outline" onClick={() => confirmPrescription(confirmingId, false)} disabled={confirmingLoading}>
-                  <XCircle className="w-4 h-4 mr-2" />
-                  Reject
-                </Button>
-                <Button onClick={() => confirmPrescription(confirmingId, true)} disabled={confirmingLoading}>
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Confirm
-                </Button>
+          {confirmingId && awaitingConfirm.find(p => p._id === confirmingId) && (() => {
+            const pres = awaitingConfirm.find(p => p._id === confirmingId)!;
+            const meds = (pres.extractedMedicines as ExtractedMedicine[]) || (pres.medicines as ExtractedMedicine[]) || [];
+            const total = meds.reduce((s: number, m: ExtractedMedicine) => s + ((m.price || 0) * (m.qty || m.quantity || 0)), 0);
+            return (
+              <div className="space-y-4">
+                {pres.fileUrl && (
+                  <PrescriptionImage fileUrl={pres.fileUrl} />
+                )}
+
+                {meds.length > 0 ? (
+                  <div className="bg-background/60 p-4 rounded-md">
+                    <h3 className="text-lg font-medium mb-2">Medicines in this Prescription</h3>
+                    <div className="divide-y">
+                      {meds.map((m: ExtractedMedicine, idx: number) => (
+                        <div key={idx} className="py-2 flex justify-between items-start">
+                          <div>
+                            <div className="font-medium">{m.name ?? (typeof m.medicine === 'object' && (m.medicine as { name?: string }).name) ?? (typeof m.medicine === 'string' ? m.medicine : undefined) ?? 'Unknown'}</div>
+                            {m.notes && <div className="text-sm text-muted-foreground">{m.notes}</div>}
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm">Qty: {m.qty ?? m.quantity ?? 1}</div>
+                            <div className="font-medium">EGP {(m.price || 0).toFixed(2)}</div>
+                            <div className="text-sm text-muted-foreground">Subtotal: EGP {(((m.price || 0) * (m.qty || m.quantity || 1)) || 0).toFixed(2)}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="pt-3 text-right font-semibold">Total: EGP {total.toFixed(2)}</div>
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground">No medicines were extracted from this prescription.</div>
+                )}
+
+                <div className="flex gap-4 justify-end">
+                  <Button variant="outline" onClick={() => confirmPrescription(confirmingId, false)} disabled={confirmingLoading}>
+                    <XCircle className="w-4 h-4 mr-2" />
+                    Reject
+                  </Button>
+                  <Button onClick={() => confirmPrescription(confirmingId, true)} disabled={confirmingLoading}>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Confirm
+                  </Button>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </DialogContent>
       </Dialog>
     </DashboardLayout>

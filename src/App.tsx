@@ -19,6 +19,8 @@ import OrderMedicines from "./pages/OrderMedicines";
 import Orders from "./pages/Orders";
 import { Checkout } from "./pages/Checkout";
 import DoctorDashboard from "./pages/DoctorDashboard";
+import DoctorPrescriptions from './pages/DoctorPrescriptions';
+import DoctorCommissions from './pages/DoctorCommissions';
 import Profile from "./pages/Profile";
 import MedicalRecords from "./pages/MedicalRecords";
 import AccountSettings from "./pages/AccountSettings";
@@ -70,14 +72,11 @@ const App = () => (
                 </ProtectedRoute>
               }>
                 <Route index element={<DoctorDashboard />} />
-                <Route path="prescriptions" element={<DoctorDashboard />} />
-                <Route path="commissions" element={<DoctorDashboard />} />
+                <Route path="prescriptions" element={<DoctorPrescriptions />} />
+                <Route path="commissions" element={<DoctorCommissions />} />
+                <Route path="patient-search" element={<PatientSearch />} />
               </Route>
-              <Route path="/patient-search" element={
-                <ProtectedRoute allowedRoles={['doctor']}>
-                  <PatientSearch />
-                </ProtectedRoute>
-              } />
+              
               
 
               {/* Admin/Pharmacy Routes with Sidebar */}
