@@ -2,7 +2,8 @@ import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import PatientSidebar from "@/components/PatientSidebar";
-import ChatBotWidget from "@/components/ChatBotWidget";
+import ChatbotPanel from "@/components/ChatbotPanel";
+import { useState } from "react";
 
 const patientNav = [
   { label: "Overview", path: "/dashboard" },
@@ -29,9 +30,33 @@ export default function PatientLayout() {
         <div className="mx-auto py-8 px-6">
           <Outlet />
         </div>
-        {/* Chat widget available to patients */}
-        <ChatBotWidget />
+
+        {/* Chatbot panel (responsive). We render the panel and a floating toggle button. */}
+        {/* chatOpen state controls whether the panel is visible. */}
       </main>
+
+      {/* Chatbot wiring */}
+      {/* NOTE: ChatbotPanel expects props chatOpen and setChatOpen */}
+      {/* We position the floating button globally so it's above content. */}
+      <ChatbotPanelWrapper />
     </PatientSidebar>
+  );
+}
+
+function ChatbotPanelWrapper() {
+  const [chatOpen, setChatOpen] = useState(false);
+
+  return (
+    <>
+      <ChatbotPanel chatOpen={chatOpen} setChatOpen={setChatOpen} />
+
+      <button
+        onClick={() => setChatOpen(true)}
+        aria-label={chatOpen ? "Open chat" : "Open chat"}
+        className="fixed right-5 bottom-5 z-40 bg-indigo-600 text-white p-3 rounded-full shadow-lg hover:bg-indigo-700 focus:outline-none"
+      >
+        💬
+      </button>
+    </>
   );
 }

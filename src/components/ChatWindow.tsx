@@ -1,27 +1,19 @@
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
 import { sendChat } from "../services/chatApi";
 
-interface ChatWindowProps {
-  onClose: () => void;
-}
-
-interface Message {
-  sender: "user" | "ai";
-  text: string;
-}
-
-export default function ChatWindow({ onClose }: ChatWindowProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState<string>("");
+export default function ChatWindow({ onClose }) {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
 
   async function handleSend() {
     if (!input.trim()) return;
 
-    const userMsg: Message = { sender: "user", text: input };
+    const userMsg = { sender: "user", text: input };
     setMessages((prev) => [...prev, userMsg]);
 
     const data = await sendChat(input);
-    const aiMsg: Message = { sender: "ai", text: data.reply };
+    const aiMsg = { sender: "ai", text: data.reply };
 
     setMessages((prev) => [...prev, aiMsg]);
     setInput("");
@@ -36,16 +28,16 @@ export default function ChatWindow({ onClose }: ChatWindowProps) {
 
       <div className="h-64 overflow-y-auto border p-2 rounded">
         {messages.map((msg, i) => (
-          <p
+          <div
             key={i}
-            className={`mb-2 ${
+            className={`mb-2 whitespace-pre-wrap ${
               msg.sender === "user"
                 ? "text-right text-blue-600"
                 : "text-left text-gray-700"
             }`}
           >
-            {msg.text}
-          </p>
+            <ReactMarkdown>{msg.text}</ReactMarkdown>
+          </div>
         ))}
       </div>
 
@@ -55,6 +47,9 @@ export default function ChatWindow({ onClose }: ChatWindowProps) {
           placeholder="Type a message..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSend();
+          }}
         />
         <button
           onClick={handleSend}
