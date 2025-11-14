@@ -2,6 +2,7 @@ import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import PatientSidebar from "@/components/PatientSidebar";
+import ChatBotWidget from "@/components/ChatBotWidget";
 
 const patientNav = [
   { label: "Overview", path: "/dashboard" },
@@ -28,6 +29,8 @@ export default function PatientLayout() {
         <div className="mx-auto py-8 px-6">
           <Outlet />
         </div>
+        {/* Chat widget available to patients */}
+        <ChatBotWidget />
       </main>
     </PatientSidebar>
   );
