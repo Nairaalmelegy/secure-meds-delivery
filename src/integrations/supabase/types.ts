@@ -126,6 +126,45 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          allergies: string[] | null
+          chronic_diseases: string[] | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string | null
+          past_medications: string[] | null
+          phone: string | null
+          scans: Json | null
+          updated_at: string
+        }
+        Insert: {
+          allergies?: string[] | null
+          chronic_diseases?: string[] | null
+          created_at?: string
+          email?: string | null
+          id: string
+          name?: string | null
+          past_medications?: string[] | null
+          phone?: string | null
+          scans?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          allergies?: string[] | null
+          chronic_diseases?: string[] | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string | null
+          past_medications?: string[] | null
+          phone?: string | null
+          scans?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

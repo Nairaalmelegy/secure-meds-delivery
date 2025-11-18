@@ -21,6 +21,7 @@ import { Checkout } from "./pages/Checkout";
 import DoctorDashboard from "./pages/DoctorDashboard";
 import DoctorPrescriptions from './pages/DoctorPrescriptions';
 import DoctorCommissions from './pages/DoctorCommissions';
+import DoctorPatientChats from './pages/DoctorPatientChats';
 import Profile from "./pages/Profile";
 import MedicalRecords from "./pages/MedicalRecords";
 import AccountSettings from "./pages/AccountSettings";
@@ -73,6 +74,7 @@ const App = () => (
               }>
                 <Route index element={<DoctorDashboard />} />
                 <Route path="prescriptions" element={<DoctorPrescriptions />} />
+                <Route path="patient-chats" element={<DoctorPatientChats />} />
                 <Route path="commissions" element={<DoctorCommissions />} />
                 <Route path="patient-search" element={<PatientSearch />} />
               </Route>
