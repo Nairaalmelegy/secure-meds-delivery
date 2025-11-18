@@ -30,14 +30,10 @@ export default function PatientLayout() {
         <div className="mx-auto py-8 px-6">
           <Outlet />
         </div>
-
-        {/* Chatbot panel (responsive). We render the panel and a floating toggle button. */}
-        {/* chatOpen state controls whether the panel is visible. */}
       </main>
 
-      {/* Chatbot wiring */}
+      {/* Chatbot wiring: render inside the sidebar layout so the desktop panel sits alongside main content */}
       {/* NOTE: ChatbotPanel expects props chatOpen and setChatOpen */}
-      {/* We position the floating button globally so it's above content. */}
       <ChatbotPanelWrapper />
     </PatientSidebar>
   );

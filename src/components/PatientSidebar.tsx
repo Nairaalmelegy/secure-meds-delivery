@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { LayoutDashboard, FileText, Upload, Package, ShoppingCart, CreditCard, LogOut } from 'lucide-react';
@@ -16,6 +17,13 @@ export default function PatientSidebar({ children }: { children: React.ReactNode
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
+
+  // Allow two children: [mainContent, rightPane]. If a rightPane is provided
+  // we'll render it as a sibling to the main content so fixed/desktop layouts
+  // (like the ChatbotPanel) can sit to the right.
+  const childArray = React.Children.toArray(children);
+  const mainContent = childArray[0] ?? null;
+  const rightPane = childArray[1] ?? null;
 
   return (
     <div className="flex">
@@ -60,7 +68,10 @@ export default function PatientSidebar({ children }: { children: React.ReactNode
         </div>
       </aside>
       
-      <main className="flex-1 min-h-screen overflow-y-auto ml-64">{children}</main>
+      <main className="flex-1 min-h-screen overflow-y-auto ml-64">{mainContent}</main>
+
+      {/* optional right-side pane (e.g., ChatbotPanel) */}
+      {rightPane}
     </div>
   );
 }
