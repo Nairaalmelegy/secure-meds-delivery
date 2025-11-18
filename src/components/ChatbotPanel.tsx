@@ -1,6 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { sendChat } from "../services/chatApi";
+import { useAuth } from "@/contexts/AuthContext";
+import { useMedicalChat } from "@/hooks/useMedicalChat";
+import SeverityScale from "./SeverityScale";
+// COMMENTED OUT: Old DeepSeek/generic chat API - replaced with Gemini-powered medical chat
+// import { sendChat } from "../services/chatApi";
 
 type Props = {
   chatOpen: boolean;
@@ -8,13 +12,12 @@ type Props = {
 };
 
 export default function ChatbotPanel({ chatOpen, setChatOpen }: Props) {
+  const { user } = useAuth();
+  const { messages, loading, sendMessage, phase } = useMedicalChat();
   const [isDesktop, setIsDesktop] = useState<boolean>(() => typeof window !== "undefined" ? window.innerWidth >= 1024 : true);
-  const [messages, setMessages] = useState<Array<{ id: string; from: "user" | "bot"; text: string }>>([
-    { id: "init", from: "bot", text: "Hello! I'm MediAssist. Ask me general health questions." },
-  ]);
   const [draft, setDraft] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [showSeverityScale, setShowSeverityScale] = useState(false);
+  const [pendingMessage, setPendingMessage] = useState("");
   const listRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -31,29 +34,32 @@ export default function ChatbotPanel({ chatOpen, setChatOpen }: Props) {
 
   async function handleSend() {
     const text = draft.trim();
-    if (!text) return;
-    setError(null);
+    if (!text || !user) return;
 
-    const id = Date.now().toString();
-    const userMsg = { id, from: "user" as const, text };
-    setMessages((m) => [...m, userMsg]);
-    setDraft("");
-    setLoading(true);
+    // Check if the last AI message was a question (contains "scale" or "rate")
+    const lastAiMessage = messages[messages.length - 1];
+    const isScaleQuestion = lastAiMessage?.role === 'assistant' && 
+      (lastAiMessage.content.toLowerCase().includes('scale') || 
+       lastAiMessage.content.toLowerCase().includes('rate'));
 
-    try {
-      const res = await sendChat(text);
-      const botMsg = { id: `${id}-bot`, from: "bot" as const, text: res.reply };
-      setMessages((m) => [...m, botMsg]);
-    } catch (err: unknown) {
-      // Only print errors to console in development; in production consider sending to telemetry
-      if (import.meta.env.DEV) console.error("chat send error", err);
-      const message = err instanceof Error ? err.message : String(err);
-      setError(message || "Failed to get a response");
-      // show an inline bot error message
-      setMessages((m) => [...m, { id: `${id}-err`, from: "bot", text: "Sorry, I couldn't reach the assistant. Try again later." }]);
-    } finally {
-      setLoading(false);
+    if (isScaleQuestion && phase === 'questioning') {
+      setPendingMessage(text);
+      setShowSeverityScale(true);
+      setDraft("");
+      return;
     }
+
+    setDraft("");
+    await sendMessage(text, user.id, user.name || user.email, user.email);
+  }
+
+  function handleSeveritySelect(severity: number) {
+    if (!user || !pendingMessage) return;
+    
+    setShowSeverityScale(false);
+    const responseText = `${pendingMessage} (Severity: ${severity}/5)`;
+    sendMessage(responseText, user.id, user.name || user.email, user.email, severity);
+    setPendingMessage("");
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -83,10 +89,15 @@ export default function ChatbotPanel({ chatOpen, setChatOpen }: Props) {
 
           <div ref={listRef} className="flex-1 overflow-y-auto p-4 space-y-3">
             {messages.map((m) => (
-              <div key={m.id} className={m.from === "user" ? "text-right" : "text-left"}>
-                <div className={`${m.from === "user" ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-800"} inline-block px-3 py-2 rounded-lg max-w-[85%] whitespace-pre-wrap`}>
-                  <ReactMarkdown>{m.text}</ReactMarkdown>
+              <div key={m.id} className={m.role === "user" ? "text-right" : "text-left"}>
+                <div className={`${m.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"} inline-block px-3 py-2 rounded-lg max-w-[85%] whitespace-pre-wrap`}>
+                  <ReactMarkdown>{m.content}</ReactMarkdown>
                 </div>
+                {m.message_type === 'question' && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    📊 Expecting severity rating
+                  </div>
+                )}
               </div>
             ))}
 
