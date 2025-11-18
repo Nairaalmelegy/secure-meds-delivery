@@ -1,12 +1,13 @@
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { LayoutDashboard, Users, FileText, DollarSign, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, FileText, DollarSign, MessageSquare, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const doctorNav = [
   { to: "/doctor-dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/doctor-dashboard/patient-search", label: "Patient Search", icon: Users },
   { to: "/doctor-dashboard/prescriptions", label: "Prescriptions", icon: FileText },
+  { to: "/doctor-dashboard/patient-chats", label: "Patient Chats", icon: MessageSquare },
   { to: "/doctor-dashboard/commissions", label: "Commissions", icon: DollarSign },
 ];
 
