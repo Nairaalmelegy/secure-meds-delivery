@@ -14,7 +14,118 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          message_type: string | null
+          metadata: Json | null
+          role: string
+          session_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          message_type?: string | null
+          metadata?: Json | null
+          role: string
+          session_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          message_type?: string | null
+          metadata?: Json | null
+          role?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          patient_email: string | null
+          patient_id: string
+          patient_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          patient_email?: string | null
+          patient_id: string
+          patient_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          patient_email?: string | null
+          patient_id?: string
+          patient_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      medical_analyses: {
+        Row: {
+          analysis_result: string | null
+          created_at: string
+          id: string
+          medical_history_reviewed: Json | null
+          patient_id: string
+          questions_asked: Json | null
+          recommendations: string | null
+          session_id: string
+          severity_scores: Json | null
+          symptoms: string[] | null
+        }
+        Insert: {
+          analysis_result?: string | null
+          created_at?: string
+          id?: string
+          medical_history_reviewed?: Json | null
+          patient_id: string
+          questions_asked?: Json | null
+          recommendations?: string | null
+          session_id: string
+          severity_scores?: Json | null
+          symptoms?: string[] | null
+        }
+        Update: {
+          analysis_result?: string | null
+          created_at?: string
+          id?: string
+          medical_history_reviewed?: Json | null
+          patient_id?: string
+          questions_asked?: Json | null
+          recommendations?: string | null
+          session_id?: string
+          severity_scores?: Json | null
+          symptoms?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_analyses_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
