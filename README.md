@@ -395,7 +395,3 @@ npm run dev
 2. Start the frontend and open the chat UI, then send a message. The frontend will `POST /api/chat` and you should see the assistant reply.
 
 If you don't want to call DeepSeek during development, you can temporarily replace `deepseekService.deepseekChat` with a local mock that returns a canned response.
-
----
-
-If you want, I can also generate a small mermaid diagram block and append it to this README to visualize the flows — say the word and I'll add it.
