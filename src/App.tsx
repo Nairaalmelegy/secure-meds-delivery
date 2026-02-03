@@ -38,6 +38,7 @@ import PatientSearch from "./pages/PatientSearch";
 
 const queryClient = new QueryClient();
 
+// Main application component
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
