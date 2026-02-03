@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/runtimeClient';
 import { useToast } from '@/hooks/use-toast';
 
 export type ChatMessage = {
@@ -29,7 +29,7 @@ export function useMedicalChat() {
 
   const createSession = useCallback(async (patientId: string, patientName: string, patientEmail: string) => {
     try {
-      const { data, error } = await supabase
+       const { data, error } = await supabase
         .from('chat_sessions')
         .insert({
           patient_id: patientId,
